@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>نظام الحضور الذكي - الإصدار الشامل</title>
+    <title>نظام كشف الحضور المطور - كلية التمريض</title>
     
     <meta property="og:title" content="جامعة الريادة - كلية التمريض">
-    <meta property="og:description" content="نظام تسجيل الحضور الذكي والتحليل الجغرافي.">
+    <meta property="og:description" content="نظام تسجيل الحضور الذكي.">
     <meta property="og:image" content="https://k.top4top.io/p_3615d3vek1.png">
     
     <link rel="manifest" href="./manifest.json">
@@ -24,6 +24,7 @@
 
     <style>
         /* === الأساسيات === */
+        /* تصميم جديد لمنع الدخول */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -43,38 +44,21 @@
         .hero-icon-wrapper.show-icon .hero-img { transform: scale(0); opacity: 0; }
         .hero-icon-wrapper.show-icon .status-icon-container { opacity: 1; transform: scale(1); }
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
-
-        /* زر التنبيهات الجديد */
-        .notification-btn {
-            position: absolute; top: 20px; left: 20px; z-index: 100;
-            width: 40px; height: 40px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer;
-            color: #64748b; transition: 0.3s;
-        }
-        .notification-btn.has-alert {
-            color: #ef4444; background: #fee2e2;
-            animation: pulse-red 2s infinite;
-        }
-        .notification-badge {
-            position: absolute; top: -2px; right: -2px;
-            width: 12px; height: 12px; background: #ef4444;
-            border-radius: 50%; border: 2px solid white; display: none;
-        }
-        .notification-btn.has-alert .notification-badge { display: block; }
-
-        /* باقي الأنماط */
+        
         .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
         .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
+
+        /* === الأزرار === */
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
+
         .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
+        
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
         .admin-sub-btn { border-radius: 18px; padding: 12px 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); height: 85px; }
         .admin-sub-btn:active { transform: scale(0.95); }
@@ -87,61 +71,208 @@
         .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); color: #0ea5e9; border: 1px solid #bae6fd; flex-direction: row; height: 55px; margin-top: 5px; }
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
-        .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
+
+        /* === زر التحقق من الهوية الجديد === */
+        .btn-verify-identity {
+            background: linear-gradient(135deg, #6366f1, #4f46e5); /* تدرج أرجواني */
+            color: white;
+            width: 100%;
+            padding: 15px;
+            border-radius: 16px;
+            border: none;
+            font-size: 14px;
+            font-weight: 800;
+            font-family: 'Cairo';
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            z-index: 10;
+        }
         .btn-verify-identity:active { transform: scale(0.97); }
-        .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
-        .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
+        
+        /* === تصميم الكاميرا الذكية (مدمج من الكود الثاني) === */
+        .cam-container {
+            width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; 
+            background: #f8fafc; 
+            overflow: hidden; border: 5px solid #e2e8f0; position: relative;
+            transition: border-color 0.3s;
+        }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
-        .spinner { border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        
+        /* مؤشر التحميل للكاميرا */
+        .spinner-overlay { 
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: rgba(255, 255, 255, 0.95); 
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 50; 
+        }
+        .spinner { 
+            border: 4px solid rgba(14, 165, 233, 0.2); 
+            border-top: 4px solid var(--primary); 
+            border-radius: 50%; 
+            width: 40px; height: 40px; 
+            animation: spin 1s linear infinite; 
+            margin-bottom: 10px;
+        }
         .large-loader-icon { font-size: 50px; color: var(--primary); margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.4)); }
-        .timer-circular-wrapper { position: absolute; top:0; left:0; width:100%; height:100%; display: none; align-items: center; justify-content: center; z-index: 10; }
+
+        /* الشريط الدائري للعد */
+        .timer-circular-wrapper {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            display: none; 
+            align-items: center; justify-content: center; z-index: 10; 
+        }
         .timer-svg-face { transform: rotate(-90deg); width: 100%; height: 100%; }
         .timer-circle-bg-face { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
-        .timer-circle-fg-face { fill: none; stroke: #10b981; stroke-width: 5; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; stroke-linecap: round; }
-        .timer-number-face { font-size: 50px; font-weight: 900; color: #1e293b; text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .alert-badge { background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s; }
+        .timer-circle-fg-face { 
+            fill: none; stroke: #10b981; stroke-width: 5; 
+            stroke-dasharray: 282.7; 
+            stroke-dashoffset: 282.7; 
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s; 
+            stroke-linecap: round; 
+        }
+        .timer-number-face { 
+            font-size: 50px; font-weight: 900; color: #1e293b; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+
+        .alert-badge { 
+            background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; 
+            font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; 
+            transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; 
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s;
+        }
+
         .status-ok { border-color: #10b981 !important; box-shadow: 0 0 15px #10b981; }
         .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 15px #f59e0b; }
         .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
-        #reportModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
-        .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
+
+
+        /* === تصميم السجل التفاعلي الجديد (Modal) === */
+        #reportModal .modal-box {
+            max-width: 400px; height: 85vh; padding: 0; background: #f8fafc;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .report-modal-header {
+            padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 20;
+        }
+
         .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
-        .btn-icon-danger { width: 40px; height: 40px; border-radius: 50%; border: none; background: #fee2e2; color: #ef4444; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+
+        /* زر الحذف الأيقونة فقط */
+        .btn-icon-danger {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: #fee2e2; color: #ef4444; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
         .btn-icon-danger:hover { background: #ef4444; color: white; transform: rotate(15deg); }
-        .report-views-container { flex: 1; position: relative; overflow: hidden; width: 100%; }
-        .report-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 15px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); background: #f8fafc; }
+
+        /* حاوية المحتوى المتحركة */
+        .report-views-container {
+            flex: 1; position: relative; overflow: hidden; width: 100%;
+        }
+        .report-view {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            overflow-y: auto; padding: 15px;
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            background: #f8fafc;
+        }
+
+        /* فيو 1: كروت المواد */
         #viewSubjects { transform: translateX(0); z-index: 10; }
         #viewStudents { transform: translateX(-100%); z-index: 20; background: #f8fafc; }
+
+        /* كلاسات التحريك */
         .slide-out { transform: translateX(100%) !important; }
         .slide-in { transform: translateX(0) !important; }
-        .subject-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
+
+        /* تصميم كارت المادة الكبير */
+        .subject-big-card {
+            background: white; border-radius: 20px; padding: 20px;
+            margin-bottom: 15px; cursor: pointer;
+            border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            transition: 0.2s; position: relative; overflow: hidden;
+        }
         .subject-big-card:active { transform: scale(0.98); background: #f0f9ff; }
-        .subject-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 4px 0 0 4px; }
+        .subject-big-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+            background: var(--primary); border-radius: 4px 0 0 4px;
+        }
         .sub-card-info h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
         .sub-card-info span { font-size: 12px; color: #64748b; font-weight: 600; }
         .sub-arrow { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-        .students-list-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .btn-back-report { width: 35px; height: 35px; border-radius: 10px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; }
-        .student-detailed-card.alert-row { background: #fff5f5; border: 1px solid #fecaca; }
-        .student-detailed-card.alert-row .st-name { color: #b91c1c; }
+
+        /* هيدر قائمة الطلاب */
+        .students-list-header {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+            background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;
+        }
+        .btn-back-report {
+            width: 35px; height: 35px; border-radius: 10px; border: none;
+            background: #f1f5f9; color: #475569; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* كارت الطالب المحدث بالوقت واليوم */
+        .student-detailed-card {
+            background: white; border-radius: 14px; padding: 15px;
+            margin-bottom: 10px; border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex;
+            justify-content: space-between; align-items: center;
+        }
         .st-data-col { display: flex; flex-direction: column; gap: 4px; text-align: right; }
         .st-name { font-weight: 800; font-size: 13px; color: #1e293b; }
-        .std-time-badge { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
-        .btn-delete-item { width: 38px; height: 38px; background: #fff1f2; color: #f43f5e; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 14px; flex-shrink: 0; margin-right: 10px; }
+        .std-time-badge {
+            background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px;
+            font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;
+            margin-top: 5px;
+        }
+        .btn-delete-item {
+            width: 38px; height: 38px;
+            background: #fff1f2; color: #f43f5e;
+            border: none; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; font-size: 14px; flex-shrink: 0; margin-right: 10px;
+        }
         .btn-delete-item:active { transform: scale(0.9); background: #f43f5e; color: white; }
-        .btn-refresh-list { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        
+        /* أزرار الفوتر الجديدة */
+        .btn-refresh-list {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px;
+            border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo';
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;
+        }
         .btn-refresh-list:active { transform: scale(0.98); }
-        .btn-close-stylish { background: #f1f5f9; color: #475569; width: 100%; padding: 12px; border-radius: 16px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; font-size: 13px; }
+        .btn-close-stylish {
+            background: #f1f5f9; color: #475569; width: 100%; padding: 12px;
+            border-radius: 16px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; font-size: 13px;
+        }
+
+
+        /* Other Modals */
         #examModal .modal-box { border: 2px solid #ddd6fe; background: #ffffff; }
         .exam-loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #7c3aed; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Inputs & Selects */
         .input-group { margin-bottom: 15px; text-align: right; position: relative; z-index: 5; }
         .modern-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Cairo'; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
         .modern-input:focus { border-color: var(--primary); background: white; }
         .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
+        
         .custom-select-wrapper { position: relative; user-select: none; width: 100%; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; }
         .custom-select-label { display: block; text-align: right; margin-bottom: 8px; font-size: 13px; color: #475569; font-weight: 800; margin-right: 5px; }
         .custom-select-trigger { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 20px; font-size: 15px; font-weight: 700; color: #334155; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
@@ -163,6 +294,8 @@
         .custom-option.selected { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
         .custom-option.selected::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
         .custom-select-wrapper.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
+
+        /* Ticket & Scanner */
         .ticket-container { background: white; border-radius: 24px; position: relative; overflow: hidden; box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #f1f5f9; }
         .ticket-container::before, .ticket-container::after { content: ''; position: absolute; top: 110px; width: 24px; height: 24px; background: #0f172a; border-radius: 50%; z-index: 20; }
         .ticket-container::before { left: -12px; } .ticket-container::after { right: -12px; }
@@ -220,14 +353,115 @@
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
         .card-body-content { position: relative; min-height: 500px; z-index: 5; }
         
-        /* NEW: MODAL FOR ALERTS */
-        #identityAlertModal .modal-box { border: 2px solid #f59e0b; }
-        .alert-icon-large { font-size: 40px; margin-bottom: 15px; color: #f59e0b; }
-        .analysis-result-item { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 8px; }
-        .ar-label { font-weight: bold; color: #64748b; font-size: 12px; }
-        .ar-value { font-weight: 900; color: #1e293b; font-size: 13px; }
-        .status-red { color: #ef4444; }
-        .status-green { color: #10b981; }
+        /* === تعديلات الفوتر الساحر (تم التحديث: تصميم زجاجي عصري) === */
+        .academic-footer {
+            display: flex; justify-content: center; align-items: center;
+            margin-top: 30px; position: relative; z-index: 10;
+        }
+
+        .uni-footer-label-large {
+            /* تصميم زجاجي عصري جداً */
+            background: rgba(255, 255, 255, 0.25); /* شفافية عالية */
+            backdrop-filter: blur(15px); /* تمويه قوي للخلفية */
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6); /* حدود خفيفة */
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); /* ظل ناعم */
+            
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 10px 25px;
+            border-radius: 50px;
+            
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            margin-top: 15px;
+            white-space: nowrap;
+            animation: float-slow 4s ease-in-out infinite alternate;
+        }
+
+        .uni-footer-label-large i {
+            color: #0ea5e9;
+            font-size: 16px;
+            filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.3));
+        }
+
+        @keyframes float-slow {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        /* === تنسيق نافذة الحذف المودرن (طلب التعديل) === */
+        .confirm-box-style {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 30px !important;
+            padding: 30px 20px !important;
+            box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .confirm-icon-animate {
+            width: 70px; height: 70px;
+            background: #fef2f2; color: #ef4444;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin: 0 auto 15px auto;
+            box-shadow: 0 0 0 8px #fff1f2;
+            animation: shake-icon 0.5s ease-in-out;
+        }
+
+        .btn-confirm-modern {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4);
+        }
+        .btn-cancel-modern { background: #f1f5f9; color: #64748b; }
+
+        @keyframes shake-icon {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+
+        /* === نافذة نجاح المسؤول الجديدة === */
+        #adminSuccessModal .modal-box {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid #10b981;
+        }
+        .admin-success-icon {
+            font-size: 50px;
+            color: #10b981;
+            margin-bottom: 15px;
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .attempts-badge { background: #fff1f2; color: #be123c; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 20px; border: 1px solid #fecdd3; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; }
+        .admin-floating-back { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255, 255, 255, 0.9); color: #475569; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; z-index: 1000; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .admin-floating-back:active { transform: scale(0.9); }
+        .admin-floating-back i { font-size: 16px; }
+        .custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; direction: ltr; position: relative; z-index: 10; }
+        .key-btn { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 0; font-size: 22px; font-weight: 700; color: #334155; box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.05); cursor: pointer; transition: all 0.1s; font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; }
+        .key-btn:active { transform: scale(0.95); background: #f1f5f9; box-shadow: none; }
+        .key-btn.action-btn { background: #f8fafc; color: #64748b; }
+        .key-btn.delete-btn { color: #ef4444; background: #fef2f2; border-color: #fecaca; }
+        .btn-delete-single { background: #fee2e2; color: #b91c1c; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .btn-delete-single:active { transform: scale(0.9); }
+        .empty-state { padding: 30px; font-weight: 700; color: var(--text-sub); background: #f8fafc; border-radius: 12px; }
+
+        /* === NEW TOAST STYLE === */
+        #toastMessage {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 20px; 
+            border-radius: 20px; font-size: 12px; display: none; z-index: 20000; 
+            animation: fadeIn 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+        }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -249,11 +483,6 @@
     <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
     <audio id="beepSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
 
-    <div id="notificationBtn" class="notification-btn" onclick="showNotificationModal()">
-        <i class="fa-solid fa-bell"></i>
-        <div class="notification-badge"></div>
-    </div>
-
     <div id="customLogoutModal" class="modal-overlay">
         <div class="modal-box">
             <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 40px; color: #ef4444; margin-bottom: 15px;"></i>
@@ -263,19 +492,6 @@
                 <button onclick="performLogout()" class="modal-btn btn-confirm">نعم</button>
                 <button onclick="closeLogoutModal()" class="modal-btn btn-cancel">إلغاء</button>
             </div>
-        </div>
-    </div>
-    
-    <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999;">
-        <div class="modal-box">
-            <i class="fa-solid fa-triangle-exclamation alert-icon-large"></i>
-            <div class="modal-title">تنبيهات النظام</div>
-            <div class="modal-text" style="text-align: right;">
-                <div id="alertContent">
-                    <div class="empty-state" style="padding:15px;">لا توجد تنبيهات حالياً.</div>
-                </div>
-            </div>
-            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155;">إغلاق</button>
         </div>
     </div>
 
@@ -303,6 +519,7 @@
 
     <div id="reportModal" class="modal-overlay">
         <div class="modal-box">
+            
             <div class="report-modal-header">
                 <div style="display:flex; flex-direction:column; align-items:flex-start;">
                     <div class="modal-title" style="margin:0; font-size:16px;">سجل الحضور</div>
@@ -314,9 +531,11 @@
             </div>
 
             <div class="report-views-container">
+                
                 <div id="viewSubjects" class="report-view slide-in">
                     <div id="subjectsContainer"></div>
                 </div>
+
                 <div id="viewStudents" class="report-view">
                     <div class="students-list-header">
                         <button onclick="showSubjectsView()" class="btn-back-report">
@@ -326,6 +545,7 @@
                     </div>
                     <div id="studentsContainer"></div>
                 </div>
+
             </div>
 
             <div class="report-modal-footer">
@@ -336,6 +556,7 @@
                     إغلاق
                 </button>
             </div>
+
         </div>
     </div>
 
@@ -391,42 +612,52 @@
 
             <div class="card-body-content">
                 <div id="screenWelcome" class="section active">
+                    
                     <div class="faculty-title-box">
                         <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
                     </div>
+
                     <h1>نظام كشف الحضور</h1>
                     <p>مرحباً بك. يرجى الضغط بالأسفل لتسجيل حضور المحاضرة الحالية.</p>
+                    
                     <div style="position: relative; z-index: 2;">
                         <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
                             تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
                         </button>
+
                         <div class="admin-controls-grid">
                             <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login">
                                 <i class="fa-solid fa-lock sub-btn-icon"></i>
                                 <span>دخول المسؤول</span>
                             </button>
+                            
                             <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout" style="display:none;">
                                 <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal sub-btn-icon"></i>
                                 <span>خروج المسؤول</span>
                             </button>
+
                             <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked">
                                 <i id="reportIcon" class="fa-solid fa-lock sub-btn-icon"></i>
                                 <span>سجل الحضور</span>
                             </button>
+
                             <button onclick="openExamModal()" class="admin-sub-btn btn-exams">
                                 <i class="fa-solid fa-file-pen sub-btn-icon"></i>
                                 <span style="font-size: 13px;">تنظيم الامتحانات</span>
                             </button>
+
                             <button onclick="safeClick(this, () => location.reload())" class="admin-sub-btn btn-refresh">
                                 <i class="fa-solid fa-rotate-right sub-btn-icon"></i>
                                 <span style="font-size: 13px;">تحديث النظام</span>
                             </button>
                         </div>
+
                         <div class="academic-footer">
                             <div class="uni-footer-label-large">
                                 <i class="fa-solid fa-building-columns"></i> جامعة الريادة للعلوم والتكنولوجيا
                             </div>
                         </div>
+
                     </div>
                     <div class="uni-watermark"></div>
                 </div>
@@ -462,10 +693,13 @@
                     </div>
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
+                    
                     <div class="input-group">
                         <input type="text" id="uniID" class="modern-input" placeholder="أدخل الكود الجامعي" readonly style="text-align:center; font-size:20px; letter-spacing:2px; font-weight:bold; background:white;">
                     </div>
+                    
                     <div class="input-group"><input type="text" id="attendanceCode" class="modern-input locked" readonly></div>
+                    
                     <div class="custom-keypad">
                         <button type="button" class="key-btn" onclick="addKey('1')">1</button>
                         <button type="button" class="key-btn" onclick="addKey('2')">2</button>
@@ -480,6 +714,7 @@
                         <button type="button" class="key-btn" onclick="addKey('0')">0</button>
                         <button type="button" class="key-btn delete-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
                     </div>
+
                     <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
                 </div>
 
@@ -487,11 +722,13 @@
                     <h1>التحقق الحيوي</h1>
                     <div class="cam-container" id="camBorder">
                         <video id="video" autoplay muted playsinline></video>
+                        
                         <div id="loaderSpinner" class="spinner-overlay">
                             <i class="fa-solid fa-face-viewfinder large-loader-icon"></i>
                             <div class="spinner"></div>
                             <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
                         </div>
+                        
                         <div id="modernTimerContainer" class="timer-circular-wrapper">
                             <svg class="timer-svg-face" viewBox="0 0 100 100">
                                 <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
@@ -501,6 +738,7 @@
                                 <span class="timer-number-face" id="timerNumberFace">3</span>
                             </div>
                         </div>
+                        
                         <div id="alertBadge" class="alert-badge">⚠️</div>
                     </div>
                     <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
@@ -509,6 +747,7 @@
                 
                 <div id="screenScanQR" class="section">
                     <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
+                    
                     <div class="student-info-card">
                         <div class="student-info-item">
                             <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
@@ -521,6 +760,7 @@
                             <span class="student-info-value" id="scanIDDisplay">--</span>
                         </div>
                     </div>
+
                     <div class="custom-select-wrapper" id="yearSelectWrapper">
                         <label class="custom-select-label">الفرقة الدراسية</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر الفرقة --">
@@ -534,8 +774,12 @@
                         <div class="custom-options">
                             <div class="sheet-handle"></div>
                             <div class="options-title">اختر الفرقة الدراسية</div>
-                            <div class="custom-option" data-value="first_year"><span>الفرقة الأولى</span></div>
-                            <div class="custom-option" data-value="second_year"><span>الفرقة الثانية</span></div>
+                            <div class="custom-option" data-value="first_year">
+                                <span>الفرقة الأولى</span>
+                            </div>
+                            <div class="custom-option" data-value="second_year">
+                                <span>الفرقة الثانية</span>
+                            </div>
                         </div>
                         <select id="yearSelect" style="display:none;">
                             <option value="" disabled selected>-- اختر الفرقة --</option>
@@ -543,6 +787,7 @@
                             <option value="second_year">الفرقة الثانية</option>
                         </select>
                     </div>
+
                     <div class="custom-select-wrapper disabled" id="subjectSelectWrapper">
                         <label class="custom-select-label">المادة الدراسية</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر الفرقة أولاً --">
@@ -558,33 +803,19 @@
                             <div class="options-title">اختر المادة الدراسية</div>
                             <div id="subjectOptionsContainer"></div>
                         </div>
-                        <select id="subjectSelect" style="display:none;" onchange="checkAllConditions()">
+                        <select id="subjectSelect" style="display:none;" onchange="checkSubjectSelection()">
                             <option value="" disabled selected>-- اختر الفرقة أولاً --</option>
                         </select>
                     </div>
-                    <div class="custom-select-wrapper" id="hallSelectWrapper">
-                        <label class="custom-select-label">المدرج الدراسي</label>
-                        <div class="custom-select-trigger" data-default-text="-- اختر المدرج --">
-                            <div class="trigger-content">
-                                <div class="trigger-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                                <span class="trigger-text">-- اختر المدرج --</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                        </div>
-                        <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
-                        <div class="custom-options">
-                            <div class="sheet-handle"></div>
-                            <div class="options-title">اختر المدرج الدراسي</div>
-                            <div id="hallOptionsContainer"></div>
-                        </div>
-                        <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
-                            <option value="" disabled selected>-- اختر المدرج --</option>
-                        </select>
-                    </div>
+                    
                     <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify">
                         <i class="fa-solid fa-fingerprint"></i> التحقق من الهوية
                     </button>
-                    <div id="qr-reader"><div class="scanner-laser"></div></div>
+
+                    <div id="qr-reader">
+                        <div class="scanner-laser"></div>
+                    </div>
+
                     <div id="startScanCard" class="qr-card-trigger" onclick="safeClick(this, startQrScanner)">
                         <div class="qr-card-icon"><i class="fa-solid fa-camera"></i></div>
                         <div>
@@ -592,29 +823,58 @@
                             <div class="qr-card-sub">وجه الكاميرا نحو الرمز</div>
                         </div>
                     </div>
-                    <div id="scanSuccessMsg" class="scan-success-badge"><i class="fa-solid fa-check-circle"></i> تم مسح الكود بنجاح</div>
+                    
+                    <div id="scanSuccessMsg" class="scan-success-badge">
+                        <i class="fa-solid fa-check-circle"></i> تم مسح الكود بنجاح
+                    </div>
+
                     <button type="button" id="retryCamBtn" class="btn-secondary" onclick="startQrScanner()" style="display:none; background: #fee2e2; color: #ef4444; margin-bottom: 15px;"><i class="fa-solid fa-rotate-right"></i> إعادة تشغيل الكاميرا</button>
+
                     <input type="hidden" id="sessionPass" required>
                     <button type="button" id="submitBtn" class="btn-main" disabled style="opacity:0.6; cursor:not-allowed;">تأكيد الحضور <i class="fa-solid fa-paper-plane"></i></button>
                 </div>
 
                 <div id="screenSuccess" class="section">
                     <h1 style="color:#10b981; margin-bottom: 15px;">تم التسجيل بنجاح</h1>
+                    
                     <div class="ticket-container">
                         <div class="ticket-header">
                             <div class="ticket-icon"><i class="fa-solid fa-check"></i></div>
                             <div style="font-weight: 900; font-size: 18px;">تأكيد حضور</div>
                         </div>
+                        
                         <div class="ticket-body">
                             <div class="verified-badge">VERIFIED</div>
-                            <div class="t-row"><span class="t-label">اسم الطالب / الطالبة</span><span class="t-value" id="receiptName">--</span></div>
-                            <div class="t-row"><span class="t-label">الكود الجامعي (ID)</span><span class="t-value english-num" id="receiptID">--</span></div>
+                            
+                            <div class="t-row">
+                                <span class="t-label">اسم الطالب / الطالبة</span>
+                                <span class="t-value" id="receiptName">--</span>
+                            </div>
+                            
+                            <div class="t-row">
+                                <span class="t-label">الكود الجامعي (ID)</span>
+                                <span class="t-value english-num" id="receiptID">--</span>
+                            </div>
+                            
                             <div class="ticket-dashed-line"></div>
-                            <div class="t-row"><span class="t-label">المادة الدراسية</span><span class="t-value" id="receiptSubject" style="color:var(--primary)">--</span></div>
-                            <div class="t-row"><span class="t-label">التاريخ</span><span class="t-value english-num" id="receiptDate">--</span></div>
-                            <div class="t-row"><span class="t-label">وقت التسجيل</span><span class="t-value english-num" id="receiptTime">--</span></div>
+                            
+                            <div class="t-row">
+                                <span class="t-label">المادة الدراسية</span>
+                                <span class="t-value" id="receiptSubject" style="color:var(--primary)">--</span>
+                            </div>
+                            
+                            <div class="t-row">
+                                <span class="t-label">التاريخ</span>
+                                <span class="t-value english-num" id="receiptDate">--</span>
+                            </div>
+                            
+                            <div class="t-row">
+                                <span class="t-label">وقت التسجيل</span>
+                                <span class="t-value english-num" id="receiptTime">--</span>
+                            </div>
                         </div>
                     </div>
+
                     <div style="color:#64748b; font-weight:700; font-size:12px; margin-top:10px;">
                         <i class="fa-solid fa-circle-check" style="color:#10b981;"></i> تم حفظ البيانات في النظام بنجاح
                     </div>
@@ -634,9 +894,9 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbyiW8lPdWwuOv4G3fu2GT87t7QNxjXU064PNrq_a8_PyAchEcWxXSO3F77b0hr9v84t/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
+            // إضافة رابط موديلات الوجه
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -644,8 +904,6 @@
         let studentsDB = {};
         let wakeLock = null;
         let cachedReportData = [];
-        // متغير عالمي لتخزين آخر تنبيه
-        let lastAlertData = null;
 
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
@@ -679,7 +937,7 @@
         let attendanceData = {};
         let processIsActive = false;
         
-        let userLat = "", userLng = ""; 
+        // متغيرات التحقق من الوجه
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
         let videoStream = null;      
@@ -691,6 +949,7 @@
         function safeClick(element, callback) {
             if (isProcessingClick) return;
             if (element && (element.disabled || element.classList.contains('disabled') || element.classList.contains('locked'))) return;
+            
             isProcessingClick = true;
             if(element) { element.style.pointerEvents = 'none'; element.style.opacity = '0.7'; }
             if (typeof callback === 'function') callback();
@@ -698,42 +957,6 @@
                 isProcessingClick = false;
                 if(element) { element.style.pointerEvents = 'auto'; element.style.opacity = '1'; }
             }, 600);
-        }
-
-        // منطق التنبيهات
-        function updateNotificationUI(data) {
-            const btn = document.getElementById('notificationBtn');
-            const content = document.getElementById('alertContent');
-            lastAlertData = data; // تخزين البيانات
-
-            if (data.isRepeat || data.isFar) {
-                btn.classList.add('has-alert');
-                // تجهيز محتوى المودال
-                let html = '';
-                if (data.isRepeat) {
-                    html += `<div class="analysis-result-item"><span class="ar-label">التكرار:</span><span class="ar-value status-red">${data.count} مرات (مخالف)</span></div>`;
-                } else {
-                    html += `<div class="analysis-result-item"><span class="ar-label">التكرار:</span><span class="ar-value status-green">${data.count} (سليم)</span></div>`;
-                }
-
-                if (data.isFar) {
-                    html += `<div class="analysis-result-item"><span class="ar-label">المسافة:</span><span class="ar-value status-red">${data.distance}م (بعيد)</span></div>`;
-                } else {
-                    html += `<div class="analysis-result-item"><span class="ar-label">المسافة:</span><span class="ar-value status-green">${data.distance}م (سليم)</span></div>`;
-                }
-                content.innerHTML = html;
-            } else {
-                btn.classList.remove('has-alert');
-                content.innerHTML = '<div class="empty-state" style="padding:15px;">بياناتك سليمة. لا توجد تنبيهات.</div>';
-            }
-        }
-
-        function showNotificationModal() {
-            document.getElementById('identityAlertModal').style.display = 'flex';
-        }
-
-        function closeIdentityAlert() {
-            document.getElementById('identityAlertModal').style.display = 'none';
         }
 
         function openExamModal() { playClick(); document.getElementById('examModal').style.display = 'flex'; }
@@ -750,7 +973,6 @@
 
         function resetApplicationState() {
             attendanceData = {};
-            attendanceData.isVerified = false; 
             sessionStorage.removeItem(TEMP_NAME_KEY);
             sessionStorage.removeItem(TEMP_ID_KEY);
             sessionStorage.removeItem(TEMP_CODE_KEY);
@@ -773,12 +995,6 @@
             document.getElementById('subjectOptionsContainer').innerHTML = '';
             document.getElementById('subjectSelect').innerHTML = '<option value="" disabled selected>-- اختر الفرقة أولاً --</option>';
             
-            const hallWrapper = document.getElementById('hallSelectWrapper');
-            hallWrapper.querySelector('.trigger-text').textContent = '-- اختر المدرج --';
-            hallWrapper.classList.remove('open');
-            hallWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
-            document.getElementById('hallSelect').value = '';
-
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.style.opacity = "0.6";
@@ -788,16 +1004,13 @@
             document.getElementById('scanNameDisplay').innerText = '--';
             document.getElementById('scanIDDisplay').innerText = '--';
             
+            // Reset Verify Button
             const verifyBtn = document.getElementById('btnVerify');
             if(verifyBtn) {
                 verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية';
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
-            
-            // Reset Notification
-            document.getElementById('notificationBtn').classList.remove('has-alert');
-            document.getElementById('alertContent').innerHTML = '<div class="empty-state" style="padding:15px;">لا توجد تنبيهات حالياً.</div>';
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -857,31 +1070,6 @@
 
         window.onload = function() {
             initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
-            const hallContainer = document.getElementById('hallOptionsContainer');
-            const hallSelect = document.getElementById('hallSelect');
-            for(let i=1; i<=20; i++) {
-                let val = "E" + i;
-                let opt = document.createElement('option');
-                opt.value = val;
-                opt.text = val;
-                hallSelect.appendChild(opt);
-                let cOpt = document.createElement('div');
-                cOpt.className = "custom-option";
-                cOpt.setAttribute('data-value', val);
-                cOpt.innerHTML = `<span>${val}</span>`;
-                cOpt.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    hallContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                    document.querySelector('#hallSelectWrapper .trigger-text').textContent = val;
-                    document.getElementById('hallSelectWrapper').classList.remove('open');
-                    hallSelect.value = val;
-                    playClick();
-                    checkAllConditions();
-                });
-                hallContainer.appendChild(cOpt);
-            }
-
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -906,17 +1094,21 @@
                 badge.style.display = 'block';
                 loginBtn.style.display = 'none';
                 logoutBtn.style.display = 'flex';
+                
                 reportBtn.classList.remove('locked');
                 reportBtn.classList.add('unlocked');
                 reportIcon.className = 'fa-solid fa-list-check sub-btn-icon';
+                
                 if(attemptsBadge) attemptsBadge.style.display = 'none';
             } else {
                 badge.style.display = 'none';
                 loginBtn.style.display = 'flex';
                 logoutBtn.style.display = 'none';
+                
                 reportBtn.classList.remove('unlocked');
                 reportBtn.classList.add('locked');
                 reportIcon.className = 'fa-solid fa-lock sub-btn-icon';
+                
                 adminFloating.style.display = 'none';
                 if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
             }
@@ -926,20 +1118,17 @@
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
-                if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } 
-            }
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             if (localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("⏳ لقد انتهت المهلة المحددة سابقاً.<br>لا يمكنك التسجيل.", true); return; }
+            if (localStorage.getItem(storageKey) === new Date().toLocaleDateString('en-GB')) { showError("⛔ تم تسجيل الحضور اليوم مسبقاً.", true); return; }
             
             switchScreen('screenLoading');
             if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
         }
 
         function checkPosition(position) {
-            userLat = position.coords.latitude;
-            userLng = position.coords.longitude;
             const dist = getDistanceFromLatLonInKm(position.coords.latitude, position.coords.longitude, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
             if (dist <= CONFIG.gps.allowedDistanceKm) { generateCodeAndShowDataEntry(); } else { showError(`📍 أنت خارج النطاق الجغرافي للكلية.<br>المسافة الحالية: ${dist.toFixed(2)} كم`, false); }
         }
@@ -987,11 +1176,18 @@
             } else { alertBox.innerText = "❌ الكود غير صحيح."; alertBox.style.display = 'block'; if(navigator.vibrate) navigator.vibrate(300); }
         }
 
+        // ==========================================
+        // 📸 منطق الكاميرا والتحقق من الوجه المدمج
+        // ==========================================
         async function startFaceVerificationProcess() {
-            if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
+            // نستخدم الـ ID الموجود في attendanceData
+            if (!attendanceData.uniID) {
+                showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444');
+                return;
+            }
             playClick();
             requestWakeLock();
-            await stopCameraSafely(); 
+            await stopCameraSafely(); // إيقاف كاميرا QR إذا كانت تعمل
             
             switchScreen('screenFaceCheck');
             const statusTxt = document.getElementById('statusTxt');
@@ -1016,7 +1212,9 @@
                 const video = document.getElementById('video');
                 video.srcObject = stream;
                 
-                await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => { video.play(); resolve(); };
+                });
                 await new Promise(resolve => setTimeout(resolve, 100));
 
                 loaderSpinner.style.display = 'none';
@@ -1027,12 +1225,12 @@
             } catch (e) {
                 console.error("Camera Error:", e);
                 showToast("فشل فتح الكاميرا: " + e.message, 4000, '#ef4444');
-                switchScreen('screenScanQR'); 
+                switchScreen('screenScanQR'); // العودة
             }
         }
 
         function startStrictAI() {
-            let step = 0; 
+            let step = 0; // 0=Timer, 1=Left
             let count = TIMER_DURATION_FACE;
             let counting = false;
             let timerInterval = null;
@@ -1081,6 +1279,7 @@
                                 modernTimer.style.display = "flex";
                                 timerNum.innerText = count;
                                 timerBar.style.stroke = "#10b981";
+                                
                                 timerInterval = setInterval(() => {
                                     const elapsed = (TIMER_DURATION_FACE - count) + 1;
                                     const progress = elapsed / TIMER_DURATION_FACE;
@@ -1088,6 +1287,7 @@
                                     timerBar.style.strokeDashoffset = offset;
                                     count--;
                                     timerNum.innerText = count;
+                                    
                                     if(count <= 0) {
                                         clearInterval(timerInterval);
                                         modernTimer.style.display = "none";
@@ -1107,7 +1307,7 @@
                                 timerNum.innerText = TIMER_DURATION_FACE;
                                 modernTimer.style.display = "none";
                                 timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE_FACE;
-                                document.getElementById('beepSound').play(); 
+                                document.getElementById('beepSound').play(); // Error sound substitute
                             }
                             camBorder.className = "cam-container status-error";
                             alertBadge.style.display = "block";
@@ -1118,61 +1318,20 @@
                         }
                     } else if(step === 1) {
                         if(ratio < 0.5) {
+                            // Success Logic
                             clearInterval(faceCheckInterval);
                             if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
                             document.getElementById('beepSound').play(); 
                             
-                            attendanceData.vector = Array.from(det.descriptor); 
+                            // Return to QR Screen & Update Button
+                            const verifyBtn = document.getElementById('btnVerify');
+                            verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
+                            verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                            verifyBtn.classList.add('disabled');
                             
-                            const statusTxt = document.getElementById('statusTxt');
-                            statusTxt.innerText = "جاري تحليل البيانات...";
-                            
-                            const payload = {
-                                action: "register_identity",
-                                id: attendanceData.uniID,
-                                name: attendanceData.name,
-                                vector: Array.from(det.descriptor), 
-                                gps: `${userLat},${userLng}`,
-                                time: new Date().toLocaleTimeString('ar-EG')
-                            };
-                            
-                            try {
-                                const response = await fetch(CONFIG.identitySheetUrl, { 
-                                    method: 'POST', 
-                                    mode: 'cors', 
-                                    headers: {'Content-Type': 'text/plain'}, 
-                                    body: JSON.stringify(payload) 
-                                });
-                                
-                                const result = await response.json();
-                                
-                                // تحديث زر التنبيهات والمودال
-                                updateNotificationUI(result);
-                                
-                                attendanceData.isVerified = true;
-                                const verifyBtn = document.getElementById('btnVerify');
-                                verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
-                                verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                                verifyBtn.classList.add('disabled');
-                                
-                                switchScreen('screenScanQR');
-                                playSuccess();
-                                showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
-                                
-                                // إذا كان هناك مخالفة، افتح نافذة التنبيهات تلقائياً
-                                if (result.isRepeat || result.isFar) {
-                                    showNotificationModal();
-                                }
-
-                                checkAllConditions(); 
-
-                            } catch(err) {
-                                console.log(err);
-                                showToast('تم التحقق محلياً (تعذر الاتصال بالسيرفر)', 3000, '#f59e0b');
-                                attendanceData.isVerified = true;
-                                switchScreen('screenScanQR');
-                            }
-
+                            switchScreen('screenScanQR');
+                            playSuccess();
+                            showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
                         } else {
                             camBorder.className = "cam-container status-wait";
                             statusTxt.innerText = "بص يمين يا قمر";
@@ -1189,19 +1348,15 @@
                 }
             }, 500);
         }
+        // ==========================================
 
         async function submitToGoogle() {
             playClick();
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
-            const selectedSubject = document.getElementById('subjectSelect').value; 
-            const sessionPassVal = document.getElementById('sessionPass').value;
-            const selectedHall = document.getElementById('hallSelect').value;
-
-            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedHall || !attendanceData.isVerified) { 
-                showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
-            }
+            const selectedSubject = document.getElementById('subjectSelect').value; const sessionPassVal = document.getElementById('sessionPass').value;
+            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject) { showToast("يرجى اختيار المادة ومسح الكود.", 3000, '#f59e0b'); return; }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("محظور"); return; }
             
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الفحص...'; btn.disabled = true;
@@ -1218,11 +1373,6 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
-            formParams.append("hall", selectedHall);
-            
-            if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
-            formParams.append("gps_lat", userLat);
-            formParams.append("gps_lng", userLng);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
@@ -1244,8 +1394,7 @@
         function setupCustomSelects() {
             const yearWrapper = document.getElementById('yearSelectWrapper');
             const subjectWrapper = document.getElementById('subjectSelectWrapper');
-            const hallWrapper = document.getElementById('hallSelectWrapper');
-            const allWrappers = [yearWrapper, subjectWrapper, hallWrapper];
+            const allWrappers = [yearWrapper, subjectWrapper];
             function toggleSelect(wrapper, event) {
                 event.stopPropagation();
                 if (!wrapper.classList.contains('open')) {
@@ -1255,7 +1404,6 @@
             }
             yearWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(yearWrapper, e));
             subjectWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(subjectWrapper, e));
-            hallWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(hallWrapper, e));
             yearWrapper.querySelectorAll('.custom-option').forEach(op => {
                 op.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1286,42 +1434,24 @@
                         e.stopPropagation(); sOptions.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                         this.classList.add('selected'); sTriggerText.textContent = this.querySelector('span').textContent;
                         sWrapper.classList.remove('open'); sReal.value = this.getAttribute('data-value');
-                        playClick(); checkAllConditions();
+                        playClick(); checkSubjectSelection();
                     }); sOptions.appendChild(cOpt);
                 });
             } else { sReal.disabled = true; sWrapper.classList.add('disabled'); sTriggerText.textContent = '-- اختر الفرقة أولاً --'; }
-            checkAllConditions();
+            checkSubjectSelection();
         }
 
-        function checkAllConditions() { 
-            const year = document.getElementById('yearSelect').value;
-            const sub = document.getElementById('subjectSelect').value; 
-            const hall = document.getElementById('hallSelect').value;
-            const qrPass = document.getElementById('sessionPass').value; 
-            const isVerified = attendanceData.isVerified === true;
-            
-            const btn = document.getElementById('submitBtn'); 
-            
-            if(year && sub && hall && qrPass && isVerified) { 
-                btn.disabled = false; 
-                btn.style.opacity = "1"; 
-                btn.style.cursor = "pointer"; 
-            } else { 
-                btn.disabled = true; 
-                btn.style.opacity = "0.6"; 
-                btn.style.cursor = "not-allowed"; 
-            } 
-        }
-        
+        function checkSubjectSelection() { const s = document.getElementById('subjectSelect').value; const p = document.getElementById('sessionPass').value; const b = document.getElementById('submitBtn'); if(s && p) { b.disabled = false; b.style.opacity = "1"; b.style.cursor = "pointer"; } else { b.disabled = true; b.style.opacity = "0.6"; b.style.cursor = "not-allowed"; } }
         async function stopCameraSafely() { if(html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch(e) {} } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
         function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; startQrScanner(); }
-        async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
+        async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkSubjectSelection(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
         function checkAdminPassword() { 
             playClick(); 
             if (document.getElementById('adminPassword').value === CONFIG.adminPassword) { 
                 playSuccess();
                 const modal = document.getElementById('adminSuccessModal');
                 modal.style.display = 'flex';
+                
                 setTimeout(() => {
                     modal.style.display = 'none';
                     sessionStorage.setItem(DOCTOR_MODE_KEY, 'true'); 
@@ -1414,16 +1544,20 @@
 
         function openSubjectDetails(subjectName) {
             playClick();
+            
+            // تصفية البيانات بناءً على اسم المادة
             const students = cachedReportData.filter(s => s.subject === subjectName);
+            
             document.getElementById('currentSubjectTitle').innerText = subjectName;
             const container = document.getElementById('studentsContainer');
             
             let html = '';
             students.forEach(item => {
+                // التأكد من وجود كود الجلسة، إذا لم يوجد يكتب غير متوفر
                 const sessionCode = item.code || "N/A";
-                const rowClass = 'student-detailed-card';
+
                 html += `
-                    <div class="${rowClass}">
+                    <div class="student-detailed-card">
                         <div class="st-data-col" style="width: 100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                                 <div class="st-name" style="font-size:14px;">${item.name}</div>
@@ -1431,20 +1565,25 @@
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
+
                             <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">
                                 ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
                             </div>
+                            
                             <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
                                 <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
                             </div>
-                            <div class="std-time-badge" style="display:inline-flex; float:left; align-items:center;">
+
+                            <div class="std-time-badge" style="display:inline-flex; float:left;">
                                 <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
                             </div>
                         </div>
                     </div>
                 `;
             });
+            
             container.innerHTML = html;
+
             document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
             document.getElementById('viewStudents').style.transform = 'translateX(0)';
         }
@@ -1457,50 +1596,96 @@
 
         function closeReportModal() { playClick(); document.getElementById('reportModal').style.display = 'none'; }
         
+        /* === MODAL & DELETE LOGIC (UPDATED) === */
         let pendingAction = null;
+
         function showModernConfirm(title, text, actionCallback) {
             playClick();
             document.getElementById('modernConfirmTitle').innerText = title;
             document.getElementById('modernConfirmText').innerHTML = text;
+            
             const modal = document.getElementById('modernConfirmModal');
             modal.style.display = 'flex';
+            
             pendingAction = actionCallback;
+            
             const yesBtn = document.getElementById('btnConfirmYes');
-            yesBtn.onclick = function() { if (pendingAction) pendingAction(); closeModernConfirm(); };
+            yesBtn.onclick = function() {
+                if (pendingAction) pendingAction();
+                closeModernConfirm();
+            };
+            
             if(navigator.vibrate) navigator.vibrate(50);
         }
 
-        function closeModernConfirm() { playClick(); document.getElementById('modernConfirmModal').style.display = 'none'; pendingAction = null; }
+        function closeModernConfirm() {
+            playClick();
+            document.getElementById('modernConfirmModal').style.display = 'none';
+            pendingAction = null;
+        }
 
         async function deleteEntry(id, btn) {
-            showModernConfirm("حذف سجل", "هل أنت متأكد من حذف هذا الطالب؟<br><span style='font-size:11px; color:#ef4444;'>لا يمكن التراجع عن هذا الإجراء.</span>", async function() {
-                const card = btn.closest('.student-detailed-card');
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                try {
-                    await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: `action=delete&id=${id}` });
-                    cachedReportData = cachedReportData.filter(s => s.uniID != id);
-                    card.style.opacity = '0';
-                    setTimeout(() => { card.remove(); if(document.querySelectorAll('.student-detailed-card').length === 0) showSubjectsView(); }, 300);
-                } catch(e) { alert("فشل الحذف"); }
-            });
+            showModernConfirm(
+                "حذف سجل",
+                "هل أنت متأكد من حذف هذا الطالب؟<br><span style='font-size:11px; color:#ef4444;'>لا يمكن التراجع عن هذا الإجراء.</span>",
+                async function() {
+                    const card = btn.closest('.student-detailed-card');
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                    try {
+                        await fetch(CONFIG.sheetApiUrl, {
+                            method: 'POST', mode: 'no-cors',
+                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                            body: `action=delete&id=${id}`
+                        });
+                        cachedReportData = cachedReportData.filter(s => s.uniID != id);
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            card.remove();
+                            if(document.querySelectorAll('.student-detailed-card').length === 0) showSubjectsView();
+                        }, 300);
+                    } catch(e) { alert("فشل الحذف"); }
+                }
+            );
         }
 
         async function clearAllReport() {
-            showModernConfirm("تصفيه السجل بالكامل", "سيتم حذف <b>جميع الحضور</b> المسجل اليوم.<br>هل أنت متأكد تماماً؟", async function() {
-                document.getElementById('subjectsContainer').innerHTML = '<div style="padding:20px; text-align:center;">جاري الحذف...</div>';
-                try {
-                    await fetch(`${CONFIG.sheetApiUrl}?action=clearAll`, { method: 'POST', mode: 'no-cors' });
-                    document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم تنظيف السجل بنجاح.</div>';
-                    playSuccess();
-                } catch(e) { alert("خطأ في الاتصال"); openReportModal(); }
-            });
+            showModernConfirm(
+                "تصفيه السجل بالكامل",
+                "سيتم حذف <b>جميع الحضور</b> المسجل اليوم.<br>هل أنت متأكد تماماً؟",
+                async function() {
+                    document.getElementById('subjectsContainer').innerHTML = '<div style="padding:20px; text-align:center;">جاري الحذف...</div>';
+                    try {
+                        await fetch(`${CONFIG.sheetApiUrl}?action=clearAll`, { method: 'POST', mode: 'no-cors' });
+                        document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم تنظيف السجل بنجاح.</div>';
+                        playSuccess();
+                    } catch(e) { alert("خطأ في الاتصال"); openReportModal(); }
+                }
+            );
         }
         
-        function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
-        function showToast(message, duration = 3000, bgColor = '#334155') { const toast = document.getElementById('toastNotification'); toast.style.backgroundColor = bgColor; toast.innerText = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, duration); }
+        /* === NEW SECURITY FUNCTIONS === */
+
+        function isMobileDevice() {
+            const ua = navigator.userAgent.toLowerCase();
+            const isTargetMobile = /android|iphone|ipod/i.test(ua);
+            const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua);
+            return (isTargetMobile && !isExcluded);
+        }
+        
+        function showToast(message, duration = 3000, bgColor = '#334155') {
+            const toast = document.getElementById('toastNotification');
+            toast.style.backgroundColor = bgColor;
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
+        }
 
         (function() {
-            let devtoolsOpen = false; const threshold = 160; 
+            let devtoolsOpen = false;
+            const threshold = 160; 
+
             const checkDevTools = () => {
                 if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
                     if (!devtoolsOpen) {
@@ -1513,18 +1698,41 @@
                     }
                 }
             };
+            
             window.addEventListener('resize', checkDevTools);
-            window.addEventListener('keydown', (e) => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.metaKey && e.altKey && e.keyCode === 73)) { e.preventDefault(); if(!devtoolsOpen) showToast('أدوات المطور محظورة.', 2000, '#ef4444'); } });
+            window.addEventListener('keydown', (e) => {
+                if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.metaKey && e.altKey && e.keyCode === 73)) {
+                    e.preventDefault();
+                    if(!devtoolsOpen) showToast('أدوات المطور محظورة.', 2000, '#ef4444');
+                }
+            });
+
             checkDevTools();
         })();
 
-        document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
-        document.addEventListener('copy', function(e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
-        document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
-        document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444');
+        });
+
+        document.addEventListener('copy', function(e) {
+            e.preventDefault();
+            showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444');
+        });
+        document.addEventListener('cut', function(e) {
+            e.preventDefault();
+            showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444');
+        });
+        document.addEventListener('paste', function(e) {
+            e.preventDefault();
+            showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444');
+        });
         
-        if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
+        if (!isMobileDevice()) { 
+            document.getElementById('desktop-blocker').style.display = 'flex'; 
+            document.body.style.overflow = 'hidden';
+            throw new Error("Desktop access denied.");
+        }
     </script>
 </body>
 </html>
-
