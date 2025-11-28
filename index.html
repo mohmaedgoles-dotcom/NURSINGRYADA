@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>نظام كشف الحضور المطور - كلية التمريض</title>
+    <title>نظام كشف الحضور الذكي - تحليل حيوي وجغرافي</title>
     
     <meta property="og:title" content="جامعة الريادة - كلية التمريض">
-    <meta property="og:description" content="نظام تسجيل الحضور الذكي.">
+    <meta property="og:description" content="نظام تسجيل الحضور الذكي مع التحليل الجغرافي.">
     <meta property="og:image" content="https://k.top4top.io/p_3615d3vek1.png">
     
     <link rel="manifest" href="./manifest.json">
@@ -24,7 +24,6 @@
 
     <style>
         /* === الأساسيات === */
-        /* تصميم جديد لمنع الدخول */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -52,7 +51,6 @@
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
 
-        /* === الأزرار === */
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
@@ -72,203 +70,65 @@
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
 
-        /* === زر التحقق من الهوية الجديد === */
         .btn-verify-identity {
-            background: linear-gradient(135deg, #6366f1, #4f46e5); /* تدرج أرجواني */
-            color: white;
-            width: 100%;
-            padding: 15px;
-            border-radius: 16px;
-            border: none;
-            font-size: 14px;
-            font-weight: 800;
-            font-family: 'Cairo';
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4);
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            position: relative;
-            z-index: 10;
+            background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10;
         }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
         
-        /* === تصميم الكاميرا الذكية (مدمج من الكود الثاني) === */
-        .cam-container {
-            width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; 
-            background: #f8fafc; 
-            overflow: hidden; border: 5px solid #e2e8f0; position: relative;
-            transition: border-color 0.3s;
-        }
+        .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        
-        /* مؤشر التحميل للكاميرا */
-        .spinner-overlay { 
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            background: rgba(255, 255, 255, 0.95); 
-            display: none; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 50; 
-        }
-        .spinner { 
-            border: 4px solid rgba(14, 165, 233, 0.2); 
-            border-top: 4px solid var(--primary); 
-            border-radius: 50%; 
-            width: 40px; height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin-bottom: 10px;
-        }
+        .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+        .spinner { border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
         .large-loader-icon { font-size: 50px; color: var(--primary); margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.4)); }
-
-        /* الشريط الدائري للعد */
-        .timer-circular-wrapper {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            display: none; 
-            align-items: center; justify-content: center; z-index: 10; 
-        }
+        .timer-circular-wrapper { position: absolute; top:0; left:0; width:100%; height:100%; display: none; align-items: center; justify-content: center; z-index: 10; }
         .timer-svg-face { transform: rotate(-90deg); width: 100%; height: 100%; }
         .timer-circle-bg-face { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
-        .timer-circle-fg-face { 
-            fill: none; stroke: #10b981; stroke-width: 5; 
-            stroke-dasharray: 282.7; 
-            stroke-dashoffset: 282.7; 
-            transition: stroke-dashoffset 0.1s linear, stroke 0.3s; 
-            stroke-linecap: round; 
-        }
-        .timer-number-face { 
-            font-size: 50px; font-weight: 900; color: #1e293b; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        }
-
-        .alert-badge { 
-            background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; 
-            font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; 
-            transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; 
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s;
-        }
-
+        .timer-circle-fg-face { fill: none; stroke: #10b981; stroke-width: 5; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; stroke-linecap: round; }
+        .timer-number-face { font-size: 50px; font-weight: 900; color: #1e293b; text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .alert-badge { background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s; }
         .status-ok { border-color: #10b981 !important; box-shadow: 0 0 15px #10b981; }
         .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 15px #f59e0b; }
         .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
 
-
-        /* === تصميم السجل التفاعلي الجديد (Modal) === */
-        #reportModal .modal-box {
-            max-width: 400px; height: 85vh; padding: 0; background: #f8fafc;
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        .report-modal-header {
-            padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-shrink: 0; z-index: 20;
-        }
-
+        #reportModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
+        .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
         .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
-
-        /* زر الحذف الأيقونة فقط */
-        .btn-icon-danger {
-            width: 40px; height: 40px; border-radius: 50%; border: none;
-            background: #fee2e2; color: #ef4444; font-size: 16px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
-        }
+        .btn-icon-danger { width: 40px; height: 40px; border-radius: 50%; border: none; background: #fee2e2; color: #ef4444; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .btn-icon-danger:hover { background: #ef4444; color: white; transform: rotate(15deg); }
-
-        /* حاوية المحتوى المتحركة */
-        .report-views-container {
-            flex: 1; position: relative; overflow: hidden; width: 100%;
-        }
-        .report-view {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            overflow-y: auto; padding: 15px;
-            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-            background: #f8fafc;
-        }
-
-        /* فيو 1: كروت المواد */
+        .report-views-container { flex: 1; position: relative; overflow: hidden; width: 100%; }
+        .report-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 15px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); background: #f8fafc; }
         #viewSubjects { transform: translateX(0); z-index: 10; }
         #viewStudents { transform: translateX(-100%); z-index: 20; background: #f8fafc; }
-
-        /* كلاسات التحريك */
         .slide-out { transform: translateX(100%) !important; }
         .slide-in { transform: translateX(0) !important; }
-
-        /* تصميم كارت المادة الكبير */
-        .subject-big-card {
-            background: white; border-radius: 20px; padding: 20px;
-            margin-bottom: 15px; cursor: pointer;
-            border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            display: flex; align-items: center; justify-content: space-between;
-            transition: 0.2s; position: relative; overflow: hidden;
-        }
+        .subject-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
         .subject-big-card:active { transform: scale(0.98); background: #f0f9ff; }
-        .subject-big-card::before {
-            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
-            background: var(--primary); border-radius: 4px 0 0 4px;
-        }
+        .subject-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 4px 0 0 4px; }
         .sub-card-info h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
         .sub-card-info span { font-size: 12px; color: #64748b; font-weight: 600; }
         .sub-arrow { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-
-        /* هيدر قائمة الطلاب */
-        .students-list-header {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
-            background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;
-        }
-        .btn-back-report {
-            width: 35px; height: 35px; border-radius: 10px; border: none;
-            background: #f1f5f9; color: #475569; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* كارت الطالب المحدث بالوقت واليوم */
-        .student-detailed-card {
-            background: white; border-radius: 14px; padding: 15px;
-            margin-bottom: 10px; border: 1px solid #f1f5f9;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex;
-            justify-content: space-between; align-items: center;
-        }
+        .students-list-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .btn-back-report { width: 35px; height: 35px; border-radius: 10px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; }
+        /* Highlighting for suspicious students (more than 3 attempts) */
+        .student-detailed-card.alert-row { background: #fff5f5; border: 1px solid #fecaca; }
+        .student-detailed-card.alert-row .st-name { color: #b91c1c; }
+        
         .st-data-col { display: flex; flex-direction: column; gap: 4px; text-align: right; }
         .st-name { font-weight: 800; font-size: 13px; color: #1e293b; }
-        .std-time-badge {
-            background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px;
-            font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;
-            margin-top: 5px;
-        }
-        .btn-delete-item {
-            width: 38px; height: 38px;
-            background: #fff1f2; color: #f43f5e;
-            border: none; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; font-size: 14px; flex-shrink: 0; margin-right: 10px;
-        }
+        .std-time-badge { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
+        .btn-delete-item { width: 38px; height: 38px; background: #fff1f2; color: #f43f5e; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 14px; flex-shrink: 0; margin-right: 10px; }
         .btn-delete-item:active { transform: scale(0.9); background: #f43f5e; color: white; }
-        
-        /* أزرار الفوتر الجديدة */
-        .btn-refresh-list {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px;
-            border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo';
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;
-        }
+        .btn-refresh-list { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-refresh-list:active { transform: scale(0.98); }
-        .btn-close-stylish {
-            background: #f1f5f9; color: #475569; width: 100%; padding: 12px;
-            border-radius: 16px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; font-size: 13px;
-        }
+        .btn-close-stylish { background: #f1f5f9; color: #475569; width: 100%; padding: 12px; border-radius: 16px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; font-size: 13px; }
 
-
-        /* Other Modals */
         #examModal .modal-box { border: 2px solid #ddd6fe; background: #ffffff; }
         .exam-loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #7c3aed; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Inputs & Selects */
         .input-group { margin-bottom: 15px; text-align: right; position: relative; z-index: 5; }
         .modern-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Cairo'; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
         .modern-input:focus { border-color: var(--primary); background: white; }
@@ -296,7 +156,6 @@
         .custom-option.selected::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
         .custom-select-wrapper.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
 
-        /* Ticket & Scanner */
         .ticket-container { background: white; border-radius: 24px; position: relative; overflow: hidden; box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #f1f5f9; }
         .ticket-container::before, .ticket-container::after { content: ''; position: absolute; top: 110px; width: 24px; height: 24px; background: #0f172a; border-radius: 50%; z-index: 20; }
         .ticket-container::before { left: -12px; } .ticket-container::after { right: -12px; }
@@ -354,92 +213,19 @@
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
         .card-body-content { position: relative; min-height: 500px; z-index: 5; }
         
-        /* === تعديلات الفوتر الساحر (تم التحديث: تصميم زجاجي عصري) === */
-        .academic-footer {
-            display: flex; justify-content: center; align-items: center;
-            margin-top: 30px; position: relative; z-index: 10;
-        }
+        .academic-footer { display: flex; justify-content: center; align-items: center; margin-top: 30px; position: relative; z-index: 10; }
+        .uni-footer-label-large { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); color: #0f172a; font-weight: 800; font-size: 13px; padding: 10px 25px; border-radius: 50px; display: flex; align-items: center; gap: 8px; margin-top: 15px; white-space: nowrap; animation: float-slow 4s ease-in-out infinite alternate; }
+        .uni-footer-label-large i { color: #0ea5e9; font-size: 16px; filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.3)); }
+        @keyframes float-slow { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
 
-        .uni-footer-label-large {
-            /* تصميم زجاجي عصري جداً */
-            background: rgba(255, 255, 255, 0.25); /* شفافية عالية */
-            backdrop-filter: blur(15px); /* تمويه قوي للخلفية */
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.6); /* حدود خفيفة */
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); /* ظل ناعم */
-            
-            color: #0f172a;
-            font-weight: 800;
-            font-size: 13px;
-            padding: 10px 25px;
-            border-radius: 50px;
-            
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            margin-top: 15px;
-            white-space: nowrap;
-            animation: float-slow 4s ease-in-out infinite alternate;
-        }
-
-        .uni-footer-label-large i {
-            color: #0ea5e9;
-            font-size: 16px;
-            filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.3));
-        }
-
-        @keyframes float-slow {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-5px); }
-        }
-
-        /* === تنسيق نافذة الحذف المودرن (طلب التعديل) === */
-        .confirm-box-style {
-            background: rgba(255, 255, 255, 0.95) !important;
-            border-radius: 30px !important;
-            padding: 30px 20px !important;
-            box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important;
-            border: 1px solid rgba(239, 68, 68, 0.1);
-            transform: scale(0.9);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .confirm-icon-animate {
-            width: 70px; height: 70px;
-            background: #fef2f2; color: #ef4444;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; margin: 0 auto 15px auto;
-            box-shadow: 0 0 0 8px #fff1f2;
-            animation: shake-icon 0.5s ease-in-out;
-        }
-
-        .btn-confirm-modern {
-            background: linear-gradient(135deg, #ef4444, #b91c1c);
-            color: white;
-            box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4);
-        }
+        .confirm-box-style { background: rgba(255, 255, 255, 0.95) !important; border-radius: 30px !important; padding: 30px 20px !important; box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important; border: 1px solid rgba(239, 68, 68, 0.1); transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .confirm-icon-animate { width: 70px; height: 70px; background: #fef2f2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 15px auto; box-shadow: 0 0 0 8px #fff1f2; animation: shake-icon 0.5s ease-in-out; }
+        .btn-confirm-modern { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4); }
         .btn-cancel-modern { background: #f1f5f9; color: #64748b; }
+        @keyframes shake-icon { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
 
-        @keyframes shake-icon {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-15deg); }
-            75% { transform: rotate(15deg); }
-        }
-
-        /* === نافذة نجاح المسؤول الجديدة === */
-        #adminSuccessModal .modal-box {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 2px solid #10b981;
-        }
-        .admin-success-icon {
-            font-size: 50px;
-            color: #10b981;
-            margin-bottom: 15px;
-            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
+        #adminSuccessModal .modal-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 2px solid #10b981; }
+        .admin-success-icon { font-size: 50px; color: #10b981; margin-bottom: 15px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .attempts-badge { background: #fff1f2; color: #be123c; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 20px; border: 1px solid #fecdd3; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; }
         .admin-floating-back { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255, 255, 255, 0.9); color: #475569; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; z-index: 1000; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .admin-floating-back:active { transform: scale(0.9); }
@@ -453,16 +239,11 @@
         .btn-delete-single:active { transform: scale(0.9); }
         .empty-state { padding: 30px; font-weight: 700; color: var(--text-sub); background: #f8fafc; border-radius: 12px; }
 
-        /* === NEW TOAST STYLE === */
-        #toastMessage {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
-            background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 20px; 
-            border-radius: 20px; font-size: 12px; display: none; z-index: 20000; 
-            animation: fadeIn 0.3s;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            font-weight: 700;
-        }
+        #toastMessage { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; display: none; z-index: 20000; animation: fadeIn 0.3s; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-weight: 700; }
+        
+        /* مودال تنبيه عدد المحاولات */
+        #limitModal .modal-box { border: 2px solid #f59e0b; }
+        .limit-count { font-size: 40px; font-weight: 900; color: #f59e0b; margin: 10px 0; display: block; }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -495,6 +276,19 @@
             </div>
         </div>
     </div>
+    
+    <div id="limitModal" class="modal-overlay" style="z-index: 99999;">
+        <div class="modal-box">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #f59e0b; margin-bottom: 15px;"></i>
+            <div class="modal-title">تنبيه النظام</div>
+            <div class="modal-text">
+                لقد قمت بتسجيل الحضور اليوم
+                <span class="limit-count" id="attemptCountDisplay">--</span>
+                مرات من أصل 3 محاولات مسموحة.
+            </div>
+            <button onclick="closeLimitModal()" class="modal-btn btn-confirm" style="background:#f59e0b;">موافق، متابعة</button>
+        </div>
+    </div>
 
     <div id="adminSuccessModal" class="modal-overlay" style="z-index: 99999;">
         <div class="modal-box">
@@ -520,7 +314,6 @@
 
     <div id="reportModal" class="modal-overlay">
         <div class="modal-box">
-            
             <div class="report-modal-header">
                 <div style="display:flex; flex-direction:column; align-items:flex-start;">
                     <div class="modal-title" style="margin:0; font-size:16px;">سجل الحضور</div>
@@ -530,13 +323,10 @@
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
-
             <div class="report-views-container">
-                
                 <div id="viewSubjects" class="report-view slide-in">
                     <div id="subjectsContainer"></div>
                 </div>
-
                 <div id="viewStudents" class="report-view">
                     <div class="students-list-header">
                         <button onclick="showSubjectsView()" class="btn-back-report">
@@ -546,9 +336,7 @@
                     </div>
                     <div id="studentsContainer"></div>
                 </div>
-
             </div>
-
             <div class="report-modal-footer">
                 <button onclick="openReportModal()" class="btn-refresh-list">
                     تحديث <i class="fa-solid fa-rotate"></i>
@@ -557,7 +345,6 @@
                     إغلاق
                 </button>
             </div>
-
         </div>
     </div>
 
@@ -949,6 +736,8 @@
         const TEMP_CODE_KEY = "temp_session_code";
         const MAX_ATTEMPTS = 3;
         const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
+        const MAX_SUCCESS_DAILY = 3;
+        const SUCCESS_COUNT_KEY = "daily_success_count_" + new Date().toLocaleDateString('en-GB');
 
         let userIP = "Unknown";
         let geo_watch_id;
@@ -1059,6 +848,30 @@
         function decrementAttempts() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); used++; localStorage.setItem(ATTEMPTS_KEY, used.toString()); updateUIForAttempts(); return MAX_ATTEMPTS - used; }
         function updateUIForAttempts() { const left = getAttemptsLeft(); document.getElementById('attemptsCountValEntry').innerText = left; }
 
+        // Local check for 3 successful limits
+        function checkStudentLimit() {
+            let count = parseInt(localStorage.getItem(SUCCESS_COUNT_KEY) || "0");
+            if (count >= MAX_SUCCESS_DAILY) {
+                showError("⛔ لقد تجاوزت الحد الأقصى لتسجيل الحضور اليوم (3 مرات).", true);
+                return false;
+            }
+            return true;
+        }
+        function incrementSuccessCount() {
+            let count = parseInt(localStorage.getItem(SUCCESS_COUNT_KEY) || "0");
+            count++;
+            localStorage.setItem(SUCCESS_COUNT_KEY, count.toString());
+            return count;
+        }
+        
+        function showLimitModal(count) {
+            document.getElementById('attemptCountDisplay').innerText = count;
+            document.getElementById('limitModal').style.display = 'flex';
+        }
+        function closeLimitModal() {
+            document.getElementById('limitModal').style.display = 'none';
+        }
+
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
             if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { window.history.pushState(null, null, window.location.href); }
@@ -1110,12 +923,10 @@
             const hallSelect = document.getElementById('hallSelect');
             for(let i=1; i<=20; i++) {
                 let val = "E" + i;
-                // Add to real select
                 let opt = document.createElement('option');
                 opt.value = val;
                 opt.text = val;
                 hallSelect.appendChild(opt);
-                // Add to custom select
                 let cOpt = document.createElement('div');
                 cOpt.className = "custom-option";
                 cOpt.setAttribute('data-value', val);
@@ -1181,11 +992,14 @@
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } }
+            // Check student limit first
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
+                if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } 
+                if (!checkStudentLimit()) return;
+            }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             if (localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("⏳ لقد انتهت المهلة المحددة سابقاً.<br>لا يمكنك التسجيل.", true); return; }
-            if (localStorage.getItem(storageKey) === new Date().toLocaleDateString('en-GB')) { showError("⛔ تم تسجيل الحضور اليوم مسبقاً.", true); return; }
             
             switchScreen('screenLoading');
             if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
@@ -1249,9 +1063,12 @@
                 showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444');
                 return;
             }
+            // Check limits again before face check
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && !checkStudentLimit()) return;
+
             playClick();
             requestWakeLock();
-            await stopCameraSafely(); // إيقاف كاميرا QR إذا كانت تعمل
+            await stopCameraSafely(); 
             
             switchScreen('screenFaceCheck');
             const statusTxt = document.getElementById('statusTxt');
@@ -1289,12 +1106,12 @@
             } catch (e) {
                 console.error("Camera Error:", e);
                 showToast("فشل فتح الكاميرا: " + e.message, 4000, '#ef4444');
-                switchScreen('screenScanQR'); // العودة
+                switchScreen('screenScanQR'); 
             }
         }
 
         function startStrictAI() {
-            let step = 0; // 0=Timer, 1=Left
+            let step = 0; 
             let count = TIMER_DURATION_FACE;
             let counting = false;
             let timerInterval = null;
@@ -1387,22 +1204,17 @@
                             if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
                             document.getElementById('beepSound').play(); 
                             
-                            // Send data to the NEW sheet immediately
-                            const payload = {
-                                action: "register_identity",
-                                id: attendanceData.uniID,
-                                name: attendanceData.name,
-                                vector: JSON.stringify(det.descriptor),
-                                gps: `${userLat},${userLng}`,
-                                time: new Date().toLocaleTimeString('ar-EG')
-                            };
+                            attendanceData.vector = Array.from(det.descriptor); // Store for final submit
                             
-                            fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                            // Increment Count Here locally
+                            let currentCount = 0;
+                            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
+                                currentCount = incrementSuccessCount();
+                                showLimitModal(currentCount); // Show popup to student
+                            }
 
-                            // Update Verification Status
                             attendanceData.isVerified = true;
 
-                            // Return to QR Screen & Update Button
                             const verifyBtn = document.getElementById('btnVerify');
                             verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
                             verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
@@ -1411,7 +1223,7 @@
                             switchScreen('screenScanQR');
                             playSuccess();
                             showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
-                            checkAllConditions(); // Re-check to enable submit button
+                            checkAllConditions(); 
                         } else {
                             camBorder.className = "cam-container status-wait";
                             statusTxt.innerText = "بص يمين يا قمر";
@@ -1439,7 +1251,6 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
 
-            // Extra validation (Already handled by button state but good for security)
             if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedHall || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
@@ -1459,12 +1270,16 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
-            formParams.append("hall", selectedHall); // Include Hall in final submission if supported by backend
+            formParams.append("hall", selectedHall);
+            
+            // إضافة البيانات الجديدة
+            if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
+            formParams.append("gps_lat", userLat);
+            formParams.append("gps_lng", userLng);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(storageKey, new Date().toLocaleDateString('en-GB')); }
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1559,7 +1374,6 @@
                 playSuccess();
                 const modal = document.getElementById('adminSuccessModal');
                 modal.style.display = 'flex';
-                
                 setTimeout(() => {
                     modal.style.display = 'none';
                     sessionStorage.setItem(DOCTOR_MODE_KEY, 'true'); 
@@ -1652,23 +1466,24 @@
 
         function openSubjectDetails(subjectName) {
             playClick();
-            
-            // تصفية البيانات بناءً على اسم المادة
             const students = cachedReportData.filter(s => s.subject === subjectName);
-            
             document.getElementById('currentSubjectTitle').innerText = subjectName;
             const container = document.getElementById('studentsContainer');
             
             let html = '';
             students.forEach(item => {
-                // التأكد من وجود كود الجلسة، إذا لم يوجد يكتب غير متوفر
                 const sessionCode = item.code || "N/A";
+                // إذا كان الطالب قد سجل أكثر من 3 مرات، نظهره بلون أحمر
+                const isAlert = (item.dailyCount && item.dailyCount > 3);
+                const rowClass = isAlert ? 'student-detailed-card alert-row' : 'student-detailed-card';
+                const countBadge = item.dailyCount ? `<span style="font-size:10px; background:#e2e8f0; padding:2px 5px; border-radius:4px; margin-right:5px;">تكرار: ${item.dailyCount}</span>` : '';
+                const distanceBadge = item.distance ? `<span style="font-size:10px; background:#dbeafe; padding:2px 5px; border-radius:4px; margin-right:5px;">بعد: ${item.distance}م</span>` : '';
 
                 html += `
-                    <div class="student-detailed-card">
+                    <div class="${rowClass}">
                         <div class="st-data-col" style="width: 100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <div class="st-name" style="font-size:14px;">${item.name}</div>
+                                <div class="st-name" style="font-size:14px;">${item.name} ${countBadge}</div>
                                 <button class="btn-delete-item" onclick="deleteEntry('${item.uniID}', this)" style="margin-right:0;">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -1682,16 +1497,15 @@
                                 <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
                             </div>
 
-                            <div class="std-time-badge" style="display:inline-flex; float:left;">
+                            <div class="std-time-badge" style="display:inline-flex; float:left; align-items:center;">
                                 <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
+                                ${distanceBadge}
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
             container.innerHTML = html;
-
             document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
             document.getElementById('viewStudents').style.transform = 'translateX(0)';
         }
@@ -1704,96 +1518,50 @@
 
         function closeReportModal() { playClick(); document.getElementById('reportModal').style.display = 'none'; }
         
-        /* === MODAL & DELETE LOGIC (UPDATED) === */
         let pendingAction = null;
-
         function showModernConfirm(title, text, actionCallback) {
             playClick();
             document.getElementById('modernConfirmTitle').innerText = title;
             document.getElementById('modernConfirmText').innerHTML = text;
-            
             const modal = document.getElementById('modernConfirmModal');
             modal.style.display = 'flex';
-            
             pendingAction = actionCallback;
-            
             const yesBtn = document.getElementById('btnConfirmYes');
-            yesBtn.onclick = function() {
-                if (pendingAction) pendingAction();
-                closeModernConfirm();
-            };
-            
+            yesBtn.onclick = function() { if (pendingAction) pendingAction(); closeModernConfirm(); };
             if(navigator.vibrate) navigator.vibrate(50);
         }
 
-        function closeModernConfirm() {
-            playClick();
-            document.getElementById('modernConfirmModal').style.display = 'none';
-            pendingAction = null;
-        }
+        function closeModernConfirm() { playClick(); document.getElementById('modernConfirmModal').style.display = 'none'; pendingAction = null; }
 
         async function deleteEntry(id, btn) {
-            showModernConfirm(
-                "حذف سجل",
-                "هل أنت متأكد من حذف هذا الطالب؟<br><span style='font-size:11px; color:#ef4444;'>لا يمكن التراجع عن هذا الإجراء.</span>",
-                async function() {
-                    const card = btn.closest('.student-detailed-card');
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                    try {
-                        await fetch(CONFIG.sheetApiUrl, {
-                            method: 'POST', mode: 'no-cors',
-                            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                            body: `action=delete&id=${id}`
-                        });
-                        cachedReportData = cachedReportData.filter(s => s.uniID != id);
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.remove();
-                            if(document.querySelectorAll('.student-detailed-card').length === 0) showSubjectsView();
-                        }, 300);
-                    } catch(e) { alert("فشل الحذف"); }
-                }
-            );
+            showModernConfirm("حذف سجل", "هل أنت متأكد من حذف هذا الطالب؟<br><span style='font-size:11px; color:#ef4444;'>لا يمكن التراجع عن هذا الإجراء.</span>", async function() {
+                const card = btn.closest('.student-detailed-card');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                try {
+                    await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: `action=delete&id=${id}` });
+                    cachedReportData = cachedReportData.filter(s => s.uniID != id);
+                    card.style.opacity = '0';
+                    setTimeout(() => { card.remove(); if(document.querySelectorAll('.student-detailed-card').length === 0) showSubjectsView(); }, 300);
+                } catch(e) { alert("فشل الحذف"); }
+            });
         }
 
         async function clearAllReport() {
-            showModernConfirm(
-                "تصفيه السجل بالكامل",
-                "سيتم حذف <b>جميع الحضور</b> المسجل اليوم.<br>هل أنت متأكد تماماً؟",
-                async function() {
-                    document.getElementById('subjectsContainer').innerHTML = '<div style="padding:20px; text-align:center;">جاري الحذف...</div>';
-                    try {
-                        await fetch(`${CONFIG.sheetApiUrl}?action=clearAll`, { method: 'POST', mode: 'no-cors' });
-                        document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم تنظيف السجل بنجاح.</div>';
-                        playSuccess();
-                    } catch(e) { alert("خطأ في الاتصال"); openReportModal(); }
-                }
-            );
+            showModernConfirm("تصفيه السجل بالكامل", "سيتم حذف <b>جميع الحضور</b> المسجل اليوم.<br>هل أنت متأكد تماماً؟", async function() {
+                document.getElementById('subjectsContainer').innerHTML = '<div style="padding:20px; text-align:center;">جاري الحذف...</div>';
+                try {
+                    await fetch(`${CONFIG.sheetApiUrl}?action=clearAll`, { method: 'POST', mode: 'no-cors' });
+                    document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم تنظيف السجل بنجاح.</div>';
+                    playSuccess();
+                } catch(e) { alert("خطأ في الاتصال"); openReportModal(); }
+            });
         }
         
-        /* === NEW SECURITY FUNCTIONS === */
-
-        function isMobileDevice() {
-            const ua = navigator.userAgent.toLowerCase();
-            const isTargetMobile = /android|iphone|ipod/i.test(ua);
-            const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua);
-            return (isTargetMobile && !isExcluded);
-        }
-        
-        function showToast(message, duration = 3000, bgColor = '#334155') {
-            const toast = document.getElementById('toastNotification');
-            toast.style.backgroundColor = bgColor;
-            toast.innerText = message;
-            toast.style.display = 'block';
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, duration);
-        }
+        function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
+        function showToast(message, duration = 3000, bgColor = '#334155') { const toast = document.getElementById('toastNotification'); toast.style.backgroundColor = bgColor; toast.innerText = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, duration); }
 
         (function() {
-            let devtoolsOpen = false;
-            const threshold = 160; 
-
+            let devtoolsOpen = false; const threshold = 160; 
             const checkDevTools = () => {
                 if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
                     if (!devtoolsOpen) {
@@ -1806,41 +1574,17 @@
                     }
                 }
             };
-            
             window.addEventListener('resize', checkDevTools);
-            window.addEventListener('keydown', (e) => {
-                if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.metaKey && e.altKey && e.keyCode === 73)) {
-                    e.preventDefault();
-                    if(!devtoolsOpen) showToast('أدوات المطور محظورة.', 2000, '#ef4444');
-                }
-            });
-
+            window.addEventListener('keydown', (e) => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.metaKey && e.altKey && e.keyCode === 73)) { e.preventDefault(); if(!devtoolsOpen) showToast('أدوات المطور محظورة.', 2000, '#ef4444'); } });
             checkDevTools();
         })();
 
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444');
-        });
-
-        document.addEventListener('copy', function(e) {
-            e.preventDefault();
-            showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444');
-        });
-        document.addEventListener('cut', function(e) {
-            e.preventDefault();
-            showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444');
-        });
-        document.addEventListener('paste', function(e) {
-            e.preventDefault();
-            showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444');
-        });
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
+        document.addEventListener('copy', function(e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
+        document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
+        document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
         
-        if (!isMobileDevice()) { 
-            document.getElementById('desktop-blocker').style.display = 'flex'; 
-            document.body.style.overflow = 'hidden';
-            throw new Error("Desktop access denied.");
-        }
+        if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
     </script>
 </body>
 </html>
