@@ -319,17 +319,37 @@
         <div class="modal-box">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div class="modal-title" style="color:#b45309; margin:0;">تنبيهات النظام</div>
+                <div class="modal-title" style="color:#b45309; margin:0;">تنبيه أمني</div>
                 <div id="adminDeleteAlert" style="display:none; width:35px; height:35px; background:#fee2e2; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; color:#ef4444;" onclick="clearNotifications()">
                     <i class="fa-solid fa-trash-can"></i>
                 </div>
             </div>
             
-            <div id="alertsListContainer" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">
-                <div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>
+            <div class="alert-header-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <div class="alert-details-container">
+                <div class="ad-row">
+                    <span class="ad-label">اسم الطالب</span>
+                    <span class="ad-val" id="alertStudentName">--</span>
+                </div>
+                <div class="ad-row">
+                    <span class="ad-label">الكود الجامعي</span>
+                    <span class="ad-val" id="alertStudentID" style="font-family:'Outfit'">--</span>
+                </div>
+                 <div class="ad-row">
+                    <span class="ad-label">وقت التنبيه</span>
+                    <span class="ad-val" id="alertTime">--</span>
+                </div>
+            </div>
+
+            <div class="alert-reason-box">
+                <span class="arb-title">سبب التنبيه</span>
+                <div id="alertMessageBody" class="arb-text">--</div>
             </div>
             
-            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; width:100%;">إغلاق</button>
+            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; margin-top:20px; width:100%;">علم، إغلاق</button>
         </div>
     </div>
 
@@ -701,7 +721,7 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycby0qZ6LtV2nf_ZV77vaqJ3rxrqluHsZLuKtYX7qb-qHxlLezRb-HrREydv8JigUHete/exec",
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbyiW8lPdWwuOv4G3fu2GT87t7QNxjXU064PNrq_a8_PyAchEcWxXSO3F77b0hr9v84t/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
@@ -712,13 +732,7 @@
         let studentsDB = {};
         let wakeLock = null;
         let cachedReportData = [];
-        let systemAlerts = [];
-
-        // Load alerts from local storage on start
-        try {
-            const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
-            if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
-        } catch (e) {}
+        let lastAlertData = null;
 
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
@@ -732,12 +746,16 @@
             "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
         };
 
+        const storageKey = "nursing_final_secure_v47";
         const DOCTOR_MODE_KEY = "is_doctor_bypass_enabled";
         const DATA_ENTRY_TIMEOUT_SEC = 20;
+        const TIMEOUT_BLOCK_KEY = "timeout_blocked_forever_v47_" + new Date().toLocaleDateString('en-GB');
         const SESSION_END_TIME_KEY = "data_entry_deadline_v2";
         const TEMP_NAME_KEY = "temp_student_name";
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
+        const MAX_ATTEMPTS = 3;
+        const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
 
         let userIP = "Unknown";
         let geo_watch_id = null;
@@ -771,108 +789,87 @@
 
         // --- ALERT SYSTEM ---
         function updateNotificationUI(data) {
-            if (data.isRepeat || data.isFar) {
-                const newAlert = {
-                    name: attendanceData.name,
-                    id: attendanceData.uniID,
-                    timestamp: new Date().toLocaleString('ar-EG'),
-                    isRepeat: data.isRepeat,
-                    isFar: data.isFar,
-                    count: data.count,
-                    distance: data.distance
-                };
-                
-                // Add to array and save
-                systemAlerts.unshift(newAlert); // Add to top
-                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
-                
-                checkStoredAlerts();
-            }
-        }
-
-        function checkStoredAlerts() {
             const btn = document.getElementById('notificationBtn');
-            const container = document.getElementById('alertsListContainer');
+            const msgBody = document.getElementById('alertMessageBody');
             
-            // Admin Delete Button Visibility
-            const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
-            document.getElementById('adminDeleteAlert').style.display = isAdmin ? 'flex' : 'none';
+            document.getElementById('alertStudentName').innerText = attendanceData.name || "--";
+            document.getElementById('alertStudentID').innerText = attendanceData.uniID || "--";
+            document.getElementById('alertTime').innerText = new Date().toLocaleTimeString('ar-EG') || "--";
+            
+            lastAlertData = data; 
 
-            if (systemAlerts.length > 0) {
+            if (data.isRepeat || data.isFar) {
                 btn.classList.add('has-alert');
+                let warnText = "";
                 
-                let html = '';
-                systemAlerts.forEach((alert, index) => {
-                    let statusHtml = '';
-                    if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
-                    if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
+                // Save alert to local storage
+                const alertData = {
+                     name: attendanceData.name,
+                     id: attendanceData.uniID,
+                     timestamp: new Date().toLocaleString('ar-EG'),
+                     isRepeat: data.isRepeat,
+                     isFar: data.isFar
+                };
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(alertData));
+                checkStoredAlerts(); // Update UI to show delete button if admin
 
-                    html += `
-                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer;" onclick="toggleAlertDetails(${index})">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="font-weight:bold; font-size:13px;">${alert.name || '---'}</div>
-                            <div style="font-size:10px; color:#94a3b8;">${alert.timestamp.split(',')[1] || ''}</div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                            <div style="font-family:'Outfit'; font-size:12px; color:#64748b;">${alert.id || ''}</div>
-                            <div>${statusHtml}</div>
-                        </div>
-                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #e2e8f0; margin-top:8px; padding-top:8px; font-size:11px; color:#475569;">
-                            ${alert.isRepeat ? 'تم تسجيل تكرار الحضور لهذا الطالب.<br>' : ''}
-                            ${alert.isFar ? 'الطالب بعيد عن النقطة المرجعية.<br>' : ''}
-                            التاريخ: ${alert.timestamp}
-                        </div>
-                    </div>
-                    `;
-                });
-                container.innerHTML = html;
+                if (data.isRepeat) {
+                    warnText += "⛔ <b>تنبيه تكرار:</b> لقد تجاوزت عدد مرات التسجيل المسموحة اليوم (3 مرات).<br>";
+                    // حظر الطالب فوراً
+                    localStorage.setItem(TIMEOUT_BLOCK_KEY, 'true');
+                }
+                if (data.isFar) {
+                    warnText += "⚠️ <b>تنبيه موقع:</b> أنت بعيد جداً عن النطاق الجغرافي المرجعي لزملائك.<br>";
+                }
+                msgBody.innerHTML = warnText;
             } else {
                 btn.classList.remove('has-alert');
-                container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>';
+                msgBody.innerHTML = "سجلك نظيف، لا توجد تنبيهات حالياً.";
             }
         }
-
-        function toggleAlertDetails(index) {
-            const el = document.getElementById(`alert-detail-${index}`);
-            if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        
+        function checkStoredAlerts() {
+            const stored = localStorage.getItem(ALERT_STORAGE_KEY);
+            const btn = document.getElementById('notificationBtn');
+            
+            // Admin Delete Button Logic
+            const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
+            const delBtn = document.getElementById('adminDeleteAlert');
+            
+            if (stored) {
+                btn.classList.add('has-alert');
+                const data = JSON.parse(stored);
+                document.getElementById('alertStudentName').innerText = data.name;
+                document.getElementById('alertStudentID').innerText = data.id;
+                document.getElementById('alertTime').innerText = data.timestamp.split(',')[1]; // Extract time
+                
+                let warnText = "";
+                if(data.isRepeat) warnText += "⛔ تكرار محاولات الحضور.<br>";
+                if(data.isFar) warnText += "⚠️ الموقع بعيد عن القاعة.<br>";
+                document.getElementById('alertMessageBody').innerHTML = warnText;
+                
+                if(isAdmin) delBtn.style.display = 'flex'; else delBtn.style.display = 'none';
+            } else {
+                btn.classList.remove('has-alert');
+                delBtn.style.display = 'none';
+            }
         }
-
+        
         function clearNotifications() {
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
-                systemAlerts = [];
                 localStorage.removeItem(ALERT_STORAGE_KEY);
                 checkStoredAlerts();
                 closeIdentityAlert();
-                showToast("تم مسح التنبيهات بنجاح", 3000, "#10b981");
+                showToast("تم حذف التنبيهات بنجاح", 2000, "#10b981");
             }
         }
 
         function showNotificationModal() {
-            checkStoredAlerts();
+            checkStoredAlerts(); // Refresh data before showing
             document.getElementById('identityAlertModal').style.display = 'flex';
         }
 
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
-        
-        // Search Function
-        function filterStudents() {
-            const input = document.getElementById('studentSearchInput');
-            const filter = input.value.toUpperCase();
-            const container = document.getElementById('studentsContainer');
-            const cards = container.getElementsByClassName('student-detailed-card');
-
-            for (let i = 0; i < cards.length; i++) {
-                const nameEl = cards[i].querySelector('.st-name');
-                // نبحث في النص بالكامل داخل الكارت (اسم + ID)
-                const textValue = cards[i].textContent || cards[i].innerText;
-                if (textValue.toUpperCase().indexOf(filter) > -1) {
-                    cards[i].style.display = "";
-                } else {
-                    cards[i].style.display = "none";
-                }
-            }
-        }
-
         function openExamModal() { playClick(); document.getElementById('examModal').style.display = 'flex'; }
         function closeExamModal() { playClick(); document.getElementById('examModal').style.display = 'none'; }
         function handleReportClick() { const btn = document.getElementById('btnViewReport'); if (btn.classList.contains('locked')) { if(navigator.vibrate) navigator.vibrate(50); } else { safeClick(btn, openReportModal); } }
@@ -916,7 +913,7 @@
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
-            checkStoredAlerts(); // Re-check alerts on reset
+            checkStoredAlerts(); // Keep alerts visible if any
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -926,6 +923,9 @@
         function convertArabicToEnglish(s) { return s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
         async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { console.log("Wake Lock error:", err); } }
         function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
+        function getAttemptsLeft() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); return Math.max(0, MAX_ATTEMPTS - used); }
+        function decrementAttempts() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); used++; localStorage.setItem(ATTEMPTS_KEY, used.toString()); updateUIForAttempts(); return MAX_ATTEMPTS - used; }
+        function updateUIForAttempts() { const left = getAttemptsLeft(); document.getElementById('attemptsCountValEntry').innerText = left; }
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
@@ -935,7 +935,7 @@
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
-                if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { /* No local storage decrement */ location.reload(); }
+                if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { decrementAttempts(); location.reload(); }
                 releaseWakeLock();
             } else {
                 if(processIsActive) requestWakeLock();
@@ -995,6 +995,7 @@
                 });
                 hallContainer.appendChild(cOpt);
             }
+
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -1282,7 +1283,7 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
 
-            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedHall || !attendanceData.isVerified) { 
+            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("محظور"); return; }
@@ -1301,7 +1302,7 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
-            formParams.append("hall", selectedHall);
+            if(selectedHall) formParams.append("hall", selectedHall);
             
             if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
             formParams.append("gps_lat", userLat);
@@ -1504,37 +1505,24 @@
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
-                
-                // Highlighting if repeated or far (data must come from sheet)
-                const dailyCount = item.dailyCount || 1;
-                const distance = item.distance || 0;
-                const isAlert = (dailyCount > 3 || distance > 100);
-                
-                const rowClass = isAlert ? 'student-detailed-card alert-row' : 'student-detailed-card';
-                const countBadge = dailyCount > 1 ? `<span style="font-size:10px; background:#e2e8f0; padding:2px 5px; border-radius:4px; margin-right:5px;">تكرار: ${dailyCount}</span>` : '';
-                const distanceBadge = distance > 0 ? `<span style="font-size:10px; background:#dbeafe; padding:2px 5px; border-radius:4px; margin-right:5px;">بعد: ${distance}م</span>` : '';
-
+                const rowClass = 'student-detailed-card';
                 html += `
                     <div class="${rowClass}">
                         <div class="st-data-col" style="width: 100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <div class="st-name" style="font-size:14px;">${item.name} ${countBadge}</div>
+                                <div class="st-name" style="font-size:14px;">${item.name}</div>
                                 <button class="btn-delete-item" onclick="deleteEntry('${item.uniID}', this)" style="margin-right:0;">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
-
                             <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">
                                 ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
                             </div>
-                            
                             <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
                                 <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
                             </div>
-
                             <div class="std-time-badge" style="display:inline-flex; float:left; align-items:center;">
                                 <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
-                                ${distanceBadge}
                             </div>
                         </div>
                     </div>
@@ -1623,4 +1611,3 @@
     </script>
 </body>
 </html>
-
