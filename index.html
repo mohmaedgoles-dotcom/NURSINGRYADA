@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>نظام الحضور الذكي - كلية التمريض</title>
+    <title>نظام الحضور - التحقق والمسح</title>
     
     <link rel="apple-touch-icon" href="icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
@@ -13,126 +13,124 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* === التصميم الأساسي === */
+        /* ============================================================ */
+        /* 🎨 1. تنسيقات الصفحة الرئيسية للنموذج (Main Form Styles) */
+        /* ============================================================ */
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --light-bg: #f8fafc;}
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #0f172a; position: relative; overflow: hidden; }
         
-        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center; position: relative; overflow: hidden; margin: 20px auto; border: 1px solid rgba(255,255,255,0.6); }
-        .card-banner { width: 100%; height: 120px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; }
-        .card-body { padding: 0 25px 30px 25px; position: relative; }
-        .hero-icon-wrapper { width: 100px; height: 100px; margin: -50px auto 15px auto; position: relative; border-radius: 50%; background: rgba(255,255,255,0.3); backdrop-filter: blur(10px); border: 3px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 40px; color: var(--primary); z-index: 10; }
-        
-        h1 { font-size: 20px; font-weight: 900; color: #0f172a; margin-bottom: 5px; }
-        p { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            min-height: 100vh; 
+            background-color: #f1f5f9; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
 
+        /* حاوية النموذج الأساسي */
+        .main-form-container {
+            width: 90%; max-width: 450px;
+            background: white; border-radius: 24px;
+            padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center; position: relative; z-index: 1;
+        }
+
+        .form-header h2 { color: var(--text-main); font-weight: 900; margin-bottom: 10px; }
+        .form-header p { color: var(--text-sub); font-size: 14px; margin-bottom: 30px; }
+
+        .hidden { display: none !important; }
+
+        /* أزرار النموذج الرئيسي */
+        .btn-action {
+            width: 100%; padding: 18px; border-radius: 16px; border: none;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-verify { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3); }
+        .btn-qr { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+        
+        .btn-action:active { transform: scale(0.98); }
+
+        /* ============================================================ */
+        /* 🔐 2. تنسيقات نافذة التحقق المنبثقة (Modal Styles) */
+        /* ============================================================ */
+        
+        /* الخلفية المظلمة للنافذة */
+        #authModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px);
+            z-index: 9999; display: none; /* مخفي افتراضياً */
+            align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* كارت النظام القديم كما هو تماماً */
+        .app-card { 
+            background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center; position: relative; 
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.6); 
+        }
+        
+        .card-banner { width: 100%; height: 100px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; }
+        .hero-icon-wrapper { width: 80px; height: 80px; margin: -40px auto 10px auto; border-radius: 50%; background: rgba(255,255,255,0.8); border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--primary); position: relative; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card-body { padding: 0 20px 25px 20px; position: relative; }
+
+        /* زر إغلاق النافذة */
+        .close-modal-btn {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            width: 35px; height: 35px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; z-index: 20;
+        }
+
+        /* === شاشات النظام الداخلي === */
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
+        .section.active { display: block; opacity: 1; animation: fadeInSection 0.5s forwards; }
 
-        /* === واجهة الكاميرا الذكية (مُعدَّلة) === */
+        /* === الكاميرا والعناصر التفاعلية (من الكود الأصلي) === */
         .cam-container {
-            width: 260px; height: 260px; margin: 10px auto; border-radius: 50%; 
-            background: var(--light-bg); /* 🚨 خلفية فاتحة بدلاً من الأسود 🚨 */
-            overflow: hidden; border: 5px solid #e2e8f0; position: relative;
+            width: 240px; height: 240px; margin: 10px auto; border-radius: 50%; 
+            background: var(--light-bg); overflow: hidden; border: 5px solid #e2e8f0; position: relative;
             transition: border-color 0.3s;
         }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        
-        /* 💡 مؤشر التحميل الأنيق (Spinner) 💡 */
-        .spinner-overlay { 
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            background: rgba(255, 255, 255, 0.95); /* 🚨 خلفية بيضاء شبه شفافة 🚨 */
-            display: none; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 50; 
-        }
-        .spinner { 
-            border: 4px solid rgba(14, 165, 233, 0.2); 
-            border-top: 4px solid var(--primary); 
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin-bottom: 10px;
-        }
-        .large-loader-icon {
-            font-size: 60px;
-            color: var(--primary); 
-            margin-bottom: 10px;
-            filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.4));
-        }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* سبينر التحميل */
+        .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+        .spinner { border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        .large-loader-icon { font-size: 50px; color: var(--primary); margin-bottom: 10px; }
 
-
-        /* 💡 أنماط الشريط الدائري الحديث (مُعدَّلة) 💡 */
-        .timer-circular-wrapper {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            display: none; 
-            align-items: center; justify-content: center; z-index: 10; 
-        }
+        /* المؤقت الدائري */
+        .timer-circular-wrapper { position: absolute; top:0; left:0; width:100%; height:100%; display: none; align-items: center; justify-content: center; z-index: 10; }
         .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
         .timer-circle-bg { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
-        .timer-circle-fg { 
-            fill: none; stroke: var(--success); stroke-width: 5; 
-            stroke-dasharray: 282.7; 
-            stroke-dashoffset: 282.7; 
-            transition: stroke-dashoffset 0.1s linear, stroke 0.3s; 
-            stroke-linecap: round; 
-        }
-        .timer-text-box { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; align-items: center; justify-content: center; 
-        }
-        .timer-number { 
-            font-size: 50px; font-weight: 900; color: var(--text-main); 
-            text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif;
-        }
-        /* إخفاء عنصر المؤقت القديم */
-        .overlay-timer, #timer { display: none !important; } 
+        .timer-circle-fg { fill: none; stroke: var(--success); stroke-width: 5; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; stroke-linecap: round; }
+        .timer-text-box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .timer-number { font-size: 50px; font-weight: 900; color: var(--text-main); text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif; }
 
-
-        .alert-badge { 
-            background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; 
-            font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; 
-            transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; 
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s;
-        }
-
+        .alert-badge { background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; animation: shake 0.4s; }
+        
         .status-ok { border-color: var(--success) !important; box-shadow: 0 0 25px var(--success); }
         .status-wait { border-color: var(--warning) !important; box-shadow: 0 0 25px var(--warning); }
         .status-error { border-color: var(--danger) !important; box-shadow: 0 0 25px var(--danger); }
 
-        /* === عناصر التحكم === */
-        .modern-input { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 15px; font-size: 18px; text-align: center; background: #f8fafc; font-weight: 700; outline: none; transition: 0.3s; }
+        /* عناصر التحكم (Input & Keypad) */
+        .modern-input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; text-align: center; background: #f8fafc; font-weight: 700; outline: none; margin-bottom: 10px; }
         .modern-input:focus { border-color: var(--primary); background: white; }
-        
-        .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 18px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4); transition: 0.2s; }
-        .btn-main:active { transform: scale(0.98); }
-        .btn-main:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-
-        .custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; direction: ltr; }
-        .key-btn { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 0; font-size: 20px; font-weight: 700; color: #334155; cursor: pointer; transition: 0.1s; }
+        .custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; direction: ltr; }
+        .key-btn { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 0; font-size: 18px; font-weight: 700; color: #334155; cursor: pointer; }
         .key-btn:active { background: #f1f5f9; }
-        .key-btn.delete-btn { color: #ef4444; background: #fef2f2; }
+        .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 12px; border-radius: 12px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4); margin-top: 15px; }
 
-        /* === التذكرة === */
-        .ticket-container { background: white; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; margin-top: 10px; }
-        .ticket-header { background: #10b981; padding: 15px; color: white; font-weight: bold; font-size: 16px; }
-        .ticket-body { padding: 20px; }
-        .t-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-        .t-label { color: #64748b; font-weight: bold; }
-        .t-value { font-weight: 800; color: #1e293b; }
-        .verified-badge { color: #10b981; border: 2px solid #10b981; padding: 5px 10px; border-radius: 8px; font-weight: 900; display: inline-block; margin-bottom: 10px; transform: rotate(-10deg); }
-
-        /* === الحماية والتحميل === */
+        /* تنبيهات */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .alert-box { background: #fef2f2; color: #ef4444; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; margin-bottom: 15px; display: none; border: 1px solid #fecaca; }
+        .alert-box { background: #fef2f2; color: #ef4444; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; margin-bottom: 10px; display: none; border: 1px solid #fecaca; }
 
         @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+        @keyframes fadeInSection { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes shake { 0%, 100% {transform: translateX(-50%);} 25% {transform: translateX(-55%);} 75% {transform: translateX(-45%);} }
+
     </style>
 </head>
 <body>
@@ -143,99 +141,107 @@
         <p>يرجى فتح الرابط من هاتف ذكي.</p>
     </div>
 
-    <div id="loaderOverlay">
-        <i class="fa-solid fa-shield-halved fa-spin" style="font-size:50px; color:#0ea5e9; margin-bottom:20px;"></i>
-        <h3 style="color:#1e293b">جاري تأمين النظام...</h3>
+    <div class="main-form-container">
+        <div class="form-header">
+            <img src="https://cdn-icons-png.flaticon.com/512/2995/2995620.png" style="width: 60px; margin-bottom: 10px;">
+            <h2>نموذج الحضور</h2>
+            <p>كلية التمريض - جامعة الريادة</p>
+        </div>
+
+        <div id="stepInitial">
+            <div style="background: #e0f2fe; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <p style="color: #0369a1; font-size: 14px;">يرجى إتمام عملية التحقق البيومتري أولاً لتتمكن من مسح الرمز.</p>
+            </div>
+            <button onclick="openAuthModal()" class="btn-action btn-verify">
+                بدء التحقق من الهوية <i class="fa-solid fa-shield-halved"></i>
+            </button>
+        </div>
+
+        <div id="stepScanQR" class="hidden">
+            <div style="background: #d1fae5; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 30px; margin-bottom: 10px;"></i>
+                <h3 style="color: #065f46; margin-bottom: 5px;">تم التحقق بنجاح!</h3>
+                <p style="color: #047857; font-size: 13px;">هويتك مؤكدة، يمكنك الآن تسجيل الحضور.</p>
+            </div>
+            
+            <button onclick="startQRScanner()" class="btn-action btn-qr">
+                مسح رمز الحضور (QR) <i class="fa-solid fa-qrcode"></i>
+            </button>
+        </div>
     </div>
 
-    <div class="bg-image"></div>
 
-    <div class="app-card">
-        <div class="card-banner"></div>
-        <div class="hero-icon-wrapper"><i class="fa-solid fa-user-graduate"></i></div>
+    <div id="authModalOverlay">
         
-        <div class="card-body">
+        <button class="close-modal-btn" onclick="closeAuthModal()">×</button>
+
+        <div class="app-card">
+            <div class="card-banner"></div>
+            <div class="hero-icon-wrapper"><i class="fa-solid fa-user-graduate"></i></div>
             
-            <div id="screenWelcome" class="section active">
-                <h1 style="color:#0ea5e9">نظام الحضور الذكي</h1>
-                <p>جامعة الريادة - كلية التمريض</p>
-                <button onclick="goToDataEntry()" class="btn-main">تسجيل الحضور <i class="fa-solid fa-arrow-left"></i></button>
-            </div>
+            <div class="card-body">
+                
+                <div id="screenDataEntry" class="section active">
+                    <h2 style="font-size: 18px; margin-bottom: 5px;">التحقق من الهوية</h2>
+                    <p>أدخل الرقم الجامعي (ID)</p>
+                    
+                    <div id="idAlert" class="alert-box"></div>
+                    <input type="text" id="uniID" class="modern-input" placeholder="-------" readonly>
+                    
+                    <div class="custom-keypad">
+                        <button class="key-btn" onclick="addKey('1')">1</button>
+                        <button class="key-btn" onclick="addKey('2')">2</button>
+                        <button class="key-btn" onclick="addKey('3')">3</button>
+                        <button class="key-btn" onclick="addKey('4')">4</button>
+                        <button class="key-btn" onclick="addKey('5')">5</button>
+                        <button class="key-btn" onclick="addKey('6')">6</button>
+                        <button class="key-btn" onclick="addKey('7')">7</button>
+                        <button class="key-btn" onclick="addKey('8')">8</button>
+                        <button class="key-btn" onclick="addKey('9')">9</button>
+                        <button class="key-btn" style="color:#ef4444; background:#fef2f2" onclick="clearKey()">C</button>
+                        <button class="key-btn" onclick="addKey('0')">0</button>
+                        <button class="key-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
+                    </div>
 
-            <div id="screenDataEntry" class="section">
-                <h1>أدخل الكود الجامعي</h1>
-                <p>اكتب رقمك التعريفي (ID)</p>
-                
-                <div id="idAlert" class="alert-box"></div>
-                <input type="text" id="uniID" class="modern-input" placeholder="-------" readonly>
-                
-                <div class="custom-keypad">
-                    <button class="key-btn" onclick="addKey('1')">1</button>
-                    <button class="key-btn" onclick="addKey('2')">2</button>
-                    <button class="key-btn" onclick="addKey('3')">3</button>
-                    <button class="key-btn" onclick="addKey('4')">4</button>
-                    <button class="key-btn" onclick="addKey('5')">5</button>
-                    <button class="key-btn" onclick="addKey('6')">6</button>
-                    <button class="key-btn" onclick="addKey('7')">7</button>
-                    <button class="key-btn" onclick="addKey('8')">8</button>
-                    <button class="key-btn" onclick="addKey('9')">9</button>
-                    <button class="key-btn action-btn" onclick="clearKey()">C</button>
-                    <button class="key-btn" onclick="addKey('0')">0</button>
-                    <button class="key-btn delete-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="startFaceFlow()" class="btn-main">التالي <i class="fa-solid fa-camera"></i></button>
                 </div>
 
-                <button onclick="startFaceFlow()" class="btn-main" style="margin-top:20px">التالي <i class="fa-solid fa-camera"></i></button>
-            </div>
-
-            <div id="screenFaceCheck" class="section">
-                <h1>التحقق الحيوي</h1>
-                <div class="cam-container" id="camBorder">
-                    <video id="video" autoplay muted playsinline></video>
+                <div id="screenFaceCheck" class="section">
+                    <h2 style="font-size: 18px; margin-bottom: 5px;">التحقق الحيوي</h2>
                     
-                    <div id="loaderSpinner" class="spinner-overlay">
-                        <i class="fa-solid fa-face-viewfinder large-loader-icon"></i>
-                        <div class="spinner"></div>
-                        <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
-                    </div>
-                    
-                    <div id="modernTimerContainer" class="timer-circular-wrapper">
-                        <svg class="timer-svg" viewBox="0 0 100 100">
-                            <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
-                            <circle class="timer-circle-fg" id="timerProgress" cx="50" cy="50" r="45"></circle>
-                        </svg>
-                        <div class="timer-text-box">
-                            <span class="timer-number" id="timerNumber">3</span>
+                    <div class="cam-container" id="camBorder">
+                        <video id="video" autoplay muted playsinline></video>
+                        
+                        <div id="loaderSpinner" class="spinner-overlay">
+                            <i class="fa-solid fa-face-viewfinder large-loader-icon"></i>
+                            <div class="spinner"></div>
+                            <p style="color:var(--text-main); font-size:14px; font-weight:bold;">جاري تهيئة النظام...</p>
                         </div>
+                        
+                        <div id="modernTimerContainer" class="timer-circular-wrapper">
+                            <svg class="timer-svg" viewBox="0 0 100 100">
+                                <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-circle-fg" id="timerProgress" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div class="timer-text-box">
+                                <span class="timer-number" id="timerNumber">3</span>
+                            </div>
+                        </div>
+                        
+                        <div id="alertBadge" class="alert-badge">⚠️</div>
                     </div>
                     
-                    <div id="alertBadge" class="alert-badge">⚠️</div>
+                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px; font-size: 16px;">جاري التشغيل...</h3>
+                    <p style="font-size:12px; margin-top:5px; color:#64748b;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
                 </div>
-                <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
-                <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
-            </div>
 
-            <div id="screenSuccess" class="section">
-                <h1 style="color:#10b981">تم الحضور بنجاح</h1>
-                <div class="ticket-container">
-                    <div class="ticket-header"><i class="fa-solid fa-check-circle"></i> تم التوثيق</div>
-                    <div class="ticket-body">
-                        <div class="verified-badge">VERIFIED</div>
-                        <div class="t-row"><span class="t-label">الاسم</span><span class="t-value" id="resName">--</span></div>
-                        <div class="t-row"><span class="t-label">الرقم (ID)</span><span class="t-value" id="resID">--</span></div>
-                        <div class="ticket-dashed-line"></div>
-                        <div class="t-row"><span class="t-label">التاريخ</span><span class="t-value" id="resDate">--</span></div>
-                        <div class="t-row"><span class="t-label">الوقت</span><span class="t-value" id="resTime">--</span></div>
-                        <div class="t-row"><span class="t-label">الحالة</span><span class="t-value" id="resDist" style="color:#0ea5e9">--</span></div>
-                    </div>
+                <div id="screenError" class="section">
+                    <h2 style="color:#ef4444">تنبيه</h2>
+                    <div class="alert-box" id="errorMsg" style="display:block; font-size:14px;"></div>
+                    <button onclick="resetToEntry()" class="btn-main" style="background:#334155;">حاول مرة أخرى</button>
                 </div>
-            </div>
 
-            <div id="screenError" class="section">
-                <h1 style="color:#ef4444">تنبيه</h1>
-                <div class="alert-box" id="errorMsg" style="display:block; font-size:14px;"></div>
-                <button onclick="location.reload()" class="btn-main" style="background:#334155;">حاول مرة أخرى</button>
             </div>
-
         </div>
     </div>
 
@@ -246,56 +252,74 @@
 
     <script>
         // ============================================================
-        // ⚙️ الإعدادات
+        // ⚙️ إعدادات النظام (System Config)
         // ============================================================
-        
-        // 🔴🔴 ضع رابط السكريبت هنا 🔴🔴
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwdee2oQsV5eFzucIK3tHCl_gxmGgPlkjMuYcusvt4YxdADVXiQFdOESFBor5MBj1k4/exec", 
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
 
-        // ============================================================
-        // 🚀 التهيئة والمتغيرات
-        // ============================================================
-        
+        // متغيرات التشغيل
         let userLat = "", userLng = "";
         let bestDescriptor = null;
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
         let videoStream = null;      
+        
+        // عناصر DOM
         const video = document.getElementById('video');
         const alertBadge = document.getElementById('alertBadge');
-        
+        const modal = document.getElementById('authModalOverlay');
         const FACE_MODELS_URL = CONFIG.modelsUrl;
-        const TIMER_DURATION = 3; // مدة العد الثابت
-        const TIMER_CIRCUMFERENCE = 282.7; // محيط الدائرة (2 * PI * 45)
+        const TIMER_DURATION = 3; 
+        const TIMER_CIRCUMFERENCE = 282.7;
 
-        window.onload = async () => {
+        // ============================================================
+        // 🚀 التحكم في النافذة والتهيئة (Modal Logic)
+        // ============================================================
+
+        window.onload = () => {
+            // التحقق من الجهاز
             if (!/android|iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.maxTouchPoints) {
                 document.getElementById('desktop-blocker').style.display = 'flex';
-                return; 
             }
-            document.getElementById('loaderOverlay').style.display = 'none';
         };
+
+        function openAuthModal() {
+            document.getElementById('clickSound').play();
+            modal.style.display = 'flex';
+            switchScreen('screenDataEntry');
+        }
+
+        function closeAuthModal() {
+            modal.style.display = 'none';
+            // إيقاف الكاميرا والتنظيف
+            if(videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            if(faceCheckInterval) clearInterval(faceCheckInterval);
+            video.srcObject = null;
+        }
 
         function switchScreen(id) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        function goToDataEntry() {
-            document.getElementById('clickSound').play();
+        function resetToEntry() {
             switchScreen('screenDataEntry');
         }
 
-        // لوحة الأرقام (Functions for keypad remain unchanged)
+        // ============================================================
+        // ⌨️ لوحة الأرقام (Keypad Logic)
+        // ============================================================
         function addKey(n) { document.getElementById('clickSound').play(); const inp = document.getElementById('uniID'); if(inp.value.length < 15) inp.value += n; }
         function backspaceKey() { document.getElementById('clickSound').play(); const inp = document.getElementById('uniID'); inp.value = inp.value.slice(0, -1); }
         function clearKey() { document.getElementById('clickSound').play(); document.getElementById('uniID').value = ''; }
 
         // ============================================================
-        // 📸 منطق الكاميرا والتحقق (مُعدَّل للتزامن والـ UX)
+        // 📸 منطق الكاميرا والتحقق (Face Logic)
         // ============================================================
 
         async function startFaceFlow() {
@@ -306,6 +330,7 @@
                 return;
             }
 
+            // طلب الموقع
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     userLat = pos.coords.latitude;
@@ -326,11 +351,9 @@
             const loaderSpinner = document.getElementById('loaderSpinner');
 
             try {
-                // 💡 إظهار مؤشر التحميل الأنيق 💡
                 statusTxt.innerText = "الرجاء الانتظار...";
                 statusTxt.style.color = "var(--text-sub)";
                 loaderSpinner.style.display = 'flex';
-
 
                 // 1. تحميل النماذج
                 await Promise.all([
@@ -340,38 +363,26 @@
                     faceapi.nets.faceExpressionNet.loadFromUri(FACE_MODELS_URL)
                 ]);
 
-                // 2. طلب الكاميرا 
+                // 2. تشغيل الفيديو
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'user', 
-                        width: { ideal: 640 }, 
-                        height: { ideal: 480 } 
-                    } 
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
                 });
                 videoStream = stream;
-                
-                // 3. انتظار بدء تشغيل الفيديو
                 video.srcObject = stream;
+                
                 await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
+                    video.onloadedmetadata = () => { video.play(); resolve(); };
                 });
                 
-                // 4. تأخير لاستقرار الإطار
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                // 💡 إخفاء مؤشر التحميل بعد الانتهاء والبدء في الكشف 💡
                 loaderSpinner.style.display = 'none';
                 statusTxt.innerText = "اثبت مكانك تماماً";
                 statusTxt.style.color = "var(--primary)";
                 startStrictAI();
 
             } catch (e) {
-                console.error("Camera Error:", e);
-                alert("فشل النظام: " + e.message + " (تحقق من إذن الكاميرا والإنترنت).");
-                location.reload();
+                console.error(e);
+                alert("فشل تشغيل الكاميرا. تأكد من الصلاحيات.");
+                closeAuthModal();
             }
         }
 
@@ -385,7 +396,6 @@
             const timerNum = document.getElementById('timerNumber');
             const modernTimer = document.getElementById('modernTimerContainer');
             
-            // إعادة ضبط الشريط قبل البدء
             timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE;
             timerNum.innerText = TIMER_DURATION;
             
@@ -405,15 +415,13 @@
                     const nose = det.landmarks.getNose()[0];
                     const jaw = det.landmarks.getJawOutline();
                     const ratio = Math.abs(nose.x - jaw[0].x) / Math.abs(nose.x - jaw[16].x);
-                    
                     const expr = det.expressions;
                     const isStableFace = expr.neutral > 0.8 || (expr.happy < 0.1 && expr.surprised < 0.1);
-
                     const moveDist = Math.sqrt(Math.pow(nose.x - lastNoseX, 2) + Math.pow(nose.y - lastNoseY, 2));
                     lastNoseX = nose.x; lastNoseY = nose.y;
                     const isNotMoving = moveDist < 10; 
 
-                    // 1. التثبيت والعد
+                    // --- المرحلة 1: الثبات والعد ---
                     if(step === 0) {
                         if(ratio > 0.8 && ratio < 1.2 && isStableFace && isNotMoving) {
                             document.getElementById('camBorder').className = "cam-container status-ok";
@@ -423,14 +431,12 @@
 
                             if(!counting) {
                                 counting = true;
-                                modernTimer.style.display = "flex"; // إظهار الشريط الدائري
+                                modernTimer.style.display = "flex";
                                 timerNum.innerText = count;
-                                timerBar.style.stroke = "var(--success)"; // تعيين اللون الأخضر
+                                timerBar.style.stroke = "var(--success)";
                                 
                                 timerInterval = setInterval(() => {
-                                    
-                                    // 💡 تحديث شريط التقدم أولاً ثم الأرقام 💡
-                                    const elapsed = (TIMER_DURATION - count) + 1; // الزمن الذي مضى (يبدأ من 1)
+                                    const elapsed = (TIMER_DURATION - count) + 1;
                                     const progress = elapsed / TIMER_DURATION;
                                     const offset = TIMER_CIRCUMFERENCE - (progress * TIMER_CIRCUMFERENCE);
                                     timerBar.style.strokeDashoffset = offset;
@@ -441,14 +447,13 @@
                                     if(count <= 0) {
                                         clearInterval(timerInterval);
                                         bestDescriptor = Array.from(det.descriptor);
-                                        
                                         modernTimer.style.display = "none";
                                         
-                                        step = 1;
+                                        step = 1; // الانتقال لمرحلة الالتفات
                                         document.getElementById('camBorder').className = "cam-container";
-                                        // 🚨 توجيه لليمين (بص يمين يا قمر) 🚨
-                                        document.getElementById('statusTxt').innerText = "بص يمين يا قمر";
+                                        document.getElementById('statusTxt').innerText = "بص يمين يا قمر ➡";
                                         document.getElementById('statusTxt').style.color = "var(--warning)";
+                                        document.getElementById('beep').play();
                                     }
                                 }, 1000);
                             }
@@ -459,7 +464,7 @@
                                 count = TIMER_DURATION;
                                 timerNum.innerText = TIMER_DURATION;
                                 modernTimer.style.display = "none";
-                                timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE; // إعادة تعيين الشريط
+                                timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE;
                                 document.getElementById('errSound').play();
                             }
                             document.getElementById('camBorder').className = "cam-container status-error";
@@ -471,45 +476,35 @@
                         }
                     }
                     
-                    // 2. الالتفات
+                    // --- المرحلة 2: الالتفات لليمين ---
                     else if(step === 1) {
-                        if(ratio < 0.5) {
+                        if(ratio < 0.5) { // نجح في الالتفات
                             clearInterval(faceCheckInterval);
-                            if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
-                            
-                            // 🔔 صوت تأكيد الالتقاط 🔔
-                            document.getElementById('beep').play(); 
-
-                            document.getElementById('camBorder').className = "cam-container status-ok";
-                            document.getElementById('statusTxt').innerText = "✅ تم التحقق! جاري الإرسال...";
-                            document.getElementById('statusTxt').style.color = "var(--success)";
-                            sendData();
+                            sendData(); // إرسال البيانات
                         } else {
-                            // تحذير المستخدم بالاستمرار في الالتفاف
                             document.getElementById('camBorder').className = "cam-container status-wait";
-                            // 🚨 توجيه لليمين (بص يمين يا قمر) 🚨
-                            document.getElementById('statusTxt').innerText = "بص يمين يا قمر";
-                            document.getElementById('statusTxt').style.color = "var(--warning)";
-                            alertBadge.style.display = "none";
+                            document.getElementById('statusTxt').innerText = "بص يمين يا قمر ➡";
                         }
                     }
                 } else {
                     document.getElementById('camBorder').className = "cam-container status-error";
-                    document.getElementById('statusTxt').innerText = "⚠️ لم يتم العثور على وجه";
-                    document.getElementById('statusTxt').style.color = "var(--danger)";
                     alertBadge.style.display = "block";
                     alertBadge.innerText = "🚫 لا يوجد وجه";
                 }
             }, 500);
         }
 
+        // ============================================================
+        // 📡 إرسال البيانات والنجاح (Data & Success)
+        // ============================================================
+
         function sendData() {
-            const id = document.getElementById('uniID').value;
-            const name = "طالب"; 
+            document.getElementById('statusTxt').innerText = "✅ تم التحقق! جاري الحفظ...";
             
+            const id = document.getElementById('uniID').value;
             const payload = {
                 id: id,
-                name: name,
+                name: "طالب", 
                 vector: bestDescriptor,
                 lat: userLat, lng: userLng
             };
@@ -518,19 +513,17 @@
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    document.getElementById('resName').innerText = data.name || name;
-                    document.getElementById('resID').innerText = id;
-                    
-                    const distMatch = data.message.match(/المسافة: (\d+)م/);
-                    const distDisplay = distMatch ? distMatch[1] + " متر" : "داخل النطاق";
-                    document.getElementById('resDist').innerText = distDisplay;
-
-                    document.getElementById('resDate').innerText = new Date().toLocaleDateString('ar-EG');
-                    document.getElementById('resTime').innerText = new Date().toLocaleTimeString('ar-EG');
-                    
+                    // 🎉 نجاح العملية
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                     document.getElementById('successSound').play();
-                    switchScreen('screenSuccess');
+                    
+                    // 1. إغلاق النافذة
+                    closeAuthModal();
+
+                    // 2. إظهار قسم الـ QR في الصفحة الرئيسية
+                    document.getElementById('stepInitial').classList.add('hidden');
+                    document.getElementById('stepScanQR').classList.remove('hidden');
+
                 } else {
                     document.getElementById('errorMsg').innerText = data.message;
                     document.getElementById('errSound').play();
@@ -541,6 +534,11 @@
                 document.getElementById('errorMsg').innerText = "خطأ في الاتصال بالسيرفر";
                 switchScreen('screenError');
             });
+        }
+
+        function startQRScanner() {
+            // هنا تضع كود فتح الماسح الضوئي الخاص بك
+            alert("✅ هنا سيتم تشغيل كاميرا مسح الـ QR");
         }
 
         document.addEventListener('contextmenu', event => event.preventDefault());
