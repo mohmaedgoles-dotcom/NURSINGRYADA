@@ -46,12 +46,34 @@
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
         
         /* زر التنبيهات (الجرس) */
-        .notification-btn { position: absolute; top: 20px; left: 20px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .notification-btn {
+            position: absolute; 
+            top: 20px; left: 20px; z-index: 100;
+            width: 45px; height: 45px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer;
+            color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
         .notification-btn:active { transform: scale(0.9); }
-        .notification-btn.has-alert { color: #ef4444; background: #fff1f2; border-color: #fecaca; animation: shake-bell 2s infinite; }
-        .notification-badge { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; display: none; }
+        .notification-btn.has-alert {
+            color: #ef4444; background: #fff1f2;
+            border-color: #fecaca;
+            animation: shake-bell 2s infinite;
+        }
+        .notification-badge {
+            position: absolute; top: 10px; right: 10px;
+            width: 10px; height: 10px; background: #ef4444;
+            border-radius: 50%; border: 2px solid #fff; display: none;
+        }
         .notification-btn.has-alert .notification-badge { display: block; }
-        @keyframes shake-bell { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
+        @keyframes shake-bell { 
+            0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 
+            30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 
+            100% { transform: rotate(0); } 
+        }
 
         .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
         .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
@@ -500,7 +522,9 @@
                             <span class="timer-label">ثانية</span>
                         </div>
                     </div>
-                    
+                    <div class="attempts-badge" id="attemptsDisplayEntry">
+                        <i class="fa-solid fa-heart-pulse"></i> المتبقي: <span id="attemptsCountValEntry">3</span> محاولات
+                    </div>
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
                     <div class="input-group">
@@ -538,7 +562,7 @@
                         <div id="modernTimerContainer" class="timer-circular-wrapper">
                             <svg class="timer-svg-face" viewBox="0 0 100 100">
                                 <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
-                                <circle class="timer-circle-fg-face" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
                             </svg>
                             <div class="timer-text-box">
                                 <span class="timer-number-face" id="timerNumberFace">3</span>
@@ -838,6 +862,8 @@
             const cards = container.getElementsByClassName('student-detailed-card');
 
             for (let i = 0; i < cards.length; i++) {
+                const nameEl = cards[i].querySelector('.st-name');
+                // نبحث في النص بالكامل داخل الكارت (اسم + ID)
                 const textValue = cards[i].textContent || cards[i].innerText;
                 if (textValue.toUpperCase().indexOf(filter) > -1) {
                     cards[i].style.display = "";
@@ -890,7 +916,7 @@
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
-            checkStoredAlerts();
+            checkStoredAlerts(); // Re-check alerts on reset
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -1015,6 +1041,7 @@
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
                 document.getElementById('adminDeleteAlert').style.display = 'none';
             }
+            updateUIForAttempts();
         }
 
         async function startProcess(skip = false) {
@@ -1255,8 +1282,7 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
 
-            // Hall is no longer mandatory for button logic, but beneficial to send
-            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !attendanceData.isVerified) { 
+            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedHall || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("محظور"); return; }
@@ -1275,7 +1301,7 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
-            if(selectedHall) formParams.append("hall", selectedHall);
+            formParams.append("hall", selectedHall);
             
             if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
             formParams.append("gps_lat", userLat);
@@ -1284,7 +1310,7 @@
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                // No local storage for successful date storage (removed per request)
+                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(storageKey, new Date().toLocaleDateString('en-GB')); }
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1353,12 +1379,13 @@
         function checkAllConditions() { 
             const year = document.getElementById('yearSelect').value;
             const sub = document.getElementById('subjectSelect').value; 
+            const hall = document.getElementById('hallSelect').value;
             const qrPass = document.getElementById('sessionPass').value; 
             const isVerified = attendanceData.isVerified === true;
             
             const btn = document.getElementById('submitBtn'); 
             
-            if(year && sub && qrPass && isVerified) { 
+            if(year && sub && hall && qrPass && isVerified) { 
                 btn.disabled = false; 
                 btn.style.opacity = "1"; 
                 btn.style.cursor = "pointer"; 
@@ -1477,6 +1504,8 @@
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
+                
+                // Highlighting if repeated or far (data must come from sheet)
                 const dailyCount = item.dailyCount || 1;
                 const distance = item.distance || 0;
                 const isAlert = (dailyCount > 3 || distance > 100);
