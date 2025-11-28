@@ -380,6 +380,11 @@
         <p>النظام متاح فقط من هواتف Android و iPhone الذكية.</p>
     </div>
 
+    <div id="loaderOverlay">
+        <i class="fa-solid fa-shield-halved fa-spin" style="font-size:50px; color:#0ea5e9; margin-bottom:20px;"></i>
+        <h3 style="color:#1e293b">جاري تأمين النظام...</h3>
+    </div>
+
     <div class="bg-image"></div>
     <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
     <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
@@ -727,6 +732,7 @@
                     <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
                     <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
                 </div>
+                
                 <div id="screenSuccess" class="section">
                     <h1 style="color:#10b981; margin-bottom: 15px;">تم التسجيل بنجاح</h1>
                     
@@ -974,7 +980,10 @@
         }
 
         window.onload = function() {
+            // 🚨 تهيئة النظام الأساسي (مُعاد إضافته) 🚨
             initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
+            
+            // تحديث الوقت والتاريخ (مُعاد إضافته)
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -982,6 +991,7 @@
                 const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
                 if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
             }, 1000);
+            
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
 
@@ -1474,16 +1484,13 @@
         let videoStream = null;      
 
         async function startFaceFlow() {
-            // يتم استدعاء هذه الدالة من زر "التحقق بالبصمة الوجهية" (أو زر "التالي" في شاشة ID)
             const id = document.getElementById('uniID').value;
             if (!id || id.length < 3) {
-                // سيتم التعامل مع رسالة الخطأ هنا
                 document.getElementById('idAlert').style.display = 'block';
                 document.getElementById('idAlert').innerText = "⚠️ أدخل كود صحيح";
                 return;
             }
 
-            // هذا هو الجزء الذي يطلب الموقع قبل فتح الكاميرا (يمكن تعديله حسب الحاجة)
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     userLat = pos.coords.latitude;
@@ -1589,7 +1596,6 @@
 
                     const moveDist = Math.sqrt(Math.pow(nose.x - lastNoseX, 2) + Math.pow(nose.y - lastNoseY, 2));
                     lastNoseX = nose.x; lastNoseY = nose.y;
-                    // 🚨 التسامح مع الحركة 🚨
                     const isNotMoving = moveDist < 10; 
 
                     // 1. التثبيت والعد
