@@ -69,6 +69,18 @@
             border-radius: 50%; border: 2px solid #fff; display: none;
         }
         .notification-btn.has-alert .notification-badge { display: block; }
+        
+        /* قفل الجرس */
+        .notification-btn.locked::after {
+            content: '\f023'; /* أيقونة القفل */
+            font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; bottom: -5px; right: -5px;
+            font-size: 12px; background: #334155; color: white;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+        }
+
         @keyframes shake-bell { 
             0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 
             30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 
@@ -237,7 +249,7 @@
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
         .card-body-content { position: relative; min-height: 500px; z-index: 5; }
         
-        /* === نافذة التنبيهات الأنيقة جداً === */
+        /* === NEW: نافذة التنبيهات الأنيقة جداً === */
         #identityAlertModal .modal-box { border: 0; border-top: 5px solid #f59e0b; border-radius: 30px; padding: 35px 25px; }
         .alert-header-icon { width: 80px; height: 80px; background: #fffbeb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; font-size: 35px; color: #f59e0b; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2); }
         .alert-details-container { background: #f8fafc; border-radius: 20px; padding: 20px; margin-top: 15px; text-align: right; border: 1px solid #e2e8f0; }
@@ -264,7 +276,7 @@
         /* شريط البحث في كل مكان */
         .search-box-wrapper { position: relative; margin-bottom: 15px; }
         .search-box-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
-        #studentSearchInput { padding-right: 40px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; width: 100%; padding: 12px 40px 12px 15px; font-family: 'Cairo'; font-size: 14px; outline: none; }
+        #studentSearchInput, #alertSearchInput { padding-right: 40px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; width: 100%; padding: 12px 40px 12px 15px; font-family: 'Cairo'; font-size: 14px; outline: none; }
         
         /* === زر التنبيهات الأنيق في الصفحة الرئيسية === */
         #notificationBtn { position: absolute; top: 35px; left: 35px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s ease; font-size: 22px; }
@@ -319,37 +331,22 @@
         <div class="modal-box">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div class="modal-title" style="color:#b45309; margin:0;">تنبيه أمني</div>
+                <div class="modal-title" style="color:#b45309; margin:0;">تنبيهات النظام</div>
                 <div id="adminDeleteAlert" style="display:none; width:35px; height:35px; background:#fee2e2; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; color:#ef4444;" onclick="clearNotifications()">
                     <i class="fa-solid fa-trash-can"></i>
                 </div>
             </div>
             
-            <div class="alert-header-icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+            <div class="search-box-wrapper">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="alertSearchInput" placeholder="بحث في التنبيهات..." onkeyup="filterAlerts()">
             </div>
 
-            <div class="alert-details-container">
-                <div class="ad-row">
-                    <span class="ad-label">اسم الطالب</span>
-                    <span class="ad-val" id="alertStudentName">--</span>
-                </div>
-                <div class="ad-row">
-                    <span class="ad-label">الكود الجامعي</span>
-                    <span class="ad-val" id="alertStudentID" style="font-family:'Outfit'">--</span>
-                </div>
-                 <div class="ad-row">
-                    <span class="ad-label">وقت التنبيه</span>
-                    <span class="ad-val" id="alertTime">--</span>
-                </div>
-            </div>
-
-            <div class="alert-reason-box">
-                <span class="arb-title">سبب التنبيه</span>
-                <div id="alertMessageBody" class="arb-text">--</div>
+            <div id="alertsListContainer" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">
+                <div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>
             </div>
             
-            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; margin-top:20px; width:100%;">علم، إغلاق</button>
+            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; width:100%;">إغلاق</button>
         </div>
     </div>
 
@@ -732,7 +729,13 @@
         let studentsDB = {};
         let wakeLock = null;
         let cachedReportData = [];
-        let lastAlertData = null;
+        let systemAlerts = [];
+
+        // Load alerts from local storage on start
+        try {
+            const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
+            if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
+        } catch (e) {}
 
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
@@ -746,7 +749,6 @@
             "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
         };
 
-        const storageKey = "nursing_final_secure_v47";
         const DOCTOR_MODE_KEY = "is_doctor_bypass_enabled";
         const DATA_ENTRY_TIMEOUT_SEC = 20;
         const TIMEOUT_BLOCK_KEY = "timeout_blocked_forever_v47_" + new Date().toLocaleDateString('en-GB');
@@ -789,87 +791,146 @@
 
         // --- ALERT SYSTEM ---
         function updateNotificationUI(data) {
-            const btn = document.getElementById('notificationBtn');
-            const msgBody = document.getElementById('alertMessageBody');
-            
-            document.getElementById('alertStudentName').innerText = attendanceData.name || "--";
-            document.getElementById('alertStudentID').innerText = attendanceData.uniID || "--";
-            document.getElementById('alertTime').innerText = new Date().toLocaleTimeString('ar-EG') || "--";
-            
-            lastAlertData = data; 
-
             if (data.isRepeat || data.isFar) {
-                btn.classList.add('has-alert');
-                let warnText = "";
-                
-                // Save alert to local storage
-                const alertData = {
-                     name: attendanceData.name,
-                     id: attendanceData.uniID,
-                     timestamp: new Date().toLocaleString('ar-EG'),
-                     isRepeat: data.isRepeat,
-                     isFar: data.isFar
+                const newAlert = {
+                    name: attendanceData.name,
+                    id: attendanceData.uniID,
+                    timestamp: new Date().toLocaleString('ar-EG'),
+                    isRepeat: data.isRepeat,
+                    isFar: data.isFar,
+                    count: data.count,
+                    distance: data.distance
                 };
-                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(alertData));
-                checkStoredAlerts(); // Update UI to show delete button if admin
+                
+                // Add to array and save
+                systemAlerts.unshift(newAlert); // Add to top
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                
+                checkStoredAlerts();
+            }
+        }
 
-                if (data.isRepeat) {
-                    warnText += "⛔ <b>تنبيه تكرار:</b> لقد تجاوزت عدد مرات التسجيل المسموحة اليوم (3 مرات).<br>";
-                    // حظر الطالب فوراً
-                    localStorage.setItem(TIMEOUT_BLOCK_KEY, 'true');
-                }
-                if (data.isFar) {
-                    warnText += "⚠️ <b>تنبيه موقع:</b> أنت بعيد جداً عن النطاق الجغرافي المرجعي لزملائك.<br>";
-                }
-                msgBody.innerHTML = warnText;
-            } else {
-                btn.classList.remove('has-alert');
-                msgBody.innerHTML = "سجلك نظيف، لا توجد تنبيهات حالياً.";
-            }
-        }
-        
         function checkStoredAlerts() {
-            const stored = localStorage.getItem(ALERT_STORAGE_KEY);
             const btn = document.getElementById('notificationBtn');
+            const container = document.getElementById('alertsListContainer');
             
-            // Admin Delete Button Logic
+            // Admin Delete Button Visibility
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
-            const delBtn = document.getElementById('adminDeleteAlert');
-            
-            if (stored) {
+            document.getElementById('adminDeleteAlert').style.display = isAdmin ? 'flex' : 'none';
+
+            if (systemAlerts.length > 0) {
                 btn.classList.add('has-alert');
-                const data = JSON.parse(stored);
-                document.getElementById('alertStudentName').innerText = data.name;
-                document.getElementById('alertStudentID').innerText = data.id;
-                document.getElementById('alertTime').innerText = data.timestamp.split(',')[1]; // Extract time
                 
-                let warnText = "";
-                if(data.isRepeat) warnText += "⛔ تكرار محاولات الحضور.<br>";
-                if(data.isFar) warnText += "⚠️ الموقع بعيد عن القاعة.<br>";
-                document.getElementById('alertMessageBody').innerHTML = warnText;
-                
-                if(isAdmin) delBtn.style.display = 'flex'; else delBtn.style.display = 'none';
+                let html = '';
+                systemAlerts.forEach((alert, index) => {
+                    // Only admin can see delete button
+                    const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
+                    
+                    let statusHtml = '';
+                    if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
+                    if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
+
+                    html += `
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer;" onclick="toggleAlertDetails(${index})">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; align-items:center;">
+                                ${deleteBtn}
+                                <div style="font-weight:bold; font-size:13px;">${alert.name || '---'}</div>
+                            </div>
+                            <div style="font-size:10px; color:#94a3b8;">${alert.timestamp.split(',')[1] || ''}</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                            <div style="font-family:'Outfit'; font-size:12px; color:#64748b;">${alert.id || ''}</div>
+                            <div>${statusHtml}</div>
+                        </div>
+                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #e2e8f0; margin-top:8px; padding-top:8px; font-size:11px; color:#475569;">
+                            ${alert.isRepeat ? 'تم تسجيل تكرار الحضور لهذا الطالب.<br>' : ''}
+                            ${alert.isFar ? 'الطالب بعيد عن النقطة المرجعية.<br>' : ''}
+                            التاريخ: ${alert.timestamp}
+                        </div>
+                    </div>
+                    `;
+                });
+                container.innerHTML = html;
             } else {
                 btn.classList.remove('has-alert');
-                delBtn.style.display = 'none';
+                container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>';
             }
         }
-        
+
+        function toggleAlertDetails(index) {
+            const el = document.getElementById(`alert-detail-${index}`);
+            if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function deleteSingleAlert(index) {
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
+                systemAlerts.splice(index, 1);
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                checkStoredAlerts();
+            }
+        }
+
         function clearNotifications() {
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
+                systemAlerts = [];
                 localStorage.removeItem(ALERT_STORAGE_KEY);
                 checkStoredAlerts();
                 closeIdentityAlert();
-                showToast("تم حذف التنبيهات بنجاح", 2000, "#10b981");
+                showToast("تم مسح التنبيهات بنجاح", 3000, "#10b981");
             }
+        }
+        
+        function filterAlerts() {
+            const input = document.getElementById('alertSearchInput');
+            const filter = input.value.toUpperCase();
+            const container = document.getElementById('alertsListContainer');
+            const items = container.querySelectorAll('div[onclick^="toggleAlertDetails"]');
+
+            items.forEach(item => {
+                const text = item.innerText || item.textContent;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
         }
 
         function showNotificationModal() {
-            checkStoredAlerts(); // Refresh data before showing
+            const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
+            if (!isAdmin) {
+                const btn = document.getElementById('notificationBtn');
+                btn.classList.add('shake-lock'); // You can define this animation if you want visual feedback
+                showToast("⛔ خاص بالمسؤول فقط", 2000, "#ef4444");
+                if(navigator.vibrate) navigator.vibrate(100);
+                return;
+            }
+            checkStoredAlerts();
             document.getElementById('identityAlertModal').style.display = 'flex';
         }
 
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
+        
+        // Search Function
+        function filterStudents() {
+            const input = document.getElementById('studentSearchInput');
+            const filter = input.value.toUpperCase();
+            const container = document.getElementById('studentsContainer');
+            const cards = container.getElementsByClassName('student-detailed-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const nameEl = cards[i].querySelector('.st-name');
+                // نبحث في النص بالكامل داخل الكارت (اسم + ID)
+                const textValue = cards[i].textContent || cards[i].innerText;
+                if (textValue.toUpperCase().indexOf(filter) > -1) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
         function openExamModal() { playClick(); document.getElementById('examModal').style.display = 'flex'; }
         function closeExamModal() { playClick(); document.getElementById('examModal').style.display = 'none'; }
         function handleReportClick() { const btn = document.getElementById('btnViewReport'); if (btn.classList.contains('locked')) { if(navigator.vibrate) navigator.vibrate(50); } else { safeClick(btn, openReportModal); } }
@@ -913,7 +974,7 @@
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
-            checkStoredAlerts(); // Keep alerts visible if any
+            checkStoredAlerts(); // Re-check alerts on reset
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -995,7 +1056,6 @@
                 });
                 hallContainer.appendChild(cOpt);
             }
-
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -1035,14 +1095,19 @@
             const reportIcon = document.getElementById('reportIcon');
             const adminFloating = document.getElementById('adminFloatingBack');
             const attemptsBadge = document.getElementById('attemptsDisplayEntry');
+            const notifBtn = document.getElementById('notificationBtn');
+            
             if (isAdmin) {
                 badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; if(attemptsBadge) attemptsBadge.style.display = 'none';
                 document.getElementById('adminDeleteAlert').style.display = 'flex';
+                notifBtn.classList.remove('locked');
             } else {
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
                 document.getElementById('adminDeleteAlert').style.display = 'none';
+                notifBtn.classList.add('locked');
             }
             updateUIForAttempts();
+            checkStoredAlerts(); // Refresh delete buttons
         }
 
         async function startProcess(skip = false) {
@@ -1283,6 +1348,7 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
 
+            // Hall is no longer mandatory for button logic, but beneficial to send
             if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
@@ -1380,13 +1446,12 @@
         function checkAllConditions() { 
             const year = document.getElementById('yearSelect').value;
             const sub = document.getElementById('subjectSelect').value; 
-            const hall = document.getElementById('hallSelect').value;
             const qrPass = document.getElementById('sessionPass').value; 
             const isVerified = attendanceData.isVerified === true;
             
             const btn = document.getElementById('submitBtn'); 
             
-            if(year && sub && hall && qrPass && isVerified) { 
+            if(year && sub && qrPass && isVerified) { 
                 btn.disabled = false; 
                 btn.style.opacity = "1"; 
                 btn.style.cursor = "pointer"; 
