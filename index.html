@@ -31,10 +31,11 @@
         body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; }
-        .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; }
+        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; }
+        .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
-        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; }
+        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
+        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; }
         
         .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; display: block; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 1; box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
@@ -45,48 +46,30 @@
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
         
         /* زر التنبيهات (الجرس) */
-        .notification-btn {
-            position: absolute; 
-            top: 20px; left: 20px; z-index: 100;
-            width: 45px; height: 45px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer;
-            color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
+        .notification-btn { position: absolute; top: 20px; left: 20px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.5); }
         .notification-btn:active { transform: scale(0.9); }
-        .notification-btn.has-alert {
-            color: #ef4444; background: #fff1f2;
-            border-color: #fecaca;
-            animation: shake-bell 2s infinite;
-        }
-        .notification-badge {
-            position: absolute; top: 10px; right: 10px;
-            width: 10px; height: 10px; background: #ef4444;
-            border-radius: 50%; border: 2px solid #fff; display: none;
-        }
+        .notification-btn.has-alert { color: #ef4444; background: #fff1f2; border-color: #fecaca; animation: shake-bell 2s infinite; }
+        .notification-badge { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; display: none; }
         .notification-btn.has-alert .notification-badge { display: block; }
-        @keyframes shake-bell { 
-            0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 
-            30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 
-            100% { transform: rotate(0); } 
-        }
+        @keyframes shake-bell { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
 
         .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
         .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
+        
+        /* الفوتر الجديد - أسفل الكارت */
+        .academic-footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: center; width: 100%; position: relative; z-index: 5; }
+        .uni-footer-label-large { background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #e2e8f0; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1); color: #334155; font-weight: 800; font-size: 12px; padding: 12px 25px; border-radius: 20px; display: flex; align-items: center; gap: 8px; white-space: nowrap; width: 100%; justify-content: center; transition: 0.3s; }
+        .uni-footer-label-large i { color: var(--primary); font-size: 16px; }
+
+        /* باقي الأزرار والقوائم */
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
-
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
-
         .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
-        
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
         .admin-sub-btn { border-radius: 18px; padding: 12px 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); height: 85px; }
         .admin-sub-btn:active { transform: scale(0.95); }
@@ -99,19 +82,15 @@
         .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); color: #0ea5e9; border: 1px solid #bae6fd; flex-direction: row; height: 55px; margin-top: 5px; }
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
-
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
-        
         .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
         .spinner { border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
-        /* أيقونة البصمة في شاشة التحميل */
         .large-loader-icon { font-size: 50px; color: var(--primary); margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.4)); }
-        
         .timer-circular-wrapper { position: absolute; top:0; left:0; width:100%; height:100%; display: none; align-items: center; justify-content: center; z-index: 10; }
         .timer-svg-face { transform: rotate(-90deg); width: 100%; height: 100%; }
         .timer-circle-bg-face { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
@@ -121,7 +100,6 @@
         .status-ok { border-color: #10b981 !important; box-shadow: 0 0 15px #10b981; }
         .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 15px #f59e0b; }
         .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
-
         #reportModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
         .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
         .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
@@ -265,6 +243,14 @@
         .search-box-wrapper { position: relative; margin-bottom: 15px; }
         .search-box-wrapper i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
         #studentSearchInput { padding-right: 40px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; width: 100%; padding: 12px 40px 12px 15px; font-family: 'Cairo'; font-size: 14px; outline: none; }
+        
+        /* === زر التنبيهات الأنيق في الصفحة الرئيسية === */
+        #notificationBtn { position: absolute; top: 35px; left: 35px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s ease; font-size: 22px; }
+        #notificationBtn.has-alert { color: #ef4444; background: #fff1f2; animation: pulse-red 2s infinite; }
+        
+        /* === النافذة المنبثقة للموقع الجغرافي === */
+        #locationForceModal { z-index: 999999 !important; background: #0f172a; }
+        #locationForceModal .modal-box { border: 2px solid #ef4444; }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -279,6 +265,15 @@
         <i class="fa-solid fa-mobile-screen-button" style="font-size:50px; margin-bottom:20px;"></i>
         <h2 style="margin-bottom:10px">عذراً، وصول غير مصرح به</h2>
         <p>النظام متاح فقط من هواتف Android و iPhone الذكية.</p>
+    </div>
+
+    <div id="locationForceModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <i class="fa-solid fa-location-dot" style="font-size:50px; color:#ef4444; margin-bottom:15px;"></i>
+            <div class="modal-title" style="color:#ef4444;">خدمة الموقع مطلوبة</div>
+            <div class="modal-text">لا يمكن استخدام النظام بدون تفعيل GPS. يرجى تفعيل الموقع والمحاولة مرة أخرى.</div>
+            <button onclick="location.reload()" class="modal-btn btn-confirm">تحديث الصفحة</button>
+        </div>
     </div>
 
     <div class="bg-image"></div>
@@ -302,37 +297,17 @@
         <div class="modal-box">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div class="modal-title" style="color:#b45309; margin:0;">تنبيه أمني</div>
+                <div class="modal-title" style="color:#b45309; margin:0;">تنبيهات النظام</div>
                 <div id="adminDeleteAlert" style="display:none; width:35px; height:35px; background:#fee2e2; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; color:#ef4444;" onclick="clearNotifications()">
                     <i class="fa-solid fa-trash-can"></i>
                 </div>
             </div>
             
-            <div class="alert-header-icon">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-
-            <div class="alert-details-container">
-                <div class="ad-row">
-                    <span class="ad-label">اسم الطالب</span>
-                    <span class="ad-val" id="alertStudentName">--</span>
-                </div>
-                <div class="ad-row">
-                    <span class="ad-label">الكود الجامعي</span>
-                    <span class="ad-val" id="alertStudentID" style="font-family:'Outfit'">--</span>
-                </div>
-                 <div class="ad-row">
-                    <span class="ad-label">وقت التنبيه</span>
-                    <span class="ad-val" id="alertTime">--</span>
-                </div>
-            </div>
-
-            <div class="alert-reason-box">
-                <span class="arb-title">سبب التنبيه</span>
-                <div id="alertMessageBody" class="arb-text">--</div>
+            <div id="alertsListContainer" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">
+                <div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>
             </div>
             
-            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; margin-top:20px; width:100%;">علم، إغلاق</button>
+            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#334155; width:100%;">إغلاق</button>
         </div>
     </div>
 
@@ -525,9 +500,7 @@
                             <span class="timer-label">ثانية</span>
                         </div>
                     </div>
-                    <div class="attempts-badge" id="attemptsDisplayEntry">
-                        <i class="fa-solid fa-heart-pulse"></i> المتبقي: <span id="attemptsCountValEntry">3</span> محاولات
-                    </div>
+                    
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
                     <div class="input-group">
@@ -711,10 +684,17 @@
         };
         
         const LOCAL_STORAGE_DB_KEY = "offline_students_db_v2";
-        const ALERT_STORAGE_KEY = "persistent_student_alerts_v1";
+        const ALERT_STORAGE_KEY = "persistent_student_alerts_v2";
         let studentsDB = {};
         let wakeLock = null;
         let cachedReportData = [];
+        let systemAlerts = [];
+
+        // Load alerts from local storage on start
+        try {
+            const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
+            if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
+        } catch (e) {}
 
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
@@ -728,19 +708,15 @@
             "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
         };
 
-        const storageKey = "nursing_final_secure_v47";
         const DOCTOR_MODE_KEY = "is_doctor_bypass_enabled";
         const DATA_ENTRY_TIMEOUT_SEC = 20;
-        const TIMEOUT_BLOCK_KEY = "timeout_blocked_forever_v47_" + new Date().toLocaleDateString('en-GB');
         const SESSION_END_TIME_KEY = "data_entry_deadline_v2";
         const TEMP_NAME_KEY = "temp_student_name";
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
-        const MAX_ATTEMPTS = 3;
-        const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
 
         let userIP = "Unknown";
-        let geo_watch_id;
+        let geo_watch_id = null;
         let countdownInterval;
         let html5QrCode;
         let currentAbortController = null;
@@ -769,73 +745,92 @@
             }, 600);
         }
 
-        // دالة لإدارة التنبيهات المخزنة
-        function checkStoredAlerts() {
-            const stored = localStorage.getItem(ALERT_STORAGE_KEY);
-            const btn = document.getElementById('notificationBtn');
-            if (stored) {
-                const alertData = JSON.parse(stored);
-                btn.classList.add('has-alert');
-                // إذا كنا في وضع المسؤول، أظهر زر الحذف
-                const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
-                document.getElementById('adminDeleteAlert').style.display = isAdmin ? 'flex' : 'none';
-                updateAlertModalContent(alertData);
-            } else {
-                btn.classList.remove('has-alert');
+        // --- ALERT SYSTEM ---
+        function updateNotificationUI(data) {
+            if (data.isRepeat || data.isFar) {
+                const newAlert = {
+                    name: attendanceData.name,
+                    id: attendanceData.uniID,
+                    timestamp: new Date().toLocaleString('ar-EG'),
+                    isRepeat: data.isRepeat,
+                    isFar: data.isFar,
+                    count: data.count,
+                    distance: data.distance
+                };
+                
+                // Add to array and save
+                systemAlerts.unshift(newAlert); // Add to top
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                
+                checkStoredAlerts();
             }
         }
 
-        function updateAlertModalContent(data) {
-            const msgBody = document.getElementById('alertMessageBody');
-            document.getElementById('alertStudentName').innerText = data.name || "--";
-            document.getElementById('alertStudentID').innerText = data.id || "--";
-            document.getElementById('alertTime').innerText = data.timestamp || "--";
+        function checkStoredAlerts() {
+            const btn = document.getElementById('notificationBtn');
+            const container = document.getElementById('alertsListContainer');
+            
+            // Admin Delete Button Visibility
+            const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
+            document.getElementById('adminDeleteAlert').style.display = isAdmin ? 'flex' : 'none';
 
-            let warnText = "";
-            if (data.isRepeat) {
-                warnText += "⛔ <b>تنبيه تكرار:</b> تجاوز الطالب الحد الأقصى للمحاولات.<br>";
+            if (systemAlerts.length > 0) {
+                btn.classList.add('has-alert');
+                
+                let html = '';
+                systemAlerts.forEach((alert, index) => {
+                    let statusHtml = '';
+                    if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
+                    if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
+
+                    html += `
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer;" onclick="toggleAlertDetails(${index})">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-weight:bold; font-size:13px;">${alert.name || '---'}</div>
+                            <div style="font-size:10px; color:#94a3b8;">${alert.timestamp.split(',')[1] || ''}</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                            <div style="font-family:'Outfit'; font-size:12px; color:#64748b;">${alert.id || ''}</div>
+                            <div>${statusHtml}</div>
+                        </div>
+                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #e2e8f0; margin-top:8px; padding-top:8px; font-size:11px; color:#475569;">
+                            ${alert.isRepeat ? 'تم تسجيل تكرار الحضور لهذا الطالب.<br>' : ''}
+                            ${alert.isFar ? 'الطالب بعيد عن النقطة المرجعية.<br>' : ''}
+                            التاريخ: ${alert.timestamp}
+                        </div>
+                    </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } else {
+                btn.classList.remove('has-alert');
+                container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>';
             }
-            if (data.isFar) {
-                warnText += "⚠️ <b>تنبيه موقع:</b> الطالب بعيد عن النطاق الجغرافي المرجعي.<br>";
-            }
-            msgBody.innerHTML = warnText;
+        }
+
+        function toggleAlertDetails(index) {
+            const el = document.getElementById(`alert-detail-${index}`);
+            if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
         }
 
         function clearNotifications() {
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
+                systemAlerts = [];
                 localStorage.removeItem(ALERT_STORAGE_KEY);
-                document.getElementById('notificationBtn').classList.remove('has-alert');
+                checkStoredAlerts();
                 closeIdentityAlert();
                 showToast("تم مسح التنبيهات بنجاح", 3000, "#10b981");
             }
         }
 
-        function updateNotificationUI(data) {
-            if (data.isRepeat || data.isFar) {
-                const alertObj = {
-                    name: attendanceData.name,
-                    id: attendanceData.uniID,
-                    timestamp: new Date().toLocaleString('ar-EG'),
-                    isRepeat: data.isRepeat,
-                    isFar: data.isFar
-                };
-                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(alertObj));
-                checkStoredAlerts();
-
-                if (data.isRepeat) {
-                    localStorage.setItem(TIMEOUT_BLOCK_KEY, 'true');
-                }
-            }
-        }
-
         function showNotificationModal() {
-            checkStoredAlerts(); // تحديث المحتوى قبل الفتح
+            checkStoredAlerts();
             document.getElementById('identityAlertModal').style.display = 'flex';
         }
 
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
         
-        // دالة البحث في القائمة
+        // Search Function
         function filterStudents() {
             const input = document.getElementById('studentSearchInput');
             const filter = input.value.toUpperCase();
@@ -843,8 +838,6 @@
             const cards = container.getElementsByClassName('student-detailed-card');
 
             for (let i = 0; i < cards.length; i++) {
-                const nameEl = cards[i].querySelector('.st-name');
-                // نبحث في النص بالكامل داخل الكارت (اسم + ID)
                 const textValue = cards[i].textContent || cards[i].innerText;
                 if (textValue.toUpperCase().indexOf(filter) > -1) {
                     cards[i].style.display = "";
@@ -897,7 +890,7 @@
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
-            checkStoredAlerts(); // Re-check alerts on reset
+            checkStoredAlerts();
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -907,9 +900,6 @@
         function convertArabicToEnglish(s) { return s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
         async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { console.log("Wake Lock error:", err); } }
         function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
-        function getAttemptsLeft() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); return Math.max(0, MAX_ATTEMPTS - used); }
-        function decrementAttempts() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); used++; localStorage.setItem(ATTEMPTS_KEY, used.toString()); updateUIForAttempts(); return MAX_ATTEMPTS - used; }
-        function updateUIForAttempts() { const left = getAttemptsLeft(); document.getElementById('attemptsCountValEntry').innerText = left; }
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
@@ -919,7 +909,7 @@
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
-                if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { decrementAttempts(); location.reload(); }
+                if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { /* No local storage decrement */ location.reload(); }
                 releaseWakeLock();
             } else {
                 if(processIsActive) requestWakeLock();
@@ -955,21 +945,18 @@
         }
 
         window.onload = function() {
-            initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
-            checkStoredAlerts(); // Check for alerts on load
+            initGlobalGuard(); updateUIForMode(); setupCustomSelects();
+            checkStoredAlerts(); 
             
+            // Initialize GPS Watcher Immediately
+            startGPSWatcher();
+
             const hallContainer = document.getElementById('hallOptionsContainer');
             const hallSelect = document.getElementById('hallSelect');
             for(let i=1; i<=20; i++) {
                 let val = "E" + i;
-                let opt = document.createElement('option');
-                opt.value = val;
-                opt.text = val;
-                hallSelect.appendChild(opt);
-                let cOpt = document.createElement('div');
-                cOpt.className = "custom-option";
-                cOpt.setAttribute('data-value', val);
-                cOpt.innerHTML = `<span>${val}</span>`;
+                let opt = document.createElement('option'); opt.value = val; opt.text = val; hallSelect.appendChild(opt);
+                let cOpt = document.createElement('div'); cOpt.className = "custom-option"; cOpt.setAttribute('data-value', val); cOpt.innerHTML = `<span>${val}</span>`;
                 cOpt.addEventListener('click', function(e) {
                     e.stopPropagation();
                     hallContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
@@ -982,7 +969,6 @@
                 });
                 hallContainer.appendChild(cOpt);
             }
-
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -993,6 +979,26 @@
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
 
+        // GPS Watcher Logic
+        function startGPSWatcher() {
+            if (navigator.geolocation) {
+                geo_watch_id = navigator.geolocation.watchPosition(
+                    (position) => {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        document.getElementById('locationForceModal').style.display = 'none'; // Hide modal if GPS back
+                    },
+                    (error) => {
+                        // If error/disabled, show blocking modal
+                        document.getElementById('locationForceModal').style.display = 'flex';
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+                );
+            } else {
+                 document.getElementById('locationForceModal').style.display = 'flex';
+            }
+        }
+
         function updateUIForMode() {
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
             const badge = document.getElementById('adminBadge');
@@ -1002,42 +1008,30 @@
             const reportIcon = document.getElementById('reportIcon');
             const adminFloating = document.getElementById('adminFloatingBack');
             const attemptsBadge = document.getElementById('attemptsDisplayEntry');
-            
             if (isAdmin) {
-                badge.style.display = 'block';
-                loginBtn.style.display = 'none';
-                logoutBtn.style.display = 'flex';
-                reportBtn.classList.remove('locked');
-                reportBtn.classList.add('unlocked');
-                reportIcon.className = 'fa-solid fa-list-check sub-btn-icon';
-                if(attemptsBadge) attemptsBadge.style.display = 'none';
-                // Show delete button in alerts if admin
+                badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; if(attemptsBadge) attemptsBadge.style.display = 'none';
                 document.getElementById('adminDeleteAlert').style.display = 'flex';
             } else {
-                badge.style.display = 'none';
-                loginBtn.style.display = 'flex';
-                logoutBtn.style.display = 'none';
-                reportBtn.classList.remove('unlocked');
-                reportBtn.classList.add('locked');
-                reportIcon.className = 'fa-solid fa-lock sub-btn-icon';
-                adminFloating.style.display = 'none';
-                if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
+                badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
                 document.getElementById('adminDeleteAlert').style.display = 'none';
             }
-            updateUIForAttempts();
         }
 
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
-                if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } 
-                if (localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("⛔ تم حظرك بسبب تجاوز عدد مرات التسجيل اليوم.", true); return; }
-            }
+            // Only server response will block now, no local storage checks for blocking
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             
+            // Force check GPS before even starting
+            if(!userLat || !userLng) {
+                document.getElementById('locationForceModal').style.display = 'flex';
+                return;
+            }
+
             switchScreen('screenLoading');
+            // One more check
             if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
         }
 
@@ -1069,8 +1063,9 @@
                 if (secondsLeft > 10) circle.style.stroke = "#10b981"; else if (secondsLeft > 5) circle.style.stroke = "#f59e0b"; else { circle.style.stroke = "#ef4444"; circle.parentElement.classList.add('timer-pulse'); }
                 if (remainingMs <= 0) {
                     clearInterval(countdownInterval); if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
-                    const left = decrementAttempts(); document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
-                    if (left === 0) { localStorage.setItem(TIMEOUT_BLOCK_KEY, 'true'); showError("⏳ انتهى الوقت. لقد استنفدت جميع المحاولات.<br>تم إغلاق التسجيل.", true); } else { showError(`⏳ انتهى الوقت.<br>تم خصم محاولة. المتبقي: ${left}`, false); }
+                    // No local storage decrement logic here anymore
+                    document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
+                    showError(`⏳ انتهى الوقت.`, false); 
                 }
             }, 100);
         }
@@ -1094,21 +1089,12 @@
         async function startFaceVerificationProcess() {
             if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             
-            // Force GPS Check
-            // إذا لم تكن هناك إحداثيات، حاول جلبها، وإذا فشل أو رفض -> امنع الفتح
+            // Check GPS again strictly
             if(!userLat || !userLng) {
-                showToast('جاري تحديث الموقع...', 2000);
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userLat = pos.coords.latitude;
-                    userLng = pos.coords.longitude;
-                    proceedToCamera();
-                }, err => {
-                    showToast('⛔ يجب تفعيل الموقع (GPS) للمتابعة.', 4000, '#ef4444');
-                    // Stop here, do NOT proceed
-                }, { enableHighAccuracy: true });
-            } else {
-                proceedToCamera();
+                document.getElementById('locationForceModal').style.display = 'flex';
+                return;
             }
+            proceedToCamera();
         }
 
         async function proceedToCamera() {
@@ -1298,7 +1284,7 @@
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(storageKey, new Date().toLocaleDateString('en-GB')); }
+                // No local storage for successful date storage (removed per request)
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1491,24 +1477,35 @@
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
-                const rowClass = 'student-detailed-card';
+                const dailyCount = item.dailyCount || 1;
+                const distance = item.distance || 0;
+                const isAlert = (dailyCount > 3 || distance > 100);
+                
+                const rowClass = isAlert ? 'student-detailed-card alert-row' : 'student-detailed-card';
+                const countBadge = dailyCount > 1 ? `<span style="font-size:10px; background:#e2e8f0; padding:2px 5px; border-radius:4px; margin-right:5px;">تكرار: ${dailyCount}</span>` : '';
+                const distanceBadge = distance > 0 ? `<span style="font-size:10px; background:#dbeafe; padding:2px 5px; border-radius:4px; margin-right:5px;">بعد: ${distance}م</span>` : '';
+
                 html += `
                     <div class="${rowClass}">
                         <div class="st-data-col" style="width: 100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <div class="st-name" style="font-size:14px;">${item.name}</div>
+                                <div class="st-name" style="font-size:14px;">${item.name} ${countBadge}</div>
                                 <button class="btn-delete-item" onclick="deleteEntry('${item.uniID}', this)" style="margin-right:0;">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
+
                             <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">
                                 ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
                             </div>
+                            
                             <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
                                 <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
                             </div>
+
                             <div class="std-time-badge" style="display:inline-flex; float:left; align-items:center;">
                                 <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
+                                ${distanceBadge}
                             </div>
                         </div>
                     </div>
