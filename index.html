@@ -95,6 +95,7 @@
             z-index: 10;
         }
         .btn-verify-identity:active { transform: scale(0.97); }
+        .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
         
         /* === تصميم الكاميرا الذكية (مدمج من الكود الثاني) === */
@@ -803,8 +804,28 @@
                             <div class="options-title">اختر المادة الدراسية</div>
                             <div id="subjectOptionsContainer"></div>
                         </div>
-                        <select id="subjectSelect" style="display:none;" onchange="checkSubjectSelection()">
+                        <select id="subjectSelect" style="display:none;" onchange="checkAllConditions()">
                             <option value="" disabled selected>-- اختر الفرقة أولاً --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="custom-select-wrapper" id="hallSelectWrapper">
+                        <label class="custom-select-label">المدرج الدراسي</label>
+                        <div class="custom-select-trigger" data-default-text="-- اختر المدرج --">
+                            <div class="trigger-content">
+                                <div class="trigger-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                                <span class="trigger-text">-- اختر المدرج --</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </div>
+                        <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
+                        <div class="custom-options">
+                            <div class="sheet-handle"></div>
+                            <div class="options-title">اختر المدرج الدراسي</div>
+                            <div id="hallOptionsContainer"></div>
+                        </div>
+                        <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
+                            <option value="" disabled selected>-- اختر المدرج --</option>
                         </select>
                     </div>
                     
@@ -894,9 +915,10 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
+            // رابط الشيت الجديد لتخزين بيانات الهوية
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbxz7nReucbLeyrdR--mYdufl7thU2MPLj0niGeRXBrFsfTd_SpYlIOROyA5AC0WJjG9/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
-            // إضافة رابط موديلات الوجه
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -937,6 +959,8 @@
         let attendanceData = {};
         let processIsActive = false;
         
+        let userLat = "", userLng = ""; // GPS for face check
+        
         // متغيرات التحقق من الوجه
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
@@ -973,6 +997,7 @@
 
         function resetApplicationState() {
             attendanceData = {};
+            attendanceData.isVerified = false; // Reset verification status
             sessionStorage.removeItem(TEMP_NAME_KEY);
             sessionStorage.removeItem(TEMP_ID_KEY);
             sessionStorage.removeItem(TEMP_CODE_KEY);
@@ -982,12 +1007,14 @@
             document.getElementById('attendanceCode').value = '';
             document.getElementById('sessionPass').value = '';
             
+            // Reset Year
             const yearWrapper = document.getElementById('yearSelectWrapper');
             yearWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة --';
             yearWrapper.classList.remove('open');
             yearWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
             document.getElementById('yearSelect').value = '';
             
+            // Reset Subject
             const subjectWrapper = document.getElementById('subjectSelectWrapper');
             subjectWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة أولاً --';
             subjectWrapper.classList.add('disabled');
@@ -995,6 +1022,13 @@
             document.getElementById('subjectOptionsContainer').innerHTML = '';
             document.getElementById('subjectSelect').innerHTML = '<option value="" disabled selected>-- اختر الفرقة أولاً --</option>';
             
+            // Reset Hall
+            const hallWrapper = document.getElementById('hallSelectWrapper');
+            hallWrapper.querySelector('.trigger-text').textContent = '-- اختر المدرج --';
+            hallWrapper.classList.remove('open');
+            hallWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+            document.getElementById('hallSelect').value = '';
+
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.style.opacity = "0.6";
@@ -1070,6 +1104,35 @@
 
         window.onload = function() {
             initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
+            
+            // Generate Hall Options E1-E20
+            const hallContainer = document.getElementById('hallOptionsContainer');
+            const hallSelect = document.getElementById('hallSelect');
+            for(let i=1; i<=20; i++) {
+                let val = "E" + i;
+                // Add to real select
+                let opt = document.createElement('option');
+                opt.value = val;
+                opt.text = val;
+                hallSelect.appendChild(opt);
+                // Add to custom select
+                let cOpt = document.createElement('div');
+                cOpt.className = "custom-option";
+                cOpt.setAttribute('data-value', val);
+                cOpt.innerHTML = `<span>${val}</span>`;
+                cOpt.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    hallContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    document.querySelector('#hallSelectWrapper .trigger-text').textContent = val;
+                    document.getElementById('hallSelectWrapper').classList.remove('open');
+                    hallSelect.value = val;
+                    playClick();
+                    checkAllConditions();
+                });
+                hallContainer.appendChild(cOpt);
+            }
+
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -1129,6 +1192,8 @@
         }
 
         function checkPosition(position) {
+            userLat = position.coords.latitude;
+            userLng = position.coords.longitude;
             const dist = getDistanceFromLatLonInKm(position.coords.latitude, position.coords.longitude, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
             if (dist <= CONFIG.gps.allowedDistanceKm) { generateCodeAndShowDataEntry(); } else { showError(`📍 أنت خارج النطاق الجغرافي للكلية.<br>المسافة الحالية: ${dist.toFixed(2)} كم`, false); }
         }
@@ -1180,7 +1245,6 @@
         // 📸 منطق الكاميرا والتحقق من الوجه المدمج
         // ==========================================
         async function startFaceVerificationProcess() {
-            // نستخدم الـ ID الموجود في attendanceData
             if (!attendanceData.uniID) {
                 showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444');
                 return;
@@ -1307,7 +1371,7 @@
                                 timerNum.innerText = TIMER_DURATION_FACE;
                                 modernTimer.style.display = "none";
                                 timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE_FACE;
-                                document.getElementById('beepSound').play(); // Error sound substitute
+                                document.getElementById('beepSound').play(); 
                             }
                             camBorder.className = "cam-container status-error";
                             alertBadge.style.display = "block";
@@ -1323,6 +1387,21 @@
                             if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
                             document.getElementById('beepSound').play(); 
                             
+                            // Send data to the NEW sheet immediately
+                            const payload = {
+                                action: "register_identity",
+                                id: attendanceData.uniID,
+                                name: attendanceData.name,
+                                vector: JSON.stringify(det.descriptor),
+                                gps: `${userLat},${userLng}`,
+                                time: new Date().toLocaleTimeString('ar-EG')
+                            };
+                            
+                            fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+
+                            // Update Verification Status
+                            attendanceData.isVerified = true;
+
                             // Return to QR Screen & Update Button
                             const verifyBtn = document.getElementById('btnVerify');
                             verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
@@ -1332,6 +1411,7 @@
                             switchScreen('screenScanQR');
                             playSuccess();
                             showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
+                            checkAllConditions(); // Re-check to enable submit button
                         } else {
                             camBorder.className = "cam-container status-wait";
                             statusTxt.innerText = "بص يمين يا قمر";
@@ -1355,8 +1435,14 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
-            const selectedSubject = document.getElementById('subjectSelect').value; const sessionPassVal = document.getElementById('sessionPass').value;
-            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject) { showToast("يرجى اختيار المادة ومسح الكود.", 3000, '#f59e0b'); return; }
+            const selectedSubject = document.getElementById('subjectSelect').value; 
+            const sessionPassVal = document.getElementById('sessionPass').value;
+            const selectedHall = document.getElementById('hallSelect').value;
+
+            // Extra validation (Already handled by button state but good for security)
+            if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedHall || !attendanceData.isVerified) { 
+                showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
+            }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("محظور"); return; }
             
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الفحص...'; btn.disabled = true;
@@ -1373,6 +1459,7 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
+            formParams.append("hall", selectedHall); // Include Hall in final submission if supported by backend
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
@@ -1394,7 +1481,8 @@
         function setupCustomSelects() {
             const yearWrapper = document.getElementById('yearSelectWrapper');
             const subjectWrapper = document.getElementById('subjectSelectWrapper');
-            const allWrappers = [yearWrapper, subjectWrapper];
+            const hallWrapper = document.getElementById('hallSelectWrapper');
+            const allWrappers = [yearWrapper, subjectWrapper, hallWrapper];
             function toggleSelect(wrapper, event) {
                 event.stopPropagation();
                 if (!wrapper.classList.contains('open')) {
@@ -1404,6 +1492,7 @@
             }
             yearWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(yearWrapper, e));
             subjectWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(subjectWrapper, e));
+            hallWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(hallWrapper, e));
             yearWrapper.querySelectorAll('.custom-option').forEach(op => {
                 op.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -1434,17 +1523,36 @@
                         e.stopPropagation(); sOptions.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                         this.classList.add('selected'); sTriggerText.textContent = this.querySelector('span').textContent;
                         sWrapper.classList.remove('open'); sReal.value = this.getAttribute('data-value');
-                        playClick(); checkSubjectSelection();
+                        playClick(); checkAllConditions();
                     }); sOptions.appendChild(cOpt);
                 });
             } else { sReal.disabled = true; sWrapper.classList.add('disabled'); sTriggerText.textContent = '-- اختر الفرقة أولاً --'; }
-            checkSubjectSelection();
+            checkAllConditions();
         }
 
-        function checkSubjectSelection() { const s = document.getElementById('subjectSelect').value; const p = document.getElementById('sessionPass').value; const b = document.getElementById('submitBtn'); if(s && p) { b.disabled = false; b.style.opacity = "1"; b.style.cursor = "pointer"; } else { b.disabled = true; b.style.opacity = "0.6"; b.style.cursor = "not-allowed"; } }
+        function checkAllConditions() { 
+            const year = document.getElementById('yearSelect').value;
+            const sub = document.getElementById('subjectSelect').value; 
+            const hall = document.getElementById('hallSelect').value;
+            const qrPass = document.getElementById('sessionPass').value; 
+            const isVerified = attendanceData.isVerified === true;
+            
+            const btn = document.getElementById('submitBtn'); 
+            
+            if(year && sub && hall && qrPass && isVerified) { 
+                btn.disabled = false; 
+                btn.style.opacity = "1"; 
+                btn.style.cursor = "pointer"; 
+            } else { 
+                btn.disabled = true; 
+                btn.style.opacity = "0.6"; 
+                btn.style.cursor = "not-allowed"; 
+            } 
+        }
+        
         async function stopCameraSafely() { if(html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch(e) {} } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
         function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; startQrScanner(); }
-        async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkSubjectSelection(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
+        async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
         function checkAdminPassword() { 
             playClick(); 
             if (document.getElementById('adminPassword').value === CONFIG.adminPassword) { 
