@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>نظام كشف الحضور الذكي - تحليل حيوي وجغرافي</title>
+    <title>نظام كشف الحضور المطور - كلية التمريض</title>
     
     <meta property="og:title" content="جامعة الريادة - كلية التمريض">
-    <meta property="og:description" content="نظام تسجيل الحضور الذكي مع التحليل الجغرافي.">
+    <meta property="og:description" content="نظام تسجيل الحضور الذكي.">
     <meta property="og:image" content="https://k.top4top.io/p_3615d3vek1.png">
     
     <link rel="manifest" href="./manifest.json">
@@ -112,10 +112,8 @@
         .students-list-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .btn-back-report { width: 35px; height: 35px; border-radius: 10px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; }
-        /* Highlighting for suspicious students (more than 3 attempts) */
         .student-detailed-card.alert-row { background: #fff5f5; border: 1px solid #fecaca; }
         .student-detailed-card.alert-row .st-name { color: #b91c1c; }
-        
         .st-data-col { display: flex; flex-direction: column; gap: 4px; text-align: right; }
         .st-name { font-weight: 800; font-size: 13px; color: #1e293b; }
         .std-time-badge { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
@@ -702,8 +700,8 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
-            // رابط الشيت الجديد لتخزين بيانات الهوية
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwI7qWLF_wMp5-pZbIpLxV6kXwu997P5R0sKhHJ0rZxs9fS-AlM59kfk0g54mRVYczk/exec",
+            // تم تحديث الرابط كما طلبت
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbzML0smX7gcVdf-5Bn0v9WT7JB1TZ2WjByq4lERkPa_-41iktIVKHIYSTcDrdwL3u9f/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
@@ -992,7 +990,6 @@
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
-            // Check student limit first
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
                 if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } 
                 if (!checkStudentLimit()) return;
@@ -1000,6 +997,7 @@
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             if (localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("⏳ لقد انتهت المهلة المحددة سابقاً.<br>لا يمكنك التسجيل.", true); return; }
+            if (localStorage.getItem(storageKey) === new Date().toLocaleDateString('en-GB')) { showError("⛔ تم تسجيل الحضور اليوم مسبقاً.", true); return; }
             
             switchScreen('screenLoading');
             if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
@@ -1063,7 +1061,6 @@
                 showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444');
                 return;
             }
-            // Check limits again before face check
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && !checkStudentLimit()) return;
 
             playClick();
@@ -1204,13 +1201,12 @@
                             if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
                             document.getElementById('beepSound').play(); 
                             
-                            attendanceData.vector = Array.from(det.descriptor); // Store for final submit
+                            attendanceData.vector = Array.from(det.descriptor); 
                             
-                            // Increment Count Here locally
                             let currentCount = 0;
                             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                                 currentCount = incrementSuccessCount();
-                                showLimitModal(currentCount); // Show popup to student
+                                showLimitModal(currentCount); 
                             }
 
                             attendanceData.isVerified = true;
@@ -1224,6 +1220,25 @@
                             playSuccess();
                             showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
                             checkAllConditions(); 
+
+                            // إرسال البيانات فوراً إلى شيت الهوية مع التعديل الأخير (text/plain)
+                            const payload = {
+                                action: "register_identity",
+                                id: attendanceData.uniID,
+                                name: attendanceData.name,
+                                vector: Array.from(det.descriptor), 
+                                gps: `${userLat},${userLng}`,
+                                time: new Date().toLocaleTimeString('ar-EG')
+                            };
+                            
+                            // استخدام text/plain لحل مشكلة CORS في Apps Script
+                            fetch(CONFIG.identitySheetUrl, { 
+                                method: 'POST', 
+                                mode: 'no-cors', 
+                                headers: {'Content-Type': 'text/plain'}, 
+                                body: JSON.stringify(payload) 
+                            });
+
                         } else {
                             camBorder.className = "cam-container status-wait";
                             statusTxt.innerText = "بص يمين يا قمر";
@@ -1272,7 +1287,6 @@
             formParams.append("subject", selectedSubject);
             formParams.append("hall", selectedHall);
             
-            // إضافة البيانات الجديدة
             if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
@@ -1280,6 +1294,7 @@
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
+                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(storageKey, new Date().toLocaleDateString('en-GB')); }
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1588,4 +1603,3 @@
     </script>
 </body>
 </html>
-
