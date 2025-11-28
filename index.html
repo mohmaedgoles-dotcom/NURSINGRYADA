@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>نظام كشف الحضور المطور - كلية التمريض</title>
+    
+    <meta property="og:title" content="جامعة الريادة - كلية التمريض">
+    <meta property="og:description" content="نظام تسجيل الحضور الذكي.">
+    <meta property="og:image" content="https://k.top4top.io/p_3615d3vek1.png">
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" href="icon.png" type="image/png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <style>
+        /* === (تنسيقات CSS الأصلية) === */
+        #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
+        :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
+        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+        
+        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
+        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; }
+        .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; }
+        .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
+        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; }
+        
+        .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; display: block; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 1; box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
+        .status-icon-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); opacity: 0; transform: scale(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; z-index: 3; }
+        .hero-icon { font-size: 42px; color: var(--primary); transition: 0.3s; filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.3)); }
+        .hero-icon-wrapper.show-icon .hero-img { transform: scale(0); opacity: 0; }
+        .hero-icon-wrapper.show-icon .status-icon-container { opacity: 1; transform: scale(1); }
+        @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
+        
+        .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
+        .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
+        .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
+        .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
+        p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
+
+        .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
+        .btn-main:active { transform: scale(0.97); }
+        .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
+
+        .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
+        
+        /* (بقية تنسيقاتك الأصلية...) */
+
+        /* === تنسيقات شاشة النظام الفولاذي الجديدة === */
+        .cam-wrapper {
+            width: 240px; height: 240px; margin: 20px auto;
+            border-radius: 50%; border: 6px solid #e2e8f0;
+            position: relative; overflow: hidden; background: black;
+            transform: scaleX(-1); transition: 0.3s;
+        }
+        .cam-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .timer-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px; font-weight: 900; color: white;
+            text-shadow: 0 4px 20px black; pointer-events: none;
+            z-index: 10; display: none;
+        }
+        .status-ok { border-color: #10b981 !important; box-shadow: 0 0 30px rgba(16, 185, 129, 0.5); }
+        .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 30px rgba(245, 158, 11, 0.5); }
+        .status-err { border-color: #ef4444 !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        /* (نهاية تنسيقاتك الأصلية...) */
+    </style>
+</head>
+<body>
+    <div id="desktop-blocker">
+        <i class="fa-solid fa-mobile-screen-button" style="font-size:50px; margin-bottom:20px;"></i>
+        <h2 style="margin-bottom:10px">عذراً، وصول غير مصرح به</h2>
+        <p>النظام متاح فقط من هواتف Android و iPhone الذكية.</p>
+    </div>
+
+    <div class="bg-image"></div>
+    <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+    <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+    <audio id="beepSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
+
+    <div class="app-card">
+        <div class="card-banner"></div>
+        <div id="adminBadge" class="admin-badge"><i class="fa-solid fa-user-shield"></i> وضع المسؤول مفعل</div>
+
+        <div class="card-body">
+            
+            <div class="hero-icon-wrapper" id="heroIconWrapper">
+                <img src="https://k.top4top.io/p_3615d3vek1.png" class="hero-img" id="heroImage">
+                <div class="status-icon-container" id="statusIconContainer">
+                    <i class="fa-solid fa-user-nurse hero-icon" id="statusIcon"></i>
+                </div>
+            </div>
+            
+            <div class="info-bar">
+                <div class="info-pill"><i class="fa-regular fa-clock"></i> <span id="currentTime">--:--:--</span></div>
+                <div class="info-pill"><i class="fa-regular fa-calendar"></i> <span id="currentDate">--/--/----</span></div>
+            </div>
+
+            <div class="card-body-content">
+                
+                <div id="screenWelcome" class="section active">
+                    <div style="position: relative; z-index: 2;">
+                        <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
+                            تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
+                        </button>
+                        </div>
+                </div>
+
+                <div id="screenAdminLogin" class="section">
+                    </div>
+
+                <div id="screenLoading" class="section">
+                    </div>
+                
+                
+                <div id="screenFaceAuth" class="section">
+                    <h1 style="font-size:20px; margin-top:5px;">التحقق الحيوي (Face-ID)</h1>
+                    <p style="margin-bottom: 25px;">يجب تثبيت الوجه وإجراء حركة الالتفات.</p>
+
+                    <div id="camBorder" class="cam-wrapper">
+                        <video id="videoElement" autoplay muted playsinline></video>
+                        <div class="timer-overlay" id="camTimer">3</div>
+                    </div>
+                    
+                    <h3 id="faceStatusText" style="font-weight: 800; color: var(--primary); font-size: 18px; min-height: 27px; margin-bottom: 15px;">جاري التشغيل...</h3>
+                    
+                    <button onclick="cancelAuth()" class="btn-secondary" style="background: #fef2f2; color: #b91c1c; border-color: #fecaca;">
+                        إلغاء العملية <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal"></i>
+                    </button>
+
+                    <div id="filterResultDisplay" style="font-size: 13px; color: #f59e0b; font-weight: 700; margin-top: 10px;"></div>
+                </div>
+                <div id="screenDataEntry" class="section">
+                    </div>
+                
+                <div id="screenScanQR" class="section">
+                    </div>
+
+                <div id="screenSuccess" class="section">
+                    </div>
+
+                <div id="screenError" class="section">
+                    </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // ==========================================
+        // ⚙️ الإعدادات (التعديل الوحيد المطلوب يدوياً)
+        // ==========================================
+        const CONFIG = {
+            // 🚨 تأكد من صحة هذا الرابط
+            sheetApiUrl: "https://script.google.com/macros/s/AKfycbyKFRtSui8dfelJxTDl8T5jV1EMESlvhPht2Qqb2VU6tKtr3TFM1oGCT5kK-bkX26ZKLA/exec",
+            adminPassword: "RYADA",
+            gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
+            modelsUrl: 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models',
+            MAX_FACE_CHECK_TIME_SEC: 10 // ⏱️ مدة الفحص الأقصى قبل الإجبار (Filter Mode)
+        };
+        
+        // (بقية الثوابت والمتغيرات الأصلية...)
+        const LOCAL_STORAGE_DB_KEY = "offline_students_db_v2";
+        const DOCTOR_MODE_KEY = "is_doctor_bypass_enabled";
+        const DATA_ENTRY_TIMEOUT_SEC = 20;
+        const TIMEOUT_BLOCK_KEY = "timeout_blocked_forever_v47_" + new Date().toLocaleDateString('en-GB');
+        const SESSION_END_TIME_KEY = "data_entry_deadline_v2";
+        const MAX_ATTEMPTS = 3;
+        const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
+        const storageKey = "nursing_final_secure_v47";
+        
+        // 🛡️ متغيرات النظام الفولاذي
+        let attendanceData = { 
+            uniID: null, name: null, code: null, 
+            lat: null, lng: null, 
+            vector: null, deviceId: null, 
+            faceStatus: "N/A" 
+        }; 
+        let videoStream = null;
+        let lastNoseX = 0, lastNoseY = 0;
+        let faceCheckInterval = null;
+        let faceCheckTimeoutTimer = null;
+        let isModelsLoaded = false; // 🚨 إشارة تحميل AI
+        
+        // (بقية المتغيرات الأصلية...)
+        let studentsDB = {};
+        let userIP = "Unknown";
+        let geo_watch_id;
+        let countdownInterval;
+        let html5QrCode;
+        let currentAbortController = null;
+        let sessionEndTime = 0;
+        let processIsActive = false;
+        let isProcessingClick = false;
+        
+        // (بقية البيانات الأصلية: subjectsData)
+        const subjectsData = {
+            "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
+            "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
+        };
+
+
+        // 🛡️ دالة بصمة الجهاز 
+        function getDeviceId() {
+            let id = localStorage.getItem('student_device_id');
+            if (!id) {
+                id = 'DEV-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+                localStorage.setItem('student_device_id', id);
+            }
+            return id;
+        }
+
+        // ==========================================
+        // 1. التحميل الأولي (تم التعديل)
+        // ==========================================
+        window.onload = function() {
+            // (بقية كود تحديث الوقت والتاريخ الأصلي)
+            initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                const dateStr = now.toLocaleDateString('en-GB');
+                const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
+                if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
+            }, 1000);
+            document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
+            
+            // 🚨 تحميل موديلات الذكاء الاصطناعي
+            faceapi.nets.tinyFaceDetector.loadFromUri(CONFIG.modelsUrl).then(() => {
+                return Promise.all([
+                    faceapi.nets.faceLandmark68Net.loadFromUri(CONFIG.modelsUrl),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(CONFIG.modelsUrl),
+                    faceapi.nets.faceExpressionNet.loadFromUri(CONFIG.modelsUrl)
+                ]);
+            }).then(() => {
+                isModelsLoaded = true; // 🚨 تم التحميل بنجاح
+                showToast("✅ النظام الفولاذي جاهز!", 3000, 'var(--success)'); 
+                
+            }).catch((e) => {
+                showError("❌ فشل تحميل نظام التحقق الحيوي. تأكد من الإنترنت.");
+            });
+        };
+
+        // ----------------------------------------------------
+        // 🚨 الدوال الأصلية والمعدلة
+        // ----------------------------------------------------
+        
+        // 1. الدالة الأصلية handleIdSubmit() - تم تغيير الوجهة
+        async function handleIdSubmit() {
+            playClick();
+            let rawId = document.getElementById('uniID').value.trim();
+            const uniIdVal = convertArabicToEnglish(rawId);
+            const alertBox = document.getElementById('idAlert');
+
+            if (!uniIdVal || Object.keys(studentsDB).length === 0 || !studentsDB[uniIdVal]) { 
+                alertBox.innerText = "❌ الكود غير صحيح أو جاري تحميل البيانات."; 
+                alertBox.style.display = 'block'; 
+                if(navigator.vibrate) navigator.vibrate(300); 
+                return; 
+            }
+            
+            // 🚨 فحص حالة تحميل الذكاء الاصطناعي
+            if (!isModelsLoaded) {
+                alertBox.innerText = "⚠️ يرجى الانتظار! نظام التحقق الحيوي لم يكتمل تحميله بعد."; 
+                alertBox.style.display = 'block'; 
+                return;
+            }
+
+            const studentName = studentsDB[uniIdVal];
+            
+            // حفظ البيانات الأساسية وبصمة الجهاز
+            attendanceData.uniID = uniIdVal; 
+            attendanceData.name = studentName;
+            attendanceData.deviceId = getDeviceId(); // 🛡️ بصمة الجهاز
+            attendanceData.faceStatus = "Failed (Timeout)"; // إعداد الحالة الافتراضية
+            
+            if(countdownInterval) clearInterval(countdownInterval); 
+            
+            // 🚨 التوجه إلى شاشة النظام الفولاذي
+            switchScreen('screenFaceCheck'); 
+            openCameraForFaceAuth(); 
+            playSuccess();
+        }
+
+        // 2. دالة تشغيل الكاميرا للنظام الفولاذي (مع حل مشكلة التوقف)
+        async function openCameraForFaceAuth() {
+            const videoEl = document.getElementById('video');
+            const statusText = document.getElementById('statusTxt');
+
+            if (faceCheckInterval) clearInterval(faceCheckInterval);
+            if (faceCheckTimeoutTimer) clearTimeout(faceCheckTimeoutTimer);
+            if(videoStream) { videoStream.getTracks().forEach(track => track.stop()); }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                videoStream = stream;
+                videoEl.srcObject = stream;
+                statusText.innerText = "اثبت مكانك تماماً.. لا تتحرك";
+                
+                // 🚨 الحل الحاسم: الانتظار حتى يصبح الفيديو جاهزاً للبث
+                videoEl.onloadeddata = () => {
+                    statusText.innerText = "جاري الكشف عن الوجه...";
+                    
+                    // بدء مؤقت المهلة الإجبارية (Filter Mode)
+                    faceCheckTimeoutTimer = setTimeout(() => {
+                        if(faceCheckInterval) clearInterval(faceCheckInterval);
+                        
+                        document.getElementById('statusTxt').innerText = "⚠️ انتهت مهلة التحقق! جاري المتابعة...";
+                        document.getElementById('camBorder').className = "cam-container status-err";
+                        document.getElementById('filterResultDisplay').innerText = "النتيجة: فشل (Timeout)";
+                        
+                        submitFinalData(); // المتابعة الإجبارية
+                    }, CONFIG.MAX_FACE_CHECK_TIME_SEC * 1000);
+
+                    runLivenessCheck();
+                    videoEl.onloadeddata = null; // إيقاف الحدث بعد التشغيل
+                };
+
+                videoEl.play(); 
+
+            } catch (e) {
+                alert("يرجى السماح بصلاحية الكاميرا");
+                cancelAuth();
+            }
+        }
+
+        // 3. منطق التحقق الحيوي
+        function runLivenessCheck() {
+            const videoEl = document.getElementById('video');
+            const border = document.getElementById('camBorder');
+            const status = document.getElementById('statusTxt');
+            const timer = document.getElementById('timer');
+            
+            let step = 0; let count = 3; let counting = false; let timerInt = null;
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 });
+
+            faceCheckInterval = setInterval(async () => {
+                if(videoEl.paused || videoEl.ended) return;
+
+                const det = await faceapi.detectSingleFace(videoEl, options)
+                                         .withFaceLandmarks().withFaceDescriptor().withFaceExpressions();
+
+                if (det) {
+                    const nose = det.landmarks.getNose()[0]; const jaw = det.landmarks.getJawOutline();
+                    const ratio = Math.abs(nose.x - jaw[0].x) / Math.abs(nose.x - jaw[16].x);
+                    const moveDist = Math.sqrt(Math.pow(nose.x - lastNoseX, 2) + Math.pow(nose.y - lastNoseY, 2));
+                    lastNoseX = nose.x; lastNoseY = nose.y;
+                    const isStableFace = det.expressions.neutral > 0.7; const isNotMoving = moveDist < 10; 
+
+                    if (step === 0) {
+                        if (ratio > 0.7 && ratio < 1.3 && isStableFace && isNotMoving) {
+                            border.className = "cam-container status-ok";
+                            if (!counting) { 
+                                counting = true; 
+                                document.getElementById('filterResultDisplay').innerText = "النتيجة: جاري التحقق...";
+                                timerInt = setInterval(() => {
+                                    count--; 
+                                    if (count <= 0) {
+                                        clearInterval(timerInt); 
+                                        attendanceData.vector = Array.from(det.descriptor); // حفظ البصمة
+                                        step = 1; 
+                                        document.getElementById('sndBeep').play();
+                                        border.className = "cam-container status-wait";
+                                        status.innerText = "⬅️ الآن التفت لليسار"; status.style.color = "#f59e0b";
+                                    }
+                                }, 1000);
+                            }
+                        }
+                    } else if (step === 1) {
+                        if (ratio < 0.6) { // نجاح الالتفات
+                            clearInterval(faceCheckInterval);
+                            clearTimeout(faceCheckTimeoutTimer); 
+                            attendanceData.faceStatus = "Passed"; 
+                            document.getElementById('filterResultDisplay').innerText = "النتيجة: نجاح (Liveness Check)";
+                            submitFinalData();
+                        }
+                    }
+                } 
+            }, 500);
+        }
+        
+        // 4. دالة المتابعة بعد الفحص الفولاذي
+        function submitFinalData() {
+            if (faceCheckInterval) clearInterval(faceCheckInterval);
+            if (faceCheckTimeoutTimer) clearTimeout(faceCheckTimeoutTimer);
+            if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+            
+            // المتابعة إلى شاشة مسح الكود (screenScanQR)
+            switchScreen('screenScanQR');
+        }
+
+        // 5. دالة الإلغاء
+        function cancelAuth() {
+            if (faceCheckInterval) clearInterval(faceCheckInterval);
+            if (faceCheckTimeoutTimer) clearTimeout(faceCheckTimeoutTimer);
+            if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+            switchScreen('screenDataEntry');
+        }
+
+
+        // 6. الدالة submitToGoogle() - تم تغيير صيغة الإرسال إلى JSON
+        async function submitToGoogle() {
+            
+            // ... (الكود الأصلي)
+            const payload = {
+                action: "register",
+                id: attendanceData.uniID,
+                name: attendanceData.name,
+                subject: selectedSubject,
+                code: `${attendanceData.code} (QR: ${sessionPassVal})`,
+                ip: userIP,
+                deviceId: attendanceData.deviceId,
+                faceVector: attendanceData.vector ? attendanceData.vector.join(',') : 'N/A',
+                faceStatus: attendanceData.faceStatus, // Passed/Failed
+                gpsLat: attendanceData.lat,
+                gpsLng: attendanceData.lng,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                await fetch(CONFIG.sheetApiUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
+                // (منطق النجاح)
+                switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
+                processIsActive = false; releaseWakeLock();
+            } catch (error) { 
+                // (منطق الخطأ)
+            }
+        }
+        
+        // 🚨 الدوال المساعدة الأصلية (موجودة بالكامل في كودك)
+        /*
+        // (يجب أن تكون هذه الدوال موجودة هنا بالكامل من كودك الأصلي):
+        // safeClick, openExamModal, closeExamModal, handleReportClick, resetApplicationState, fetch, playClick, playSuccess, playBeep, convertArabicToEnglish, requestWakeLock, releaseWakeLock, getAttemptsLeft, decrementAttempts, updateUIForAttempts, updateHeaderState, updateUIForMode, startProcess, checkPosition, generateCodeAndShowDataEntry, startCountdown, handleIdSubmit, submitToGoogle, addKey, backspaceKey, clearKey, getDistanceFromLatLonInKm, goBackToWelcome, closeSelect, setupCustomSelects, updateSubjects, checkSubjectSelection, stopCameraSafely, retryCamera, startQrScanner, checkAdminPassword, showError, performLogout, openLogoutModal, closeLogoutModal, showConnectionLostModal, hideConnectionLostModal, checkRealConnection, initGlobalGuard, handleGpsError, openReportModal, renderSubjectsList, openSubjectDetails, showSubjectsView, closeReportModal, showModernConfirm, closeModernConfirm, deleteEntry, clearAllReport, isMobileDevice, showToast, وغيرها...
+        */
+
+    </script>
+</body>
+</html>
