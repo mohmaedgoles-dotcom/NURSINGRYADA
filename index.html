@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>نظام كشف الحضور المطور - كلية التمريض</title>
+    <title>نظام كشف الحضور الذكي - تحليل فوري</title>
     
     <meta property="og:title" content="جامعة الريادة - كلية التمريض">
-    <meta property="og:description" content="نظام تسجيل الحضور الذكي.">
+    <meta property="og:description" content="نظام تسجيل الحضور الذكي والتحليل الجغرافي.">
     <meta property="og:image" content="https://k.top4top.io/p_3615d3vek1.png">
     
     <link rel="manifest" href="./manifest.json">
@@ -112,8 +112,10 @@
         .students-list-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .btn-back-report { width: 35px; height: 35px; border-radius: 10px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; }
+        
         .student-detailed-card.alert-row { background: #fff5f5; border: 1px solid #fecaca; }
         .student-detailed-card.alert-row .st-name { color: #b91c1c; }
+        
         .st-data-col { display: flex; flex-direction: column; gap: 4px; text-align: right; }
         .st-name { font-weight: 800; font-size: 13px; color: #1e293b; }
         .std-time-badge { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
@@ -211,37 +213,14 @@
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
         .card-body-content { position: relative; min-height: 500px; z-index: 5; }
         
-        .academic-footer { display: flex; justify-content: center; align-items: center; margin-top: 30px; position: relative; z-index: 10; }
-        .uni-footer-label-large { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); color: #0f172a; font-weight: 800; font-size: 13px; padding: 10px 25px; border-radius: 50px; display: flex; align-items: center; gap: 8px; margin-top: 15px; white-space: nowrap; animation: float-slow 4s ease-in-out infinite alternate; }
-        .uni-footer-label-large i { color: #0ea5e9; font-size: 16px; filter: drop-shadow(0 2px 4px rgba(14, 165, 233, 0.3)); }
-        @keyframes float-slow { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
-
-        .confirm-box-style { background: rgba(255, 255, 255, 0.95) !important; border-radius: 30px !important; padding: 30px 20px !important; box-shadow: 0 25px 50px -12px rgba(239, 68, 68, 0.25) !important; border: 1px solid rgba(239, 68, 68, 0.1); transform: scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .confirm-icon-animate { width: 70px; height: 70px; background: #fef2f2; color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 15px auto; box-shadow: 0 0 0 8px #fff1f2; animation: shake-icon 0.5s ease-in-out; }
-        .btn-confirm-modern { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.4); }
-        .btn-cancel-modern { background: #f1f5f9; color: #64748b; }
-        @keyframes shake-icon { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
-
-        #adminSuccessModal .modal-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 2px solid #10b981; }
-        .admin-success-icon { font-size: 50px; color: #10b981; margin-bottom: 15px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .attempts-badge { background: #fff1f2; color: #be123c; font-size: 11px; font-weight: 800; padding: 5px 10px; border-radius: 20px; border: 1px solid #fecdd3; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 10px; }
-        .admin-floating-back { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; background: rgba(255, 255, 255, 0.9); color: #475569; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; z-index: 1000; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .admin-floating-back:active { transform: scale(0.9); }
-        .admin-floating-back i { font-size: 16px; }
-        .custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; direction: ltr; position: relative; z-index: 10; }
-        .key-btn { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px 0; font-size: 22px; font-weight: 700; color: #334155; box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.05); cursor: pointer; transition: all 0.1s; font-family: 'Cairo', sans-serif; display: flex; justify-content: center; align-items: center; }
-        .key-btn:active { transform: scale(0.95); background: #f1f5f9; box-shadow: none; }
-        .key-btn.action-btn { background: #f8fafc; color: #64748b; }
-        .key-btn.delete-btn { color: #ef4444; background: #fef2f2; border-color: #fecaca; }
-        .btn-delete-single { background: #fee2e2; color: #b91c1c; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; transition: 0.2s; font-size: 12px; display: flex; align-items: center; justify-content: center; }
-        .btn-delete-single:active { transform: scale(0.9); }
-        .empty-state { padding: 30px; font-weight: 700; color: var(--text-sub); background: #f8fafc; border-radius: 12px; }
-
-        #toastMessage { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 10px 20px; border-radius: 20px; font-size: 12px; display: none; z-index: 20000; animation: fadeIn 0.3s; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); font-weight: 700; }
-        
-        /* مودال تنبيه عدد المحاولات */
-        #limitModal .modal-box { border: 2px solid #f59e0b; }
-        .limit-count { font-size: 40px; font-weight: 900; color: #f59e0b; margin: 10px 0; display: block; }
+        /* === NEW ALERT MODAL FOR IDENTITY ANALYSIS === */
+        #identityAlertModal .modal-box { border: 2px solid #f59e0b; }
+        .alert-icon-large { font-size: 40px; margin-bottom: 15px; color: #f59e0b; }
+        .analysis-result-item { display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: #f8fafc; border-radius: 8px; }
+        .ar-label { font-weight: bold; color: #64748b; font-size: 12px; }
+        .ar-value { font-weight: 900; color: #1e293b; font-size: 13px; }
+        .status-red { color: #ef4444; }
+        .status-green { color: #10b981; }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -275,16 +254,24 @@
         </div>
     </div>
     
-    <div id="limitModal" class="modal-overlay" style="z-index: 99999;">
+    <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999;">
         <div class="modal-box">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: #f59e0b; margin-bottom: 15px;"></i>
-            <div class="modal-title">تنبيه النظام</div>
-            <div class="modal-text">
-                لقد قمت بتسجيل الحضور اليوم
-                <span class="limit-count" id="attemptCountDisplay">--</span>
-                مرات من أصل 3 محاولات مسموحة.
+            <i class="fa-solid fa-triangle-exclamation alert-icon-large"></i>
+            <div class="modal-title">نتيجة التحليل</div>
+            <div class="modal-text" style="text-align: right;">
+                <div class="analysis-result-item">
+                    <span class="ar-label">المسافة عن المدرج:</span>
+                    <span class="ar-value" id="alertDistance">--</span>
+                </div>
+                <div class="analysis-result-item">
+                    <span class="ar-label">عدد مرات الحضور:</span>
+                    <span class="ar-value" id="alertCount">--</span>
+                </div>
+                <div style="margin-top:10px; font-size:12px; color:#ef4444; font-weight:bold;" id="alertMessageBody">
+                    يوجد مخالفة في بيانات الحضور.
+                </div>
             </div>
-            <button onclick="closeLimitModal()" class="modal-btn btn-confirm" style="background:#f59e0b;">موافق، متابعة</button>
+            <button onclick="closeIdentityAlert()" class="modal-btn btn-confirm" style="background:#f59e0b;">موافق</button>
         </div>
     </div>
 
@@ -312,6 +299,7 @@
 
     <div id="reportModal" class="modal-overlay">
         <div class="modal-box">
+            
             <div class="report-modal-header">
                 <div style="display:flex; flex-direction:column; align-items:flex-start;">
                     <div class="modal-title" style="margin:0; font-size:16px;">سجل الحضور</div>
@@ -321,10 +309,13 @@
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
+
             <div class="report-views-container">
+                
                 <div id="viewSubjects" class="report-view slide-in">
                     <div id="subjectsContainer"></div>
                 </div>
+
                 <div id="viewStudents" class="report-view">
                     <div class="students-list-header">
                         <button onclick="showSubjectsView()" class="btn-back-report">
@@ -334,7 +325,9 @@
                     </div>
                     <div id="studentsContainer"></div>
                 </div>
+
             </div>
+
             <div class="report-modal-footer">
                 <button onclick="openReportModal()" class="btn-refresh-list">
                     تحديث <i class="fa-solid fa-rotate"></i>
@@ -343,6 +336,7 @@
                     إغلاق
                 </button>
             </div>
+
         </div>
     </div>
 
@@ -700,7 +694,7 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
-            // تم تحديث الرابط كما طلبت
+            // تم تحديث رابط شيت الهوية الجديد (v2)
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbzML0smX7gcVdf-5Bn0v9WT7JB1TZ2WjByq4lERkPa_-41iktIVKHIYSTcDrdwL3u9f/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
@@ -734,8 +728,6 @@
         const TEMP_CODE_KEY = "temp_session_code";
         const MAX_ATTEMPTS = 3;
         const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
-        const MAX_SUCCESS_DAILY = 3;
-        const SUCCESS_COUNT_KEY = "daily_success_count_" + new Date().toLocaleDateString('en-GB');
 
         let userIP = "Unknown";
         let geo_watch_id;
@@ -746,9 +738,7 @@
         let attendanceData = {};
         let processIsActive = false;
         
-        let userLat = "", userLng = ""; // GPS for face check
-        
-        // متغيرات التحقق من الوجه
+        let userLat = "", userLng = ""; 
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
         let videoStream = null;      
@@ -760,7 +750,6 @@
         function safeClick(element, callback) {
             if (isProcessingClick) return;
             if (element && (element.disabled || element.classList.contains('disabled') || element.classList.contains('locked'))) return;
-            
             isProcessingClick = true;
             if(element) { element.style.pointerEvents = 'none'; element.style.opacity = '0.7'; }
             if (typeof callback === 'function') callback();
@@ -784,7 +773,7 @@
 
         function resetApplicationState() {
             attendanceData = {};
-            attendanceData.isVerified = false; // Reset verification status
+            attendanceData.isVerified = false; 
             sessionStorage.removeItem(TEMP_NAME_KEY);
             sessionStorage.removeItem(TEMP_ID_KEY);
             sessionStorage.removeItem(TEMP_CODE_KEY);
@@ -794,14 +783,12 @@
             document.getElementById('attendanceCode').value = '';
             document.getElementById('sessionPass').value = '';
             
-            // Reset Year
             const yearWrapper = document.getElementById('yearSelectWrapper');
             yearWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة --';
             yearWrapper.classList.remove('open');
             yearWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
             document.getElementById('yearSelect').value = '';
             
-            // Reset Subject
             const subjectWrapper = document.getElementById('subjectSelectWrapper');
             subjectWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة أولاً --';
             subjectWrapper.classList.add('disabled');
@@ -809,7 +796,6 @@
             document.getElementById('subjectOptionsContainer').innerHTML = '';
             document.getElementById('subjectSelect').innerHTML = '<option value="" disabled selected>-- اختر الفرقة أولاً --</option>';
             
-            // Reset Hall
             const hallWrapper = document.getElementById('hallSelectWrapper');
             hallWrapper.querySelector('.trigger-text').textContent = '-- اختر المدرج --';
             hallWrapper.classList.remove('open');
@@ -825,7 +811,6 @@
             document.getElementById('scanNameDisplay').innerText = '--';
             document.getElementById('scanIDDisplay').innerText = '--';
             
-            // Reset Verify Button
             const verifyBtn = document.getElementById('btnVerify');
             if(verifyBtn) {
                 verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية';
@@ -846,28 +831,8 @@
         function decrementAttempts() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); used++; localStorage.setItem(ATTEMPTS_KEY, used.toString()); updateUIForAttempts(); return MAX_ATTEMPTS - used; }
         function updateUIForAttempts() { const left = getAttemptsLeft(); document.getElementById('attemptsCountValEntry').innerText = left; }
 
-        // Local check for 3 successful limits
-        function checkStudentLimit() {
-            let count = parseInt(localStorage.getItem(SUCCESS_COUNT_KEY) || "0");
-            if (count >= MAX_SUCCESS_DAILY) {
-                showError("⛔ لقد تجاوزت الحد الأقصى لتسجيل الحضور اليوم (3 مرات).", true);
-                return false;
-            }
-            return true;
-        }
-        function incrementSuccessCount() {
-            let count = parseInt(localStorage.getItem(SUCCESS_COUNT_KEY) || "0");
-            count++;
-            localStorage.setItem(SUCCESS_COUNT_KEY, count.toString());
-            return count;
-        }
-        
-        function showLimitModal(count) {
-            document.getElementById('attemptCountDisplay').innerText = count;
-            document.getElementById('limitModal').style.display = 'flex';
-        }
-        function closeLimitModal() {
-            document.getElementById('limitModal').style.display = 'none';
+        function closeIdentityAlert() {
+            document.getElementById('identityAlertModal').style.display = 'none';
         }
 
         window.history.pushState(null, null, window.location.href);
@@ -915,8 +880,6 @@
 
         window.onload = function() {
             initGlobalGuard(); updateUIForAttempts(); updateUIForMode(); setupCustomSelects();
-            
-            // Generate Hall Options E1-E20
             const hallContainer = document.getElementById('hallOptionsContainer');
             const hallSelect = document.getElementById('hallSelect');
             for(let i=1; i<=20; i++) {
@@ -966,21 +929,17 @@
                 badge.style.display = 'block';
                 loginBtn.style.display = 'none';
                 logoutBtn.style.display = 'flex';
-                
                 reportBtn.classList.remove('locked');
                 reportBtn.classList.add('unlocked');
                 reportIcon.className = 'fa-solid fa-list-check sub-btn-icon';
-                
                 if(attemptsBadge) attemptsBadge.style.display = 'none';
             } else {
                 badge.style.display = 'none';
                 loginBtn.style.display = 'flex';
                 logoutBtn.style.display = 'none';
-                
                 reportBtn.classList.remove('unlocked');
                 reportBtn.classList.add('locked');
                 reportIcon.className = 'fa-solid fa-lock sub-btn-icon';
-                
                 adminFloating.style.display = 'none';
                 if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
             }
@@ -992,12 +951,10 @@
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
                 if (getAttemptsLeft() <= 0) { showError("⛔ لقد استنفذت جميع محاولاتك اليوم (3 محاولات).<br>تم حظرك.", true); return; } 
-                if (!checkStudentLimit()) return;
             }
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             if (localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("⏳ لقد انتهت المهلة المحددة سابقاً.<br>لا يمكنك التسجيل.", true); return; }
-            if (localStorage.getItem(storageKey) === new Date().toLocaleDateString('en-GB')) { showError("⛔ تم تسجيل الحضور اليوم مسبقاً.", true); return; }
             
             switchScreen('screenLoading');
             if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
@@ -1053,16 +1010,8 @@
             } else { alertBox.innerText = "❌ الكود غير صحيح."; alertBox.style.display = 'block'; if(navigator.vibrate) navigator.vibrate(300); }
         }
 
-        // ==========================================
-        // 📸 منطق الكاميرا والتحقق من الوجه المدمج
-        // ==========================================
         async function startFaceVerificationProcess() {
-            if (!attendanceData.uniID) {
-                showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444');
-                return;
-            }
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && !checkStudentLimit()) return;
-
+            if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             playClick();
             requestWakeLock();
             await stopCameraSafely(); 
@@ -1090,9 +1039,7 @@
                 const video = document.getElementById('video');
                 video.srcObject = stream;
                 
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => { video.play(); resolve(); };
-                });
+                await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
                 await new Promise(resolve => setTimeout(resolve, 100));
 
                 loaderSpinner.style.display = 'none';
@@ -1157,7 +1104,6 @@
                                 modernTimer.style.display = "flex";
                                 timerNum.innerText = count;
                                 timerBar.style.stroke = "#10b981";
-                                
                                 timerInterval = setInterval(() => {
                                     const elapsed = (TIMER_DURATION_FACE - count) + 1;
                                     const progress = elapsed / TIMER_DURATION_FACE;
@@ -1165,7 +1111,6 @@
                                     timerBar.style.strokeDashoffset = offset;
                                     count--;
                                     timerNum.innerText = count;
-                                    
                                     if(count <= 0) {
                                         clearInterval(timerInterval);
                                         modernTimer.style.display = "none";
@@ -1196,32 +1141,16 @@
                         }
                     } else if(step === 1) {
                         if(ratio < 0.5) {
-                            // Success Logic
                             clearInterval(faceCheckInterval);
                             if(videoStream) videoStream.getTracks().forEach(track => track.stop()); 
                             document.getElementById('beepSound').play(); 
                             
                             attendanceData.vector = Array.from(det.descriptor); 
                             
-                            let currentCount = 0;
-                            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
-                                currentCount = incrementSuccessCount();
-                                showLimitModal(currentCount); 
-                            }
-
-                            attendanceData.isVerified = true;
-
-                            const verifyBtn = document.getElementById('btnVerify');
-                            verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
-                            verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                            verifyBtn.classList.add('disabled');
+                            // -- HERE IS THE MAGIC: Send to Cloud, Wait for Analysis --
+                            const statusTxt = document.getElementById('statusTxt');
+                            statusTxt.innerText = "جاري تحليل البيانات...";
                             
-                            switchScreen('screenScanQR');
-                            playSuccess();
-                            showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
-                            checkAllConditions(); 
-
-                            // إرسال البيانات فوراً إلى شيت الهوية مع التعديل الأخير (text/plain)
                             const payload = {
                                 action: "register_identity",
                                 id: attendanceData.uniID,
@@ -1231,13 +1160,55 @@
                                 time: new Date().toLocaleTimeString('ar-EG')
                             };
                             
-                            // استخدام text/plain لحل مشكلة CORS في Apps Script
-                            fetch(CONFIG.identitySheetUrl, { 
-                                method: 'POST', 
-                                mode: 'no-cors', 
-                                headers: {'Content-Type': 'text/plain'}, 
-                                body: JSON.stringify(payload) 
-                            });
+                            try {
+                                const response = await fetch(CONFIG.identitySheetUrl, { 
+                                    method: 'POST', 
+                                    mode: 'cors', // Important: Use CORS to read response
+                                    headers: {'Content-Type': 'text/plain'}, 
+                                    body: JSON.stringify(payload) 
+                                });
+                                
+                                const result = await response.json();
+                                
+                                // 1. Check Repetition (Count > 3)
+                                if(result.count > 3) {
+                                    document.getElementById('alertDistance').innerText = result.distance + " متر";
+                                    document.getElementById('alertCount').innerText = result.count;
+                                    document.getElementById('alertMessageBody').innerText = "⛔ تم تجاوز الحد الأقصى للمحاولات (3 مرات).";
+                                    document.getElementById('identityAlertModal').style.display = 'flex';
+                                    // Prevent moving forward
+                                    return;
+                                }
+                                
+                                // 2. Check Distance (e.g. > 100m)
+                                if(result.distance > 100) {
+                                    document.getElementById('alertDistance').innerText = result.distance + " متر";
+                                    document.getElementById('alertCount').innerText = result.count;
+                                    document.getElementById('alertMessageBody').innerText = "⚠️ أنت بعيد جداً عن النقطة المرجعية للمدرج.";
+                                    document.getElementById('identityAlertModal').style.display = 'flex';
+                                    // Prevent moving forward
+                                    return;
+                                }
+
+                                // If all good:
+                                attendanceData.isVerified = true;
+                                const verifyBtn = document.getElementById('btnVerify');
+                                verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
+                                verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                                verifyBtn.classList.add('disabled');
+                                
+                                switchScreen('screenScanQR');
+                                playSuccess();
+                                showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
+                                checkAllConditions(); 
+
+                            } catch(err) {
+                                console.log(err);
+                                // Fallback in case of error, allow pass but warn
+                                showToast('تم التحقق محلياً (تعذر الاتصال بالسيرفر)', 3000, '#f59e0b');
+                                attendanceData.isVerified = true;
+                                switchScreen('screenScanQR');
+                            }
 
                         } else {
                             camBorder.className = "cam-container status-wait";
@@ -1255,7 +1226,6 @@
                 }
             }, 500);
         }
-        // ==========================================
 
         async function submitToGoogle() {
             playClick();
@@ -1389,6 +1359,7 @@
                 playSuccess();
                 const modal = document.getElementById('adminSuccessModal');
                 modal.style.display = 'flex';
+                
                 setTimeout(() => {
                     modal.style.display = 'none';
                     sessionStorage.setItem(DOCTOR_MODE_KEY, 'true'); 
@@ -1488,11 +1459,15 @@
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
-                // إذا كان الطالب قد سجل أكثر من 3 مرات، نظهره بلون أحمر
-                const isAlert = (item.dailyCount && item.dailyCount > 3);
+                
+                // Highlighting if repeated or far (data must come from sheet)
+                const dailyCount = item.dailyCount || 1;
+                const distance = item.distance || 0;
+                const isAlert = (dailyCount > 3 || distance > 100);
+                
                 const rowClass = isAlert ? 'student-detailed-card alert-row' : 'student-detailed-card';
-                const countBadge = item.dailyCount ? `<span style="font-size:10px; background:#e2e8f0; padding:2px 5px; border-radius:4px; margin-right:5px;">تكرار: ${item.dailyCount}</span>` : '';
-                const distanceBadge = item.distance ? `<span style="font-size:10px; background:#dbeafe; padding:2px 5px; border-radius:4px; margin-right:5px;">بعد: ${item.distance}م</span>` : '';
+                const countBadge = dailyCount > 1 ? `<span style="font-size:10px; background:#e2e8f0; padding:2px 5px; border-radius:4px; margin-right:5px;">تكرار: ${dailyCount}</span>` : '';
+                const distanceBadge = distance > 0 ? `<span style="font-size:10px; background:#dbeafe; padding:2px 5px; border-radius:4px; margin-right:5px;">بعد: ${distance}م</span>` : '';
 
                 html += `
                     <div class="${rowClass}">
