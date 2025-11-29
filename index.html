@@ -28,20 +28,34 @@
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
-        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: padding-bottom 0.3s; }
+        
+        /* تعديل: تحسين استجابة الجسم للكيبورد */
+        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: all 0.3s; }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
         .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; transition: margin-top 0.3s; }
         
-        /* تعديل: رفع الكارت عند فتح الكيبورد بشكل ذكي */
+        /* === هام جداً: حل مشكلة الكيبورد (رفع النوافذ والكارت) === */
         @media (max-height: 600px) {
-            .app-card { margin-top: 5px; margin-bottom: 5px; min-height: auto; height: 95vh; border-radius: 16px; justify-content: flex-start; }
+            /* رفع الكارت الرئيسي */
+            .app-card { margin-top: 0; margin-bottom: 0; min-height: 100vh; height: 100vh; border-radius: 0; justify-content: flex-start; }
             .card-banner { height: 80px; flex-shrink: 0; }
             .hero-icon-wrapper { width: 70px; height: 70px; margin-top: -35px; margin-bottom: 10px; }
             .hero-icon { font-size: 28px; }
             .card-body { padding: 0 15px 15px 15px; overflow-y: auto; }
-            /* رفع النوافذ المنبثقة أيضاً */
-            .modal-box { align-self: flex-start; margin-top: 20px; transform: scale(1) !important; max-height: 90vh; overflow-y: auto; }
+            
+            /* رفع النوافذ المنبثقة (Modals) للأعلى عند فتح الكيبورد */
+            .modal-overlay {
+                align-items: flex-start !important; /* المحاذاة للأعلى بدلاً من المنتصف */
+                padding-top: 20px;
+                overflow-y: auto; /* السماح بالتمرير */
+            }
+            .modal-box {
+                margin-top: 10px;
+                margin-bottom: 300px; /* مسافة سفلية كبيرة لرفع المحتوى فوق الكيبورد */
+                transform: scale(1) !important;
+                max-height: none !important;
+            }
         }
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
@@ -103,7 +117,6 @@
         .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
         
-        /* التعديل: تصميم عصري للعنوان */
         .smart-title {
             background: linear-gradient(to right, #0ea5e9, #0284c7);
             -webkit-background-clip: text;
@@ -115,12 +128,10 @@
             text-shadow: 0px 4px 10px rgba(14, 165, 233, 0.15);
         }
 
-        /* الفوتر الجديد - أسفل الكارت */
         .academic-footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: center; width: 100%; position: relative; z-index: 5; }
         .uni-footer-label-large { background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid #e2e8f0; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1); color: #334155; font-weight: 800; font-size: 12px; padding: 12px 25px; border-radius: 20px; display: flex; align-items: center; gap: 8px; white-space: nowrap; width: 100%; justify-content: center; transition: 0.3s; }
         .uni-footer-label-large i { color: var(--primary); font-size: 16px; }
 
-        /* باقي الأزرار والقوائم */
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
@@ -137,7 +148,7 @@
         .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; }
         .btn-report.unlocked { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; }
         .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed; border: 1px solid #ddd6fe; flex-direction: row; height: 60px; margin-top: 5px; }
-        /* التعديل: زر التحديث أيقونة فقط */
+        
         .btn-refresh { grid-column: span 1; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); color: #0ea5e9; border: 1px solid #bae6fd; flex-direction: row; height: 55px; margin-top: 5px; }
         .btn-data-entry { grid-column: span 1; background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #c2410c; border: 1px solid #fed7aa; flex-direction: column; height: 55px; margin-top: 5px; opacity: 0.7; cursor: not-allowed; }
         
@@ -148,6 +159,8 @@
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
         
+        .btn-admin-bypass { background: #fee2e2; color: #ef4444; width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #fecaca; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: none; }
+
         .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
