@@ -103,34 +103,81 @@
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
         
-        /* --- NEW STYLES FOR BUTTONS --- */
+        /* --- NEW STYLES FOR BUTTONS (UPDATED MODERN LOOK) --- */
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
         
-        /* --- New Modern Back Button Style --- */
-        .btn-modern-back { background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; color: #64748b; width: 100%; padding: 12px; border-radius: 16px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: 'Cairo'; margin-top: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-modern-back:active { transform: scale(0.97); background: #f8fafc; }
-
-        /* --- Updated Admin Dashboard Buttons (Modern & Compact) --- */
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .admin-sub-btn { border-radius: 18px; padding: 8px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; height: 75px; position: relative; overflow: hidden; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
-        .admin-sub-btn:active { transform: scale(0.96); }
-
-        /* Modern Color Palette */
-        .btn-admin-login { background: linear-gradient(135deg, #6366f1, #4f46e5); } /* Indigo */
-        .btn-admin-logout { background: linear-gradient(135deg, #f43f5e, #e11d48); } /* Rose */
-        .btn-report.unlocked { background: linear-gradient(135deg, #10b981, #059669); } /* Emerald */
-        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; box-shadow: none; }
-        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #8b5cf6, #7c3aed); height: 55px; flex-direction: row; font-size: 14px; gap: 10px; } /* Violet */
-        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #06b6d4, #0891b2); height: 50px; width: 50px; border-radius: 50%; justify-self: center; } /* Cyan */
-        .btn-refresh:active { transform: rotate(180deg) scale(0.9); }
-        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #64748b, #475569); height: 55px; flex-direction: row; font-size: 14px; gap: 10px; } /* Slate */
-
-        .sub-btn-icon { font-size: 22px; margin-bottom: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
-        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { font-size: 18px; }
         
+        /* Updated Admin Buttons Styles - Smaller & Modern */
+        .admin-sub-btn { 
+            border-radius: 18px; 
+            padding: 10px 8px; 
+            font-size: 12px; 
+            font-weight: 800; 
+            border: none; 
+            cursor: pointer; 
+            font-family: 'Cairo'; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+            box-shadow: 0 6px 15px -4px rgba(0, 0, 0, 0.1); 
+            height: 75px; /* Smaller height */
+            position: relative; 
+            overflow: hidden; 
+            color: white;
+        }
+        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+        .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
+        
+        /* New Modern Colors */
+        .btn-admin-login { background: linear-gradient(135deg, #6366f1, #4338ca); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.25); } /* Indigo Modern */
+        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); box-shadow: 0 5px 15px rgba(190, 18, 60, 0.25); } 
+        
+        .btn-report.unlocked { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 5px 15px rgba(245, 158, 11, 0.25); } /* Amber Modern */
+        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
+        
+        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #10b981, #059669); flex-direction: row; height: 50px; margin-top: 5px; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.25); } /* Emerald Modern */
+        
+        .btn-refresh { 
+            grid-column: span 2; 
+            background: linear-gradient(135deg, #06b6d4, #0891b2); 
+            border-radius: 50px; /* Pill shape */
+            width: 50px; height: 50px; 
+            justify-self: center; 
+            margin-top: 5px;
+            box-shadow: 0 5px 15px rgba(6, 182, 212, 0.25); 
+        }
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
+        
+        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #3b82f6, #2563eb); margin-top: 5px; height: 50px; flex-direction: row; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.25); } /* Blue Modern */
+
+        .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
+        
+        /* Modern Back Button for Admin Page */
+        .btn-back-modern {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-main);
+            width: 100%;
+            padding: 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            font-family: 'Cairo';
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-top: 15px;
+        }
+        .btn-back-modern:active { transform: scale(0.97); background: #f8fafc; }
+
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
@@ -386,7 +433,7 @@
         <div class="modal-box" style="border: 2px solid #ef4444;">
             <i class="fa-solid fa-ban" style="font-size: 50px; color: #ef4444; margin-bottom: 15px;"></i>
             <div class="modal-title" style="color: #ef4444;">تم حظرك</div>
-            <div class="modal-text" style="font-weight: bold;">لقد تجاوزت عدد مرات التسجيل المسموحة لهذا اليوم.</div>
+            <div class="modal-text" style="font-weight: bold;">لقد تجاوزت عدد مرات التسجيل المسموحة لهذا اليوم (3 محاولات) أو تم اكتشاف تلاعب.</div>
             <button onclick="location.reload()" class="modal-btn btn-confirm" style="margin-top: 10px;">إغلاق</button>
         </div>
     </div>
@@ -655,8 +702,9 @@
                     <div id="adminAlert" style="display:none;" class="alert-box"></div>
                     <div class="input-group"><input type="password" id="adminPassword" class="modern-input" placeholder="كلمة المرور" required></div>
                     <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
-                    <button onclick="goBackToWelcome()" class="btn-modern-back">
-                        <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal"></i> العودة
+                    <button onclick="goBackToWelcome()" class="btn-back-modern">
+                        العودة للصفحة الرئيسية
+                        <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
                 <div id="screenLoading" class="section">
@@ -672,16 +720,13 @@
                             <circle class="timer-circle-fg" id="timerProgress" cx="40" cy="40" r="35"></circle>
                         </svg>
                         <div class="timer-text-box">
-                            <span class="timer-number" id="timerNumber">15</span>
+                            <span class="timer-number" id="timerNumber">20</span>
                             <span class="timer-label">ثانية</span>
                         </div>
                     </div>
                     
                     <div class="attempts-hearts" id="attemptsHeartsContainer">
-                        <i class="fa-solid fa-heart heart-icon"></i>
-                        <i class="fa-solid fa-heart heart-icon"></i>
-                        <i class="fa-solid fa-heart heart-icon"></i>
-                    </div>
+                        </div>
 
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
@@ -705,6 +750,47 @@
                         <button type="button" class="key-btn delete-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
                     </div>
                     
+                    <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
+                </div>
+
+                <div id="screenFaceCheck" class="section">
+                    <h1>التعرف على الهوية</h1>
+                    <div class="cam-container" id="camBorder">
+                        <video id="video" autoplay muted playsinline></video>
+                        <div id="loaderSpinner" class="spinner-overlay">
+                            <i class="fa-solid fa-user-shield large-loader-icon"></i>
+                            <div class="spinner"></div>
+                            <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
+                        </div>
+                        <div id="modernTimerContainer" class="timer-circular-wrapper">
+                            <svg class="timer-svg-face" viewBox="0 0 100 100">
+                                <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div class="timer-text-box">
+                                <span class="timer-number-face" id="timerNumberFace">3</span>
+                            </div>
+                        </div>
+                        <div id="alertBadge" class="alert-badge">⚠️</div>
+                    </div>
+                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
+                    <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
+                </div>
+                
+                <div id="screenScanQR" class="section">
+                    <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
+                    <div class="student-info-card">
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                            <span class="student-info-label">اسم الطالب / الطالبة</span>
+                            <span class="student-info-value" id="scanNameDisplay">--</span>
+                        </div>
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-id-card"></i></div>
+                            <span class="student-info-label">الكود الجامعي (ID)</span>
+                            <span class="student-info-value" id="scanIDDisplay">--</span>
+                        </div>
+                    </div>
                     <div class="custom-select-wrapper" id="yearSelectWrapper">
                         <label class="custom-select-label">الفرقة الدراسية</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر الفرقة --">
@@ -760,56 +846,16 @@
                         <div class="custom-options">
                             <div class="sheet-handle"></div>
                             <div class="options-title">اختر المدرج الدراسي</div>
+                            
                             <div class="hall-search-box">
                                 <input type="text" id="hallSearchInput" class="hall-search-input" placeholder="بحث عن القاعة..." onclick="event.stopPropagation()">
                             </div>
+                            
                             <div id="hallOptionsContainer" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
                         <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
                             <option value="" disabled selected>-- اختر المدرج --</option>
                         </select>
-                    </div>
-
-                    <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
-                </div>
-
-                <div id="screenFaceCheck" class="section">
-                    <h1>التعرف على الهوية</h1>
-                    <div class="cam-container" id="camBorder">
-                        <video id="video" autoplay muted playsinline></video>
-                        <div id="loaderSpinner" class="spinner-overlay">
-                            <i class="fa-solid fa-user-shield large-loader-icon"></i>
-                            <div class="spinner"></div>
-                            <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
-                        </div>
-                        <div id="modernTimerContainer" class="timer-circular-wrapper">
-                            <svg class="timer-svg-face" viewBox="0 0 100 100">
-                                <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
-                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
-                            </svg>
-                            <div class="timer-text-box">
-                                <span class="timer-number-face" id="timerNumberFace">3</span>
-                            </div>
-                        </div>
-                        <div id="alertBadge" class="alert-badge">⚠️</div>
-                    </div>
-                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
-                    <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
-                </div>
-                
-                <div id="screenScanQR" class="section">
-                    <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
-                    <div class="student-info-card">
-                        <div class="student-info-item">
-                            <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                            <span class="student-info-label">اسم الطالب / الطالبة</span>
-                            <span class="student-info-value" id="scanNameDisplay">--</span>
-                        </div>
-                        <div class="student-info-item">
-                            <div class="student-info-icon"><i class="fa-solid fa-id-card"></i></div>
-                            <span class="student-info-label">الكود الجامعي (ID)</span>
-                            <span class="student-info-value" id="scanIDDisplay">--</span>
-                        </div>
                     </div>
 
                     <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify">
@@ -896,10 +942,10 @@
 
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
-            try { studentsDB = JSON.parse(savedDB); console.log("⚡ تم تحميل الأسماء محلياً:", Object.keys(studentsDB).length); } catch(e) { console.error("Error parsing DB", e); }
+            try { studentsDB = JSON.parse(savedDB); } catch(e) {}
         }
 
-        fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); console.log("✅ تم تحديث قاعدة البيانات:", Object.keys(d).length); } }).catch(e => console.log("DB Update Error", e));
+        fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => {});
 
         let defaultSubjects = {
             "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
@@ -912,19 +958,20 @@
 
         const DOCTOR_MODE_KEY = "is_doctor_bypass_enabled";
         const DATA_ENTRY_TIMEOUT_SEC = 20;
-        const TIMEOUT_BLOCK_KEY = "timeout_blocked_forever_v47_" + new Date().toLocaleDateString('en-GB');
         const SESSION_END_TIME_KEY = "data_entry_deadline_v2";
         const TEMP_NAME_KEY = "temp_student_name";
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
+        
+        // --- LOGIC FOR ATTEMPTS (Date-Based) ---
         const MAX_ATTEMPTS = 3;
-        const ATTEMPTS_KEY = "daily_attempts_v48_" + new Date().toLocaleDateString('en-GB', {timeZone: 'Africa/Cairo'});
+        // المفتاح يعتمد على التاريخ لضمان تصفير المحاولات كل يوم
+        const ATTEMPTS_KEY = "daily_attempts_v50_" + new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
 
         let userIP = "Unknown";
         let geo_watch_id = null;
         let countdownInterval;
         let html5QrCode;
-        let currentAbortController = null;
         let sessionEndTime = 0;
         let attendanceData = {};
         let processIsActive = false;
@@ -1015,45 +1062,49 @@
                 renderSubjectsManage();
             }
         }
-        // --- ALERT SYSTEM (DETAILED & SECURITY FOCUSED) ---
+
+        // --- UPDATED ALERT SYSTEM WITH SECURITY DETAILS ---
         function updateNotificationUI(data) {
-            // ترجمة وتفصيل سبب التنبيه
-            let reasonTitle = "تنبيه أمني";
-            let reasonDetail = "";
-            let riskColor = "#f59e0b"; // برتقالي
+            // Check if there are security risks to report
+            if (data.isRepeat || data.isFar || data.risk_level) {
+                
+                let reasonText = "نشاط مشبوه";
+                let detailText = "تم اكتشاف نشاط غير معتاد.";
+                
+                if (data.risk_level === "DEVICE_SHARING") {
+                    reasonText = "تكرار جهاز";
+                    detailText = "هذا الجهاز استخدم لطالب آخر.";
+                } else if (data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat) {
+                    reasonText = "تسجيل مكرر";
+                    detailText = `الطالب مسجل بالفعل ${data.count || 1} مرات اليوم.`;
+                } else if (data.risk_level === "FACE_SPOOF") {
+                    reasonText = "انتحال وجه";
+                    detailText = "تطابق وجه مع طالب آخر.";
+                } else if (data.risk_level === "WRONG_LOCATION" || data.isFar) {
+                    reasonText = "خارج الموقع";
+                    detailText = `المسافة: ${Math.round(data.distance || 0)} متر عن القاعة.`;
+                }
 
-            if (data.risk_level === "DEVICE_SHARING") {
-                reasonTitle = "تكرار جهاز";
-                reasonDetail = "تم استخدام هذا الجهاز لطالب آخر اليوم.";
-                riskColor = "#ef4444"; // أحمر
-            } else if (data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat) {
-                reasonTitle = "تسجيل مكرر";
-                reasonDetail = "تم تسجيل الحضور لهذا الطالب مسبقاً.";
-                riskColor = "#3b82f6"; // أزرق
-            } else if (data.risk_level === "FACE_SPOOF") {
-                reasonTitle = "انتحال وجه";
-                reasonDetail = "تطابق بصمة الوجه مع طالب آخر.";
-                riskColor = "#b91c1c"; // أحمر غامق
-            } else if (data.risk_level === "WRONG_LOCATION" || data.isFar) {
-                reasonTitle = "خارج النطاق";
-                reasonDetail = `بعيد عن النقطة المرجعية (${data.distance}م).`;
-                riskColor = "#f97316"; // برتقالي غامق
-            }
+                // Add Current Date and Time
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ar-EG');
+                const dateString = now.toLocaleDateString('ar-EG');
 
-            if (data.isRepeat || data.isFar || data.risk_level !== "SAFE") {
                 const newAlert = {
-                    name: attendanceData.name,
-                    id: attendanceData.uniID,
-                    timestamp: new Date().toLocaleString('ar-EG'),
+                    name: attendanceData.name || 'مجهول',
+                    id: attendanceData.uniID || '---',
+                    timestamp: `${dateString} - ${timeString}`,
                     risk_level: data.risk_level,
-                    reason_title: reasonTitle,
-                    reason_detail: reasonDetail,
-                    color: riskColor,
+                    reason: reasonText,
+                    detail: detailText,
+                    isRepeat: data.isRepeat,
+                    isFar: data.isFar,
                     count: data.count,
                     distance: data.distance,
-                    hall: data.hall || document.getElementById('hallSelect').value, 
+                    hall: data.hall || document.getElementById('hallSelect').value || 'غير محدد', 
                     isRead: false
                 };
+                
                 systemAlerts.unshift(newAlert);
                 localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
                 checkStoredAlerts();
@@ -1073,41 +1124,39 @@
                 let html = '';
                 systemAlerts.forEach((alert, index) => {
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
+                    
+                    let badgeColor = "#f59e0b"; // Default warning
+                    if (alert.reason === "تكرار جهاز" || alert.reason === "انتحال وجه" || alert.reason === "تسجيل مكرر") badgeColor = "#ef4444"; // Danger
+                    
                     const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
 
                     html += `
-                    <div class="${itemClass}" style="border-radius:12px; padding:12px; margin-bottom:8px; cursor:pointer; transition:0.3s; border:1px solid #e2e8f0;" onclick="toggleAlertDetails(${index})">
+                    <div class="${itemClass}" style="border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer; transition:0.3s;" onclick="toggleAlertDetails(${index})">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="display:flex; align-items:center;">
                                 ${deleteBtn}
-                                <div style="font-weight:900; font-size:13px; color:#1e293b;">${alert.name || '---'}</div>
+                                <div style="font-weight:bold; font-size:13px;">${alert.name}</div>
                             </div>
-                            <div style="font-size:10px; color:#94a3b8; font-weight:bold;">${alert.timestamp.split(',')[1] || ''}</div>
+                            <div style="font-size:10px; color:#94a3b8;">${alert.timestamp.split('-')[1] || ''}</div>
                         </div>
-                        
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                            <div style="display:flex; flex-direction:column; gap:2px;">
-                                <div style="font-family:'Outfit'; font-size:11px; color:#64748b; font-weight:bold;">${alert.id || ''}</div>
-                                <div style="font-size:11px; color:#0f766e; font-weight:800; background:#f0fdfa; padding:2px 6px; border-radius:4px; width:fit-content;">
-                                    🏛️ ${alert.hall || 'N/A'}
-                                </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="font-family:'Outfit'; font-size:12px; color:#64748b;">${alert.id}</div>
+                                <div style="font-size:11px; color:#0f766e; font-weight:bold;">🏛️ ${alert.hall}</div>
                             </div>
                             <div style="text-align:left;">
-                                <span style="color:${alert.color}; display:block; font-size:12px; font-weight:900; background:#fff; padding:4px 8px; border-radius:6px; border:1px solid ${alert.color}20;">
-                                    ⚠️ ${alert.reason_title}
-                                </span>
+                                <span style="color:${badgeColor}; display:block; font-size:11px; font-weight:bold;">⚠️ ${alert.reason}</span>
                             </div>
                         </div>
-
-                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #cbd5e1; margin-top:10px; padding-top:8px; font-size:12px; color:#475569; line-height:1.6;">
-                            <strong>التفاصيل:</strong> ${alert.reason_detail}<br>
-                            <span style="font-size:10px; color:#94a3b8;">التاريخ الكامل: ${alert.timestamp}</span>
+                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #e2e8f0; margin-top:8px; padding-top:8px; font-size:11px; color:#475569;">
+                            ${alert.detail}<br>
+                            التاريخ: ${alert.timestamp}
                         </div>
                     </div>
                     `;
                 });
                 container.innerHTML = html;
-            } else { container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px; text-align:center; color:#94a3b8;">لا توجد تنبيهات مسجلة.</div>'; }
+            } else { container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>'; }
         }
 
         function toggleAlertDetails(index) {
@@ -1185,11 +1234,23 @@
         function playSuccess() { document.getElementById('successSound').play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([50, 50, 50]); }
         function playBeep() { document.getElementById('beepSound').play().catch(e=>{}); }
         function convertArabicToEnglish(s) { return s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
-        async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { console.log("Wake Lock error:", err); } }
+        async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
         function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
         
-        function getAttemptsLeft() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); return Math.max(0, MAX_ATTEMPTS - used); }
-        function decrementAttempts() { let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); used++; localStorage.setItem(ATTEMPTS_KEY, used.toString()); updateUIForAttempts(); return MAX_ATTEMPTS - used; }
+        // --- STRICT ATTEMPTS LOGIC ---
+        function getAttemptsLeft() { 
+            let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
+            return Math.max(0, MAX_ATTEMPTS - used); 
+        }
+        function decrementAttempts() { 
+            let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
+            if (used < MAX_ATTEMPTS) {
+                used++; 
+                localStorage.setItem(ATTEMPTS_KEY, used.toString()); 
+                updateUIForAttempts(); 
+            }
+            return MAX_ATTEMPTS - used; 
+        }
         function updateUIForAttempts() { 
             const left = getAttemptsLeft(); 
             const container = document.getElementById('attemptsHeartsContainer');
@@ -1204,11 +1265,15 @@
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
-            if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { window.history.pushState(null, null, window.location.href); }
-            else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { goBackToWelcome(); }
+            if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
+                window.history.pushState(null, null, window.location.href); 
+            } else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { 
+                goBackToWelcome(); 
+            }
         };
         
         function handleStrictPenalty() {
+             // If process is active and user tries to leave/refresh/close -> Deduct attempt
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
             }
@@ -1257,10 +1322,6 @@
         }
 
         window.onload = function() {
-            // --- NEW: Reset Bans on fresh start (FOR TESTING ONLY, REMOVE FOR PRODUCTION) ---
-            localStorage.removeItem(ATTEMPTS_KEY);
-            localStorage.removeItem(TIMEOUT_BLOCK_KEY);
-            
             initGlobalGuard(); updateUIForMode(); setupCustomSelects();
             checkStoredAlerts(); 
             startGPSWatcher(); 
@@ -1268,8 +1329,9 @@
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
                 const now = new Date();
-                const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
-                const dateStr = now.toLocaleDateString('en-GB');
+                // Cairo Time
+                const timeStr = now.toLocaleTimeString('ar-EG', {hour12: true, hour:'2-digit', minute:'2-digit'});
+                const dateStr = now.toLocaleDateString('ar-EG');
                 const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
                 if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
             }, 1000);
@@ -1300,17 +1362,6 @@
             if(filteredHalls.length === 0) { hallContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#94a3b8; font-size:12px;">لا توجد نتائج</div>'; }
         }
 
-        function addNewHall(e) {
-            e.stopPropagation();
-            const newHall = prompt("أدخل رقم/اسم القاعة الجديدة:");
-            if (newHall && newHall.trim() !== "") {
-                if(!hallsList.includes(newHall.trim())) {
-                    hallsList.push(newHall.trim()); localStorage.setItem('hallsList_v3', JSON.stringify(hallsList));
-                    renderHallOptions(); showToast("تم إضافة القاعة بنجاح", 2000, "#10b981");
-                } else { showToast("القاعة موجودة بالفعل", 2000, "#f59e0b"); }
-            }
-        }
-
         function startGPSWatcher() {
             if (navigator.geolocation) {
                 geo_watch_id = navigator.geolocation.watchPosition(
@@ -1318,10 +1369,6 @@
                     (error) => { }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
                 );
             }
-        }
-
-        function resetBan() {
-            localStorage.removeItem(ATTEMPTS_KEY); document.getElementById('banModal').style.display = 'none'; updateUIForAttempts(); showToast("تم فك الحظر بنجاح", 2000, "#10b981");
         }
 
         function updateUIForMode() {
@@ -1332,26 +1379,19 @@
             const reportBtn = document.getElementById('btnViewReport');
             const reportIcon = document.getElementById('reportIcon');
             const adminFloating = document.getElementById('adminFloatingBack');
-            const attemptsBadge = document.getElementById('attemptsDisplayEntry');
             const notifBtn = document.getElementById('notificationBtn');
             const adminBypassContainer = document.getElementById('adminBypassContainer');
-            const addHallBtnContainer = document.getElementById('adminAddHallContainer');
-            const unbanBtn = document.getElementById('btnUnban');
             const btnDataEntry = document.getElementById('btnDataEntry');
             
             if (isAdmin) {
-                badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; if(attemptsBadge) attemptsBadge.style.display = 'none';
+                badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; 
                 document.getElementById('adminDeleteAlert').style.display = 'flex'; notifBtn.classList.remove('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'block';
-                if(addHallBtnContainer) addHallBtnContainer.style.display = 'block';
-                if(unbanBtn) unbanBtn.style.display = 'none'; 
                 if(btnDataEntry) btnDataEntry.style.display = 'flex';
             } else {
-                badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
+                badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; 
                 document.getElementById('adminDeleteAlert').style.display = 'none'; notifBtn.classList.add('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'none';
-                if(addHallBtnContainer) addHallBtnContainer.style.display = 'none';
-                if(unbanBtn) unbanBtn.style.display = 'none';
                 if(btnDataEntry) btnDataEntry.style.display = 'none';
             }
             updateUIForAttempts(); checkStoredAlerts(); 
@@ -1377,22 +1417,12 @@
 
         async function startProcess(skip = false) {
             playClick();
-            
-            // --- STRICT VALIDATION: Must select Year, Subject, AND Hall first ---
-            const year = document.getElementById('yearSelect').value; 
-            const sub = document.getElementById('subjectSelect').value; 
-            const hall = document.getElementById('hallSelect').value;
-            
-            if (!year || !sub || !hall) {
-                 showToast('⚠️ يجب اختيار الفرقة والمقرر والمدرج أولاً', 3000, '#f59e0b');
-                 if(navigator.vibrate) navigator.vibrate(100);
-                 return; 
-            }
-
+            // --- STRICT BAN CHECK START ---
             if (getAttemptsLeft() === 0 && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                  document.getElementById('banModal').style.display = 'flex';
                  return;
             }
+            // --- STRICT BAN CHECK END ---
             
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
@@ -1424,6 +1454,8 @@
                     clearInterval(countdownInterval); 
                     if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
                     document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
+                    
+                    // --- DEDUCT ATTEMPT ON TIMEOUT ---
                     let left = decrementAttempts();
                     if (left === 0) { document.getElementById('banModal').style.display = 'flex'; } else { showError(`⏳ انتهى الوقت. (المتبقي: ${left})`, false); }
                 }
@@ -1458,6 +1490,14 @@
         }
 
         async function startFaceVerificationProcess() {
+            const year = document.getElementById('yearSelect').value; 
+            const sub = document.getElementById('subjectSelect').value; 
+            const hall = document.getElementById('hallSelect').value;
+            if (!year || !sub || !hall) {
+                showToast('⚠️ اختر الفرقة والمادة والقاعة أولاً', 3000, '#f59e0b');
+                return;
+            }
+
             if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             const btn = document.getElementById('btnVerify'); const oldText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديد الموقع...';
@@ -1535,8 +1575,8 @@
                                 gps: `${userLat},${userLng}`, 
                                 time: new Date().toLocaleTimeString('ar-EG'), 
                                 hall: document.getElementById('hallSelect').value || 'N/A',
-                                device_id: deviceId, // Send in correct format
-                                deviceId: deviceId,  // Send in correct format
+                                device_id: deviceId, 
+                                deviceId: deviceId,  
                                 session_key: sessionKey, 
                                 publicKey: sessionKey
                             };
@@ -1544,15 +1584,7 @@
                                 const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
                                 const result = await response.json();
                                 updateNotificationUI(result);
-                                
-                                // --- STRICT SERVER-SIDE BAN TRIGGER ---
-                                // If server says count >= 3 OR any major risk detected (spoof, device share)
-                                if (result.count >= 3 || result.risk_level === "FACE_SPOOF" || result.risk_level === "DEVICE_SHARING") { 
-                                    localStorage.setItem(ATTEMPTS_KEY, "3"); // Max out attempts locally
-                                    document.getElementById('banModal').style.display = 'flex'; 
-                                    return; 
-                                }
-                                
+                                if (result.count >= 3) { document.getElementById('banModal').style.display = 'flex'; return; }
                                 attendanceData.isVerified = true; const verifyBtn = document.getElementById('btnVerify'); verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية'; verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)'; verifyBtn.classList.add('disabled'); switchScreen('screenScanQR'); playSuccess(); showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981'); checkAllConditions(); 
                             } catch(err) { console.log(err); showToast('تم التحقق محلياً (تعذر الاتصال بالسيرفر)', 3000, '#f59e0b'); attendanceData.isVerified = true; switchScreen('screenScanQR'); }
                         } else { camBorder.className = "cam-container status-wait"; statusTxt.innerText = "بص يمين يا قمر"; statusTxt.style.color = "var(--warning)"; alertBadge.style.display = "none"; }
@@ -1580,7 +1612,7 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
             if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !attendanceData.isVerified) { showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; }
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true' && localStorage.getItem(TIMEOUT_BLOCK_KEY) === 'true') { showError("محظور"); return; }
+            
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الفحص...'; btn.disabled = true;
             
             const isOnline = await checkRealConnection(); if (!isOnline) { btn.innerHTML = originalText; btn.disabled = false; showConnectionLostModal(); return; }
@@ -1590,8 +1622,8 @@
             document.getElementById('receiptID').innerText = attendanceData.uniID; 
             document.getElementById('receiptSubject').innerText = selectedSubject; 
             document.getElementById('receiptHall').innerText = selectedHall || 'N/A'; 
-            document.getElementById('receiptDate').innerText = now.toLocaleDateString('en-GB'); 
-            document.getElementById('receiptTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'});
+            document.getElementById('receiptDate').innerText = now.toLocaleDateString('ar-EG'); 
+            document.getElementById('receiptTime').innerText = now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
             
             const finalCodeValue = `${attendanceData.code} (QR: ${sessionPassVal})`;
             const deviceId = getUniqueDeviceId();
@@ -1609,19 +1641,14 @@
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
             
-            // --- Shotgun Approach: Send data with MULTIPLE keys to match whatever the backend expects ---
+            formParams.append("deviceId", deviceId);   
+            formParams.append("publicKey", sessionKey); 
             formParams.append("device_id", deviceId);
-            formParams.append("deviceId", deviceId);
-            formParams.append("device", deviceId);
             formParams.append("session_key", sessionKey);
-            formParams.append("sessionKey", sessionKey);
-            formParams.append("publicKey", sessionKey); // Added publicKey as well
-            formParams.append("key", sessionKey);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(ATTEMPTS_KEY, new Date().toLocaleDateString('en-GB')); } 
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1712,14 +1739,14 @@
         function initGlobalGuard() { setInterval(async () => { const o = await checkRealConnection(); if (!o) showConnectionLostModal(); else hideConnectionLostModal(); }, 2000); 
             if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
         }
-        function handleGpsError(error) { let msg = "يرجى تفعيل الموقع (GPS)."; if(error.code == 1) msg = "⛔ تم رفض إذن الموقع."; else if(error.code == 2) msg = "⚠️ إشارة GPS ضعيفة."; document.getElementById('errorMsg').innerHTML = msg; document.getElementById('retryBtn').onclick = function() { playClick(); switchScreen('screenLoading'); navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }); }; switchScreen('screenError'); }
-
+        
         async function openReportModal() {
             playClick(); document.getElementById('reportModal').style.display = 'flex'; showSubjectsView();
-            const d = new Date().toLocaleDateString('en-GB'); document.getElementById('reportDateDisplay').innerText = d;
+            const d = new Date().toLocaleDateString('ar-EG'); document.getElementById('reportDateDisplay').innerText = d;
             const container = document.getElementById('subjectsContainer');
             container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري جلب المواد...</div></div>`;
             try {
+                // Ensure date is sent for filtering if needed backend side, currently backend sends all day's data
                 const response = await fetch(`${CONFIG.sheetApiUrl}?action=getReport&date=${encodeURIComponent(d)}`);
                 const data = await response.json();
                 if (!data || data.length === 0) { container.innerHTML = `<div class="empty-state" style="margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>لا توجد سجلات اليوم.</div>`; return; }
@@ -1727,7 +1754,6 @@
             } catch (e) { container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">خطأ في الاتصال.</div>'; }
         }
 
-        // --- UPDATED REPORT LOGIC: Subject -> Student List (Directly) ---
         function renderSubjectsList(data) {
             const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
             let html = '';
@@ -1749,14 +1775,12 @@
         function openSubjectDetails(subjectName) {
             playClick();
             document.getElementById('currentSubjectTitle').innerText = subjectName;
-            
-            // Filter by subject and get students directly
             const students = cachedReportData.filter(s => s.subject === subjectName);
-            
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
-                const hallName = item.hall || "N/A"; // Get Hall Name for display
+                const hallName = item.hall || "N/A";
+                const timeStr = item.time || "--:--";
                 
                 html += `
                     <div class="student-detailed-card">
@@ -1773,26 +1797,23 @@
                                     <i class="fa-solid fa-building-columns"></i> <span style="font-family:'Cairo', sans-serif;">${hallName}</span>
                                 </div>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px;">
-                                    <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
-                                </div>
-                                <div class="std-time-badge">
-                                    <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
-                                </div>
+                            <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
+                                <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
+                            </div>
+                            <div style="display:flex; align-items:center;">
+                                <div class="std-time-badge"><i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${timeStr}</span></div>
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
             document.getElementById('studentsContainer').innerHTML = html;
             document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
             document.getElementById('viewStudents').style.transform = 'translateX(0)';
         }
 
         function showSubjectsView() { playClick(); document.getElementById('viewSubjects').style.transform = 'translateX(0)'; document.getElementById('viewStudents').style.transform = 'translateX(100%)'; }
-        
+
         function closeReportModal() { playClick(); document.getElementById('reportModal').style.display = 'none'; }
         
         let pendingAction = null;
