@@ -103,6 +103,7 @@
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
         
+        /* --- NEW STYLES FOR BUTTONS --- */
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
@@ -516,24 +517,13 @@
                     <div id="subjectsContainer"></div>
                 </div>
                 
-                <div id="viewHalls" class="report-view">
+                <div id="viewStudents" class="report-view">
                     <div class="students-list-header">
                         <button onclick="showSubjectsView()" class="btn-back-report">
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
-                        <span id="currentSubjectTitleHalls" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
-                    </div>
-                    <div id="hallsContainer"></div>
-                </div>
-
-                <div id="viewStudents" class="report-view">
-                    <div class="students-list-header">
-                        <button onclick="showHallsView()" class="btn-back-report">
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </button>
                         <div style="display:flex; flex-direction:column; text-align:right;">
-                            <span id="currentSubjectTitle" style="font-weight:800; font-size:12px; color:#64748b">--</span>
-                            <span id="currentHallTitle" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
+                            <span id="currentSubjectTitle" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
                         </div>
                         <button onclick="openReportModal()" class="btn-back-report" style="margin-right:auto;">
                            <i class="fa-solid fa-rotate-right"></i>
@@ -715,47 +705,6 @@
                         <button type="button" class="key-btn delete-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
                     </div>
                     
-                    <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
-                </div>
-
-                <div id="screenFaceCheck" class="section">
-                    <h1>التعرف على الهوية</h1>
-                    <div class="cam-container" id="camBorder">
-                        <video id="video" autoplay muted playsinline></video>
-                        <div id="loaderSpinner" class="spinner-overlay">
-                            <i class="fa-solid fa-user-shield large-loader-icon"></i>
-                            <div class="spinner"></div>
-                            <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
-                        </div>
-                        <div id="modernTimerContainer" class="timer-circular-wrapper">
-                            <svg class="timer-svg-face" viewBox="0 0 100 100">
-                                <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
-                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
-                            </svg>
-                            <div class="timer-text-box">
-                                <span class="timer-number-face" id="timerNumberFace">3</span>
-                            </div>
-                        </div>
-                        <div id="alertBadge" class="alert-badge">⚠️</div>
-                    </div>
-                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
-                    <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
-                </div>
-                
-                <div id="screenScanQR" class="section">
-                    <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
-                    <div class="student-info-card">
-                        <div class="student-info-item">
-                            <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                            <span class="student-info-label">اسم الطالب / الطالبة</span>
-                            <span class="student-info-value" id="scanNameDisplay">--</span>
-                        </div>
-                        <div class="student-info-item">
-                            <div class="student-info-icon"><i class="fa-solid fa-id-card"></i></div>
-                            <span class="student-info-label">الكود الجامعي (ID)</span>
-                            <span class="student-info-value" id="scanIDDisplay">--</span>
-                        </div>
-                    </div>
                     <div class="custom-select-wrapper" id="yearSelectWrapper">
                         <label class="custom-select-label">الفرقة الدراسية</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر الفرقة --">
@@ -811,16 +760,56 @@
                         <div class="custom-options">
                             <div class="sheet-handle"></div>
                             <div class="options-title">اختر المدرج الدراسي</div>
-                            
                             <div class="hall-search-box">
                                 <input type="text" id="hallSearchInput" class="hall-search-input" placeholder="بحث عن القاعة..." onclick="event.stopPropagation()">
                             </div>
-                            
                             <div id="hallOptionsContainer" style="max-height: 250px; overflow-y: auto;"></div>
                         </div>
                         <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
                             <option value="" disabled selected>-- اختر المدرج --</option>
                         </select>
+                    </div>
+
+                    <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
+                </div>
+
+                <div id="screenFaceCheck" class="section">
+                    <h1>التعرف على الهوية</h1>
+                    <div class="cam-container" id="camBorder">
+                        <video id="video" autoplay muted playsinline></video>
+                        <div id="loaderSpinner" class="spinner-overlay">
+                            <i class="fa-solid fa-user-shield large-loader-icon"></i>
+                            <div class="spinner"></div>
+                            <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
+                        </div>
+                        <div id="modernTimerContainer" class="timer-circular-wrapper">
+                            <svg class="timer-svg-face" viewBox="0 0 100 100">
+                                <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div class="timer-text-box">
+                                <span class="timer-number-face" id="timerNumberFace">3</span>
+                            </div>
+                        </div>
+                        <div id="alertBadge" class="alert-badge">⚠️</div>
+                    </div>
+                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
+                    <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
+                </div>
+                
+                <div id="screenScanQR" class="section">
+                    <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
+                    <div class="student-info-card">
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                            <span class="student-info-label">اسم الطالب / الطالبة</span>
+                            <span class="student-info-value" id="scanNameDisplay">--</span>
+                        </div>
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-id-card"></i></div>
+                            <span class="student-info-label">الكود الجامعي (ID)</span>
+                            <span class="student-info-value" id="scanIDDisplay">--</span>
+                        </div>
                     </div>
 
                     <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify">
@@ -929,10 +918,7 @@
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
         const MAX_ATTEMPTS = 3;
-        
-        // --- Strict Date Key for Egypt Time ---
-        const getTodayKey = () => "daily_attempts_v48_" + new Date().toLocaleDateString('en-GB', {timeZone: 'Africa/Cairo'});
-        const ATTEMPTS_KEY = getTodayKey();
+        const ATTEMPTS_KEY = "daily_attempts_v48_" + new Date().toLocaleDateString('en-GB', {timeZone: 'Africa/Cairo'});
 
         let userIP = "Unknown";
         let geo_watch_id = null;
@@ -1222,7 +1208,6 @@
             else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { goBackToWelcome(); }
         };
         
-        // --- STRICT PENALTY: Deduct attempt on Exit/Hide/Refresh ---
         function handleStrictPenalty() {
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
@@ -1272,7 +1257,7 @@
         }
 
         window.onload = function() {
-            // --- RESET BANS ON LOAD (FRESH START) ---
+            // --- NEW: Reset Bans on fresh start (FOR TESTING ONLY, REMOVE FOR PRODUCTION) ---
             localStorage.removeItem(ATTEMPTS_KEY);
             localStorage.removeItem(TIMEOUT_BLOCK_KEY);
             
@@ -1634,12 +1619,9 @@
             formParams.append("key", sessionKey);
             
             try {
-                const response = await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
+                await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                
-                // We can't read response in no-cors mode, but if we are here, it was sent.
-                // If server side bans, it will affect NEXT attempt via Identity Check.
-                // But locally, we assume success doesn't ban unless specific logic.
+                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(ATTEMPTS_KEY, new Date().toLocaleDateString('en-GB')); } 
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1774,9 +1756,7 @@
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
-                const hallName = item.hall || "N/A"; 
-                // Adding Time and Date to the Student Card
-                const fullDate = item.time || ""; // Assuming item.time contains time string
+                const hallName = item.hall || "N/A"; // Get Hall Name for display
                 
                 html += `
                     <div class="student-detailed-card">
@@ -1798,7 +1778,7 @@
                                     <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
                                 </div>
                                 <div class="std-time-badge">
-                                    <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${fullDate}</span>
+                                    <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span>
                                 </div>
                             </div>
                         </div>
