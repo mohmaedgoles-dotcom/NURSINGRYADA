@@ -158,34 +158,79 @@
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
         .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
-        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-        .admin-sub-btn { border-radius: 18px; padding: 12px 10px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); height: 85px; }
-        .admin-sub-btn:active { transform: scale(0.95); }
-        .btn-admin-login { background: #f0f9ff; color: var(--primary-dark); border: 1px solid #bae6fd; }
-        .btn-admin-logout { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .btn-report { transition: all 0.3s; }
-        .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; }
-        .btn-report.unlocked { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; }
-        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed; border: 1px solid #ddd6fe; flex-direction: row; height: 60px; margin-top: 5px; }
         
-        /* التعديل: تصميم زر تحديث النظام (دائري ومتوسط) */
+        /* === تعديل: أزرار المسؤول العصرية === */
+        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .admin-sub-btn { 
+            border-radius: 22px; 
+            padding: 12px 10px; 
+            font-size: 13px; 
+            font-weight: 800; 
+            border: none; 
+            cursor: pointer; 
+            font-family: 'Cairo'; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); 
+            height: 90px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+        .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
+        
+        .btn-admin-login { 
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-admin-logout { 
+            background: linear-gradient(135deg, #f43f5e, #e11d48); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(225, 29, 72, 0.3);
+        }
+        .btn-report.unlocked { 
+            background: linear-gradient(135deg, #10b981, #059669); 
+            color: white; 
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+            border: none;
+        }
+        .btn-report.locked { 
+            background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none;
+        }
+        .btn-exams { 
+            grid-column: span 2; 
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+            color: white; 
+            border: none; 
+            flex-direction: row; 
+            height: 60px; 
+            margin-top: 5px;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+        
+        /* التعديل: تصميم زر تحديث النظام (دائري ومتوسط) - برتقالي عصري */
         .btn-refresh { 
             grid-column: span 2; 
-            background: #ffffff; 
-            color: #0ea5e9; 
-            border: 2px solid #e0f2fe; 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+            border: none; 
             flex-direction: row; 
             height: 55px; 
             margin-top: 5px; 
-            border-radius: 50%; /* دائري */
-            width: 55px; /* مربع ليصبح دائرة */
-            justify-self: center; /* توسيط في الشبكة */
-            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
+            border-radius: 50%; 
+            width: 55px; 
+            justify-self: center; 
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
         }
-        .btn-refresh:active { background: #f0f9ff; transform: rotate(180deg); transition: 0.4s; }
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
 
-        .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
-        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
+        .sub-btn-icon { font-size: 24px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 20px; }
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
@@ -366,6 +411,32 @@
 
         /* تعديل: رفع طبقة نافذة الحذف لتكون فوق التقرير */
         #modernConfirmModal { z-index: 2147483647 !important; }
+
+        /* === تحسين أيقونة المحاولات (القلوب) === */
+        .attempts-hearts { 
+            display: flex; gap: 5px; align-items: center; justify-content: center; 
+            background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 20px; 
+            margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .heart-icon { font-size: 18px; color: #ef4444; transition: 0.3s; }
+        .heart-icon.lost { color: #cbd5e1; }
+
+        /* === شريط بحث القاعات === */
+        .hall-search-box {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            background: white;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .hall-search-input {
+            width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
+            font-family: 'Cairo'; font-size: 13px; outline: none; background: #f8fafc;
+        }
+        .add-hall-btn {
+            width: 100%; padding: 10px; margin-top: 10px; 
+            background: #ecfdf5; color: #059669; border: 1px dashed #10b981; 
+            border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;
+        }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -582,7 +653,7 @@
                                 <span>خروج المسؤول</span>
                             </button>
                             <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked">
-                                <i id="reportIcon" class="fa-solid fa-lock sub-btn-icon"></i>
+                                <i id="reportIcon" class="fa-solid fa-list-check sub-btn-icon"></i>
                                 <span>سجل الحضور</span>
                             </button>
                             <button onclick="openExamModal()" class="admin-sub-btn btn-exams">
@@ -626,9 +697,13 @@
                             <span class="timer-label">ثانية</span>
                         </div>
                     </div>
-                    <div class="attempts-badge" id="attemptsDisplayEntry">
-                        <i class="fa-solid fa-heart-pulse"></i> المتبقي: <span id="attemptsCountValEntry">3</span> محاولات
+                    
+                    <div class="attempts-hearts" id="attemptsHeartsContainer">
+                        <i class="fa-solid fa-heart heart-icon"></i>
+                        <i class="fa-solid fa-heart heart-icon"></i>
+                        <i class="fa-solid fa-heart heart-icon"></i>
                     </div>
+
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
                     <div class="input-group">
@@ -733,6 +808,7 @@
                             <option value="" disabled selected>-- اختر الفرقة أولاً --</option>
                         </select>
                     </div>
+                    
                     <div class="custom-select-wrapper" id="hallSelectWrapper">
                         <label class="custom-select-label">المدرج الدراسي (اختياري)</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر المدرج --">
@@ -746,12 +822,22 @@
                         <div class="custom-options">
                             <div class="sheet-handle"></div>
                             <div class="options-title">اختر المدرج الدراسي</div>
-                            <div id="hallOptionsContainer"></div>
+                            
+                            <div class="hall-search-box">
+                                <input type="text" id="hallSearchInput" class="hall-search-input" placeholder="بحث عن القاعة..." onclick="event.stopPropagation()">
+                            </div>
+                            
+                            <div id="hallOptionsContainer" style="max-height: 250px; overflow-y: auto;"></div>
+                            
+                            <div id="adminAddHallContainer" style="padding: 10px; border-top: 1px solid #f1f5f9; display: none;">
+                                <button onclick="addNewHall(event)" class="add-hall-btn">+ إضافة قاعة جديدة</button>
+                            </div>
                         </div>
                         <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
                             <option value="" disabled selected>-- اختر المدرج --</option>
                         </select>
                     </div>
+
                     <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify">
                         <i class="fa-solid fa-fingerprint"></i> التحقق من الهوية
                     </button>
@@ -815,7 +901,7 @@
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbwGzpB4sgb3aC5rPYtmo3C8Pwyq0cLcedEIbacNk56kgmv1aV7OJK1vzofmwszfwzK7/exec",
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbyiW8lPdWwuOv4G3fu2GT87t7QNxjXU064PNrq_a8_PyAchEcWxXSO3F77b0hr9v84t/exec",
             adminPassword: "RYADA",
-            gps: { targetLat: 30.38583, targetLong: 30.48888, allowedDistanceKm: 1.5 },
+            gps: { targetLat: 30.385833057777198, targetLong: 30.488889886477118, allowedDistanceKm: 1.5 },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -853,6 +939,9 @@
         const TEMP_CODE_KEY = "temp_session_code";
         const MAX_ATTEMPTS = 3;
         const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
+
+        // قائمة القاعات الجديدة
+        let hallsList = ["037", "038", "039", "019", "025", "123", "124", "127", "131", "132", "133", "134", "231", "335", "121", "118"];
 
         let userIP = "Unknown";
         let geo_watch_id = null;
@@ -1107,7 +1196,21 @@
             updateUIForAttempts(); 
             return MAX_ATTEMPTS - used; 
         }
-        function updateUIForAttempts() { const left = getAttemptsLeft(); document.getElementById('attemptsCountValEntry').innerText = left; }
+        function updateUIForAttempts() { 
+            const left = getAttemptsLeft(); 
+            // document.getElementById('attemptsCountValEntry').innerText = left; // Old way
+            // New way: Hearts
+            const container = document.getElementById('attemptsHeartsContainer');
+            if(container) {
+                container.innerHTML = '';
+                for(let i=0; i<MAX_ATTEMPTS; i++) {
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-solid fa-heart heart-icon';
+                    if(i >= left) icon.classList.add('lost');
+                    container.appendChild(icon);
+                }
+            }
+        }
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
@@ -1159,24 +1262,13 @@
             // Initialize GPS Watcher Immediately (Just watcher, no blocking)
             startGPSWatcher(); 
 
-            const hallContainer = document.getElementById('hallOptionsContainer');
-            const hallSelect = document.getElementById('hallSelect');
-            for(let i=1; i<=20; i++) {
-                let val = "E" + i;
-                let opt = document.createElement('option'); opt.value = val; opt.text = val; hallSelect.appendChild(opt);
-                let cOpt = document.createElement('div'); cOpt.className = "custom-option"; cOpt.setAttribute('data-value', val); cOpt.innerHTML = `<span>${val}</span>`;
-                cOpt.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    hallContainer.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                    document.querySelector('#hallSelectWrapper .trigger-text').textContent = val;
-                    document.getElementById('hallSelectWrapper').classList.remove('open');
-                    hallSelect.value = val;
-                    playClick();
-                    checkAllConditions();
-                });
-                hallContainer.appendChild(cOpt);
-            }
+            renderHallOptions(); // New function for halls
+
+            // Hall Search Listener
+            document.getElementById('hallSearchInput').addEventListener('input', function(e) {
+                renderHallOptions(e.target.value);
+            });
+
             setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -1187,6 +1279,54 @@
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
         
+        function renderHallOptions(filter = "") {
+            const hallContainer = document.getElementById('hallOptionsContainer');
+            const hallSelect = document.getElementById('hallSelect');
+            
+            // Clear existing options except default in select
+            hallSelect.innerHTML = '<option value="" disabled selected>-- اختر المدرج --</option>';
+            hallContainer.innerHTML = '';
+
+            const filteredHalls = hallsList.filter(h => h.includes(filter));
+
+            filteredHalls.forEach(val => {
+                // Populate Hidden Select
+                let opt = document.createElement('option'); opt.value = val; opt.text = val; hallSelect.appendChild(opt);
+                
+                // Populate Custom UI
+                let cOpt = document.createElement('div'); cOpt.className = "custom-option"; cOpt.setAttribute('data-value', val); cOpt.innerHTML = `<span>${val}</span>`;
+                cOpt.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    hallContainer.parentElement.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    document.querySelector('#hallSelectWrapper .trigger-text').textContent = val;
+                    document.getElementById('hallSelectWrapper').classList.remove('open');
+                    hallSelect.value = val;
+                    playClick();
+                    checkAllConditions();
+                });
+                hallContainer.appendChild(cOpt);
+            });
+
+            if(filteredHalls.length === 0) {
+                hallContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#94a3b8; font-size:12px;">لا توجد نتائج</div>';
+            }
+        }
+
+        function addNewHall(e) {
+            e.stopPropagation();
+            const newHall = prompt("أدخل رقم/اسم القاعة الجديدة:");
+            if (newHall && newHall.trim() !== "") {
+                if(!hallsList.includes(newHall.trim())) {
+                    hallsList.push(newHall.trim());
+                    renderHallOptions();
+                    showToast("تم إضافة القاعة بنجاح", 2000, "#10b981");
+                } else {
+                    showToast("القاعة موجودة بالفعل", 2000, "#f59e0b");
+                }
+            }
+        }
+
         // GPS Watcher (Background)
         function startGPSWatcher() {
             if (navigator.geolocation) {
@@ -1215,17 +1355,20 @@
             const attemptsBadge = document.getElementById('attemptsDisplayEntry');
             const notifBtn = document.getElementById('notificationBtn');
             const adminBypassContainer = document.getElementById('adminBypassContainer');
+            const addHallBtnContainer = document.getElementById('adminAddHallContainer');
             
             if (isAdmin) {
                 badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; if(attemptsBadge) attemptsBadge.style.display = 'none';
                 document.getElementById('adminDeleteAlert').style.display = 'flex';
                 notifBtn.classList.remove('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'block';
+                if(addHallBtnContainer) addHallBtnContainer.style.display = 'block';
             } else {
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
                 document.getElementById('adminDeleteAlert').style.display = 'none';
                 notifBtn.classList.add('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'none';
+                if(addHallBtnContainer) addHallBtnContainer.style.display = 'none';
             }
             updateUIForAttempts();
             checkStoredAlerts(); // Refresh delete buttons
@@ -1588,7 +1731,26 @@
         function backspaceKey() { playClick(); const i = document.getElementById('uniID'); i.value=i.value.slice(0,-1); }
         function clearKey() { playClick(); document.getElementById('uniID').value=''; }
         function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) { var R = 6371; var dLat = (lat2-lat1) * (Math.PI/180); var dLon = (lon2-lon1) * (Math.PI/180); var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2); return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); }
-        async function goBackToWelcome() { playClick(); if (geo_watch_id) navigator.geolocation.clearWatch(geo_watch_id); if(countdownInterval) clearInterval(countdownInterval); await stopCameraSafely(); sessionStorage.removeItem(SESSION_END_TIME_KEY); sessionStorage.removeItem(TEMP_NAME_KEY); sessionStorage.removeItem(TEMP_ID_KEY); sessionStorage.removeItem(TEMP_CODE_KEY); processIsActive = false; releaseWakeLock(); document.getElementById('uniID').value = ''; document.getElementById('startScanCard').style.display = 'flex'; hideConnectionLostModal(); switchScreen('screenWelcome'); }
+        
+        async function goBackToWelcome() { 
+            playClick(); 
+            // Dynamic scroll reset to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (geo_watch_id) navigator.geolocation.clearWatch(geo_watch_id); 
+            if(countdownInterval) clearInterval(countdownInterval); 
+            await stopCameraSafely(); 
+            sessionStorage.removeItem(SESSION_END_TIME_KEY); 
+            sessionStorage.removeItem(TEMP_NAME_KEY); 
+            sessionStorage.removeItem(TEMP_ID_KEY); 
+            sessionStorage.removeItem(TEMP_CODE_KEY); 
+            processIsActive = false; 
+            releaseWakeLock(); 
+            document.getElementById('uniID').value = ''; 
+            document.getElementById('startScanCard').style.display = 'flex'; 
+            hideConnectionLostModal(); 
+            switchScreen('screenWelcome'); 
+        }
         
         function closeSelect(overlay) { const wrapper = overlay.parentElement; wrapper.classList.remove('open'); }
         function setupCustomSelects() {
