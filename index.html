@@ -1256,11 +1256,6 @@
                 if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
             }, 1000);
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
-            
-            // Check Ban on Load
-            if (getAttemptsLeft() === 0) {
-                 document.getElementById('banModal').style.display = 'flex';
-            }
         };
         
         function renderHallOptions(filter = "") {
