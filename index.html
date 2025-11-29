@@ -28,18 +28,20 @@
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
-        /* تعديل: السماح للصفحة بالتمدد عند فتح الكيبورد */
         body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: padding-bottom 0.3s; }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
         .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; transition: margin-top 0.3s; }
         
-        /* تعديل: رفع الكارت عند فتح الكيبورد */
+        /* تعديل: رفع الكارت عند فتح الكيبورد بشكل ذكي */
         @media (max-height: 600px) {
-            .app-card { margin-top: 10px; min-height: 500px; }
-            .card-banner { height: 100px; }
-            .hero-icon-wrapper { width: 80px; height: 80px; margin-top: -40px; }
-            .hero-icon { font-size: 30px; }
+            .app-card { margin-top: 5px; margin-bottom: 5px; min-height: auto; height: 95vh; border-radius: 16px; justify-content: flex-start; }
+            .card-banner { height: 80px; flex-shrink: 0; }
+            .hero-icon-wrapper { width: 70px; height: 70px; margin-top: -35px; margin-bottom: 10px; }
+            .hero-icon { font-size: 28px; }
+            .card-body { padding: 0 15px 15px 15px; overflow-y: auto; }
+            /* رفع النوافذ المنبثقة أيضاً */
+            .modal-box { align-self: flex-start; margin-top: 20px; transform: scale(1) !important; max-height: 90vh; overflow-y: auto; }
         }
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
@@ -290,6 +292,10 @@
         .arb-title { display: block; font-size: 11px; font-weight: 800; color: #991b1b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .arb-text { font-size: 13px; font-weight: 700; color: #ef4444; line-height: 1.5; }
         
+        /* تعديل: ستايل التنبيهات الجديد (مقروء/غير مقروء) */
+        .unread-alert { background-color: #fff1f2 !important; border-left: 4px solid #ef4444; }
+        .read-alert { opacity: 0.8; background-color: #fff; }
+
         /* === زر الرجوع في أسفل اليمين === */
         .admin-floating-back { position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.9); color: #475569; border-radius: 50%; display: none; align-items: center; justify-content: center; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15); border: 1px solid #e2e8f0; z-index: 1000; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .admin-floating-back:active { transform: scale(0.9); }
@@ -837,7 +843,7 @@
             }, 600);
         }
 
-        // --- ALERT SYSTEM ---
+        // --- ALERT SYSTEM (UPDATED) ---
         function updateNotificationUI(data) {
             if (data.isRepeat || data.isFar) {
                 const newAlert = {
@@ -847,11 +853,11 @@
                     isRepeat: data.isRepeat,
                     isFar: data.isFar,
                     count: data.count,
-                    distance: data.distance
+                    distance: data.distance,
+                    isRead: false // New property
                 };
                 
-                // Add to array and save
-                systemAlerts.unshift(newAlert); // Add to top
+                systemAlerts.unshift(newAlert);
                 localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
                 
                 checkStoredAlerts();
@@ -861,25 +867,32 @@
         function checkStoredAlerts() {
             const btn = document.getElementById('notificationBtn');
             const container = document.getElementById('alertsListContainer');
-            
-            // Admin Delete Button Visibility
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
             document.getElementById('adminDeleteAlert').style.display = isAdmin ? 'flex' : 'none';
 
-            if (systemAlerts.length > 0) {
+            // Check if there are ANY unread alerts
+            const unreadCount = systemAlerts.filter(a => !a.isRead).length;
+
+            if (unreadCount > 0) {
                 btn.classList.add('has-alert');
-                
+            } else {
+                btn.classList.remove('has-alert');
+            }
+
+            if (systemAlerts.length > 0) {
                 let html = '';
                 systemAlerts.forEach((alert, index) => {
-                    // Only admin can see delete button
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
                     
                     let statusHtml = '';
                     if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
                     if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
 
+                    // Apply styles based on read status
+                    const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
+
                     html += `
-                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer;" onclick="toggleAlertDetails(${index})">
+                    <div class="${itemClass}" style="border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer; transition:0.3s;" onclick="toggleAlertDetails(${index})">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="display:flex; align-items:center;">
                                 ${deleteBtn}
@@ -901,12 +914,18 @@
                 });
                 container.innerHTML = html;
             } else {
-                btn.classList.remove('has-alert');
                 container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>';
             }
         }
 
         function toggleAlertDetails(index) {
+            // Mark as read when clicked
+            if (!systemAlerts[index].isRead) {
+                systemAlerts[index].isRead = true;
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                checkStoredAlerts(); // Refresh UI to update badge and styles
+            }
+
             const el = document.getElementById(`alert-detail-${index}`);
             if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
         }
@@ -950,7 +969,6 @@
             if (!isAdmin) {
                 const btn = document.getElementById('notificationBtn');
                 btn.classList.add('shake-lock'); 
-                // التعديل: لا أريد أن تظهر رسائل
                 if(navigator.vibrate) navigator.vibrate(100);
                 return;
             }
@@ -969,7 +987,6 @@
 
             for (let i = 0; i < cards.length; i++) {
                 const nameEl = cards[i].querySelector('.st-name');
-                // نبحث في النص بالكامل داخل الكارت (اسم + ID)
                 const textValue = cards[i].textContent || cards[i].innerText;
                 if (textValue.toUpperCase().indexOf(filter) > -1) {
                     cards[i].style.display = "";
@@ -1026,7 +1043,7 @@
             const bypassCheck = document.getElementById('bypassCheckbox');
             if(bypassCheck) bypassCheck.checked = false;
             
-            checkStoredAlerts(); // Re-check alerts on reset
+            checkStoredAlerts(); 
         }
 
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
@@ -1037,7 +1054,6 @@
         async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { console.log("Wake Lock error:", err); } }
         function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
         
-        // التعديل: إصلاح منطق المحاولات ليعرض 3 محاولات فعلية
         function getAttemptsLeft() { 
             let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
             return Math.max(0, MAX_ATTEMPTS - used); 
@@ -1075,7 +1091,6 @@
                 if (screenId === 'screenLoading') { icon.className = "fa-solid fa-satellite-dish hero-icon fa-spin"; icon.style.color = "var(--primary)"; }
                 else if (screenId === 'screenDataEntry') { icon.className = "fa-solid fa-user-pen hero-icon"; icon.style.color = "var(--primary)"; icon.style.animation = "none"; }
                 else if (screenId === 'screenScanQR') { icon.className = "fa-solid fa-qrcode hero-icon"; icon.style.color = "var(--primary)"; icon.style.animation = "none"; }
-                // التعديل: إضافة أيقونة في الدائرة البيضاء في صفحة التعرف على الهوية
                 else if (screenId === 'screenFaceCheck') { icon.className = "fa-solid fa-face-viewfinder hero-icon"; icon.style.color = "var(--primary)"; icon.style.animation = "none"; }
                 else if (screenId === 'screenSuccess') { icon.className = "fa-solid fa-check hero-icon"; icon.style.color = "#10b981"; icon.style.animation = "none"; }
                 else if (screenId === 'screenError') { icon.className = "fa-solid fa-triangle-exclamation hero-icon"; icon.style.color = "#ef4444"; icon.style.animation = "none"; }
