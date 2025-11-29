@@ -168,9 +168,9 @@
         .btn-report.unlocked { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; }
         .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed; border: 1px solid #ddd6fe; flex-direction: row; height: 60px; margin-top: 5px; }
         
-        /* التعديل: تصميم جديد لزر تحديث النظام (دائري وعصري) */
+        /* التعديل: تصميم زر تحديث النظام (دائري ومتوسط) */
         .btn-refresh { 
-            grid-column: span 1; 
+            grid-column: span 2; 
             background: #ffffff; 
             color: #0ea5e9; 
             border: 2px solid #e0f2fe; 
@@ -179,25 +179,11 @@
             margin-top: 5px; 
             border-radius: 50%; /* دائري */
             width: 55px; /* مربع ليصبح دائرة */
-            justify-self: center; /* توسيط */
+            justify-self: center; /* توسيط في الشبكة */
             box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
         }
         .btn-refresh:active { background: #f0f9ff; transform: rotate(180deg); transition: 0.4s; }
 
-        /* التعديل: تصميم جديد لزر إدخال البيانات (عصري) */
-        .btn-data-entry { 
-            grid-column: span 1; 
-            background: linear-gradient(135deg, #8b5cf6, #6366f1); 
-            color: white; 
-            border: none; 
-            flex-direction: column; 
-            height: 55px; 
-            margin-top: 5px; 
-            opacity: 0.7; 
-            cursor: not-allowed; 
-            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
-        }
-        
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
@@ -377,6 +363,9 @@
         /* === النافذة المنبثقة للموقع الجغرافي === */
         #locationForceModal { z-index: 999999999 !important; background: #0f172a; }
         #locationForceModal .modal-box { border: 2px solid #ef4444; }
+
+        /* تعديل: رفع طبقة نافذة الحذف لتكون فوق التقرير */
+        #modernConfirmModal { z-index: 2147483647 !important; }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -601,11 +590,6 @@
                                 <span style="font-size: 13px;">تنظيم الامتحانات</span>
                             </button>
                             
-                            <button class="admin-sub-btn btn-data-entry">
-                                <i class="fa-solid fa-database sub-btn-icon"></i>
-                                <span style="font-size: 11px;">إدخال البيانات<br>(سيتم تفعيله لاحقا)</span>
-                            </button>
-
                             <button onclick="safeClick(this, () => location.reload())" class="admin-sub-btn btn-refresh">
                                 <i class="fa-solid fa-rotate-right sub-btn-icon" style="font-size: 24px;"></i>
                             </button>
@@ -1247,15 +1231,51 @@
             checkStoredAlerts(); // Refresh delete buttons
         }
 
+        function checkLocationStrict(onSuccess) {
+            if (!userLat || !userLng) {
+                // Try one more fetch if empty
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            userLat = pos.coords.latitude;
+                            userLng = pos.coords.longitude;
+                            checkDistance(onSuccess);
+                        },
+                        (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
+                        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+                    );
+                } else {
+                    document.getElementById('locationForceModal').style.display = 'flex';
+                }
+            } else {
+                checkDistance(onSuccess);
+            }
+        }
+
+        function checkDistance(onSuccess) {
+            let dist = getDistanceFromLatLonInKm(userLat, userLng, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
+            if (dist > CONFIG.gps.allowedDistanceKm) {
+                // Too far!
+                showError("🚫 أنت خارج نطاق الكلية. يرجى التواجد في المكان الصحيح.", false);
+                return;
+            }
+            onSuccess();
+        }
+
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
-            const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             
-            // Direct entry, no blocking modal
+            const isOnline = await checkRealConnection(); 
+            if (!isOnline) { showConnectionLostModal(); return; }
+            
+            // Check GPS strictly FIRST
             switchScreen('screenLoading');
-            generateCodeAndShowDataEntry();
+            
+            checkLocationStrict(() => {
+                generateCodeAndShowDataEntry();
+            });
         }
 
         function generateCodeAndShowDataEntry() {
@@ -1277,10 +1297,20 @@
                 const percent = Math.max(0, remainingMs / (DATA_ENTRY_TIMEOUT_SEC * 1000)); const offset = circumference - (percent * circumference);
                 text.innerText = secondsLeft.toString(); circle.style.strokeDashoffset = offset;
                 if (secondsLeft > 10) circle.style.stroke = "#10b981"; else if (secondsLeft > 5) circle.style.stroke = "#f59e0b"; else { circle.style.stroke = "#ef4444"; circle.parentElement.classList.add('timer-pulse'); }
+                
                 if (remainingMs <= 0) {
-                    clearInterval(countdownInterval); if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
+                    clearInterval(countdownInterval); 
+                    if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
+                    
                     document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
-                    showError(`⏳ انتهى الوقت.`, false); 
+                    
+                    // Decrease Attempt Immediately and Check Ban
+                    let left = decrementAttempts();
+                    if (left === 0) {
+                        document.getElementById('banModal').style.display = 'flex';
+                    } else {
+                        showError(`⏳ انتهى الوقت. (المتبقي: ${left})`, false); 
+                    }
                 }
             }, 100);
         }
@@ -1325,34 +1355,15 @@
         async function startFaceVerificationProcess() {
             if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             
-            // تعديل: محاولة جلب الموقع هنا بدلاً من الحظر الفوري
-            if(!userLat || !userLng) {
-                // Show temporary loading state
-                const btn = document.getElementById('btnVerify');
-                const oldText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديد الموقع...';
-                
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            userLat = pos.coords.latitude;
-                            userLng = pos.coords.longitude;
-                            btn.innerHTML = oldText;
-                            proceedToCamera(); // Success -> Go to camera
-                        },
-                        (err) => {
-                            btn.innerHTML = oldText;
-                            document.getElementById('locationForceModal').style.display = 'flex'; // Fail -> Show Modal
-                        },
-                        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-                    );
-                } else {
-                    btn.innerHTML = oldText;
-                    document.getElementById('locationForceModal').style.display = 'flex';
-                }
-                return;
-            }
-            proceedToCamera();
+            const btn = document.getElementById('btnVerify');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديد الموقع...';
+
+            checkLocationStrict(() => {
+                // If location is good, proceed
+                btn.innerHTML = oldText;
+                proceedToCamera();
+            });
         }
 
         async function proceedToCamera() {
@@ -1515,14 +1526,14 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             
+            // Final Location Check (Step 3 - Just to be safe)
             if(!userLat || !userLng) {
                 if (navigator.geolocation) {
-                    // Try one last time before giving up
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             userLat = pos.coords.latitude;
                             userLng = pos.coords.longitude;
-                            submitToGoogle(); // Recursive retry
+                            submitToGoogle(); 
                         },
                         (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
                         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
