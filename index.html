@@ -1031,7 +1031,7 @@
                     isFar: data.isFar,
                     count: data.count,
                     distance: data.distance,
-                    hall: data.hall, // حفظ القاعة
+                    hall: data.hall, 
                     isRead: false
                 };
                 systemAlerts.unshift(newAlert);
@@ -1057,9 +1057,7 @@
                     if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
                     if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
                     
-                    // ذكر القاعة في التنبيه
                     const hallInfo = alert.hall ? `<div style="font-size:11px; color:#0f766e; font-weight:bold; margin-top:2px;">🏛️ القاعة: ${alert.hall}</div>` : '';
-
                     const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
 
                     html += `
@@ -1126,7 +1124,6 @@
 
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
         
-        // Search Function (Universal)
         function filterStudents() {
             const input = document.getElementById('studentSearchInput'); const filter = input.value.toUpperCase();
             const container = document.getElementById('studentsContainer'); const cards = container.getElementsByClassName('student-detailed-card');
@@ -1181,7 +1178,6 @@
                     if(i >= left) icon.classList.add('lost'); container.appendChild(icon);
                 }
             }
-            // تم إزالة شرط الحظر من هنا، ليظهر فقط عند الضغط على الزر
         }
 
         window.history.pushState(null, null, window.location.href);
@@ -1190,7 +1186,6 @@
             else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { goBackToWelcome(); }
         };
         
-        // --- Strict Close/Background Monitoring ---
         function handleStrictPenalty() {
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
@@ -1198,7 +1193,6 @@
         }
 
         window.addEventListener('beforeunload', (event) => {
-             // خصم محاولة فوراً عند غلق الصفحة أثناء العملية
              handleStrictPenalty();
         });
 
@@ -1357,7 +1351,6 @@
 
         async function startProcess(skip = false) {
             playClick();
-            // Check Ban Before Start (This will now run only when button is clicked)
             if (getAttemptsLeft() === 0 && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                  document.getElementById('banModal').style.display = 'flex';
                  return;
@@ -1493,7 +1486,7 @@
                         if(ratio < 0.5) {
                             clearInterval(faceCheckInterval); if(videoStream) videoStream.getTracks().forEach(track => track.stop()); document.getElementById('beepSound').play(); 
                             attendanceData.vector = Array.from(det.descriptor); const statusTxt = document.getElementById('statusTxt'); statusTxt.innerText = "جاري تحليل البيانات...";
-                            // Add DEVICE_ID and SESSION_KEY to payload for Identity Check (to catch bans early if needed)
+                            
                             const deviceId = getUniqueDeviceId();
                             const sessionKey = generateSessionKey();
                             const payload = { 
@@ -1553,8 +1546,6 @@
             document.getElementById('receiptTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'});
             
             const finalCodeValue = `${attendanceData.code} (QR: ${sessionPassVal})`;
-            
-            // --- NEW: Inject Device ID and Session Key ---
             const deviceId = getUniqueDeviceId();
             const sessionKey = generateSessionKey();
 
@@ -1570,18 +1561,18 @@
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
             
-            // Append New Fields to fill M, N, O columns in Excel
+            // --- Shotgun Approach: Send data with MULTIPLE keys to match whatever the backend expects ---
             formParams.append("device_id", deviceId);
+            formParams.append("deviceId", deviceId);
+            formParams.append("device", deviceId);
             formParams.append("session_key", sessionKey);
+            formParams.append("sessionKey", sessionKey);
+            formParams.append("key", sessionKey);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(ATTEMPTS_KEY, new Date().toLocaleDateString('en-GB')); } // Reset attempts if successful? Or keep counting? Usually keep counting to prevent reuse. 
-                // Based on "Ban if > 3", we assume success counts as 1.
-                // However, user logic says "deduct attempt on fail/exit".
-                // If success, we don't necessarily deduct an attempt unless you want max 3 successes per day.
-                // Assuming standard logic: success is good. Failures deduct.
+                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(ATTEMPTS_KEY, new Date().toLocaleDateString('en-GB')); } 
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
