@@ -1181,9 +1181,7 @@
                     if(i >= left) icon.classList.add('lost'); container.appendChild(icon);
                 }
             }
-            if (left === 0 && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
-                 document.getElementById('banModal').style.display = 'flex';
-            }
+            // تم إزالة شرط الحظر من هنا، ليظهر فقط عند الضغط على الزر
         }
 
         window.history.pushState(null, null, window.location.href);
@@ -1359,7 +1357,7 @@
 
         async function startProcess(skip = false) {
             playClick();
-            // Check Ban Before Start
+            // Check Ban Before Start (Logic Moved Here)
             if (getAttemptsLeft() === 0 && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                  document.getElementById('banModal').style.display = 'flex';
                  return;
