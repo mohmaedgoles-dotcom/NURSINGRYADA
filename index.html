@@ -29,33 +29,52 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
         
-        /* تعديل: تحسين استجابة الجسم للكيبورد */
-        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: all 0.3s; }
+        /* تعديل: حل نهائي للكيبورد */
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            min-height: 100vh; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            color: var(--text-main); 
+            background-color: transparent !important; 
+            position: relative; 
+            padding-top: env(safe-area-inset-top); 
+            padding-bottom: env(safe-area-inset-bottom); 
+            padding-left: env(safe-area-inset-left); 
+            padding-right: env(safe-area-inset-right); 
+            -webkit-user-select: none; user-select: none; touch-action: manipulation; 
+            transition: all 0.3s; 
+        }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; transition: margin-top 0.3s; }
         
-        /* === هام جداً: حل مشكلة الكيبورد (رفع النوافذ والكارت) === */
-        @media (max-height: 600px) {
-            /* رفع الكارت الرئيسي */
-            .app-card { margin-top: 0; margin-bottom: 0; min-height: 100vh; height: 100vh; border-radius: 0; justify-content: flex-start; }
-            .card-banner { height: 80px; flex-shrink: 0; }
-            .hero-icon-wrapper { width: 70px; height: 70px; margin-top: -35px; margin-bottom: 10px; }
-            .hero-icon { font-size: 28px; }
-            .card-body { padding: 0 15px 15px 15px; overflow-y: auto; }
+        .app-card { 
+            background: var(--glass-bg); 
+            width: 90%; max-width: 400px; 
+            border-radius: 24px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+            animation: slideUp 0.6s ease-out; 
+            margin: 20px auto; 
+            min-height: 650px; 
+            display: flex; flex-direction: column; 
+        }
+        
+        /* === حل مشكلة الكيبورد: عند صغر الشاشة، اسمح بالتمرير وارفع المحتوى === */
+        @media (max-height: 650px) {
+            body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
+            .app-card { margin-top: 0; margin-bottom: 50px; min-height: auto; height: auto; border-radius: 16px; overflow: visible; }
+            .card-body { overflow-y: visible; }
+            .section.active { padding-bottom: 150px; } /* مساحة إضافية تحت المحتوى */
             
-            /* رفع النوافذ المنبثقة (Modals) للأعلى عند فتح الكيبورد */
-            .modal-overlay {
-                align-items: flex-start !important; /* المحاذاة للأعلى بدلاً من المنتصف */
-                padding-top: 20px;
-                overflow-y: auto; /* السماح بالتمرير */
-            }
-            .modal-box {
-                margin-top: 10px;
-                margin-bottom: 300px; /* مسافة سفلية كبيرة لرفع المحتوى فوق الكيبورد */
-                transform: scale(1) !important;
-                max-height: none !important;
-            }
+            /* رفع النوافذ لتظهر فوق الكيبورد */
+            .modal-overlay { align-items: flex-start !important; padding-top: 10px; overflow-y: auto; }
+            .modal-box { margin-top: 10px; margin-bottom: 50px; position: relative; top: 0; transform: none !important; }
         }
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
@@ -98,7 +117,7 @@
         
         /* قفل الجرس */
         .notification-btn.locked::after {
-            content: '\f023'; /* أيقونة القفل */
+            content: '\f023'; 
             font-family: 'Font Awesome 6 Free'; font-weight: 900;
             position: absolute; bottom: -5px; right: -5px;
             font-size: 12px; background: #334155; color: white;
@@ -149,8 +168,35 @@
         .btn-report.unlocked { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; }
         .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #f5f3ff, #ede9fe); color: #7c3aed; border: 1px solid #ddd6fe; flex-direction: row; height: 60px; margin-top: 5px; }
         
-        .btn-refresh { grid-column: span 1; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); color: #0ea5e9; border: 1px solid #bae6fd; flex-direction: row; height: 55px; margin-top: 5px; }
-        .btn-data-entry { grid-column: span 1; background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #c2410c; border: 1px solid #fed7aa; flex-direction: column; height: 55px; margin-top: 5px; opacity: 0.7; cursor: not-allowed; }
+        /* التعديل: تصميم جديد لزر تحديث النظام (دائري وعصري) */
+        .btn-refresh { 
+            grid-column: span 1; 
+            background: #ffffff; 
+            color: #0ea5e9; 
+            border: 2px solid #e0f2fe; 
+            flex-direction: row; 
+            height: 55px; 
+            margin-top: 5px; 
+            border-radius: 50%; /* دائري */
+            width: 55px; /* مربع ليصبح دائرة */
+            justify-self: center; /* توسيط */
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
+        }
+        .btn-refresh:active { background: #f0f9ff; transform: rotate(180deg); transition: 0.4s; }
+
+        /* التعديل: تصميم جديد لزر إدخال البيانات (عصري) */
+        .btn-data-entry { 
+            grid-column: span 1; 
+            background: linear-gradient(135deg, #8b5cf6, #6366f1); 
+            color: white; 
+            border: none; 
+            flex-direction: column; 
+            height: 55px; 
+            margin-top: 5px; 
+            opacity: 0.7; 
+            cursor: not-allowed; 
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
         
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
@@ -159,8 +205,6 @@
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
         
-        .btn-admin-bypass { background: #fee2e2; color: #ef4444; width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #fecaca; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: none; }
-
         .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
@@ -730,7 +774,7 @@
                     
                     <div id="adminBypassContainer" style="display:none; margin-top:10px; margin-bottom:15px; text-align:right;">
                         <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
-                            <input type="checkbox" id="bypassCheckbox" style="width:20px; height:20px; accent-color:#10b981;" onchange="checkAllConditions()">
+                            <input type="checkbox" id="bypassCheckbox" style="width:20px; height:20px; accent-color:#10b981;" onchange="toggleBypassMode()">
                             <span style="font-weight:bold; color:#ef4444; font-size:13px;">تجاوز التحقق (وضع المسؤول)</span>
                         </label>
                     </div>
@@ -1050,6 +1094,7 @@
             if(verifyBtn) {
                 verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية';
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+                verifyBtn.style.display = 'flex';
                 verifyBtn.classList.remove('disabled');
             }
             // Reset bypass checkbox
@@ -1127,9 +1172,8 @@
             initGlobalGuard(); updateUIForMode(); setupCustomSelects();
             checkStoredAlerts(); 
             
-            // Initialize GPS Watcher Immediately
-            // تعديل: لا تجبره هنا، فقط قم بتهيئة المراقبة
-            // startGPSWatcher(); 
+            // Initialize GPS Watcher Immediately (Just watcher, no blocking)
+            startGPSWatcher(); 
 
             const hallContainer = document.getElementById('hallOptionsContainer');
             const hallSelect = document.getElementById('hallSelect');
@@ -1158,6 +1202,23 @@
             }, 1000);
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
+        
+        // GPS Watcher (Background)
+        function startGPSWatcher() {
+            if (navigator.geolocation) {
+                geo_watch_id = navigator.geolocation.watchPosition(
+                    (position) => {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        // Do NOT show blocking modal here, just update vars
+                    },
+                    (error) => {
+                        // Do nothing, handle errors on action click
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+                );
+            }
+        }
 
         function updateUIForMode() {
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
@@ -1189,11 +1250,10 @@
         async function startProcess(skip = false) {
             playClick();
             resetApplicationState();
-            // Only server response will block now, no local storage checks for blocking
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             
-            // تعديل: لا نتحقق من الموقع هنا بشكل صارم، نسمح له بالدخول
+            // Direct entry, no blocking modal
             switchScreen('screenLoading');
             generateCodeAndShowDataEntry();
         }
@@ -1219,7 +1279,6 @@
                 if (secondsLeft > 10) circle.style.stroke = "#10b981"; else if (secondsLeft > 5) circle.style.stroke = "#f59e0b"; else { circle.style.stroke = "#ef4444"; circle.parentElement.classList.add('timer-pulse'); }
                 if (remainingMs <= 0) {
                     clearInterval(countdownInterval); if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
-                    // No local storage decrement logic here anymore
                     document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
                     showError(`⏳ انتهى الوقت.`, false); 
                 }
@@ -1242,40 +1301,53 @@
             } else { alertBox.innerText = "❌ الكود غير صحيح."; alertBox.style.display = 'block'; if(navigator.vibrate) navigator.vibrate(300); }
         }
 
-        async function startFaceVerificationProcess() {
-            // التحقق من تجاوز المسؤول
-            if (document.getElementById('bypassCheckbox') && document.getElementById('bypassCheckbox').checked && sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
+        // التعديل: منطق الـ Toggle للباس
+        function toggleBypassMode() {
+            const chk = document.getElementById('bypassCheckbox');
+            const btnVerify = document.getElementById('btnVerify');
+            
+            if(chk.checked) {
                 attendanceData.isVerified = true;
-                const verifyBtn = document.getElementById('btnVerify');
-                verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم تجاوز التحقق (مسؤول)';
-                verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                verifyBtn.classList.add('disabled');
-                playSuccess();
-                checkAllConditions();
-                return;
+                btnVerify.style.display = 'none'; // Hide button
+                // Or if you prefer showing it disabled:
+                // btnVerify.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق يدوياً';
+                // btnVerify.classList.add('disabled');
+                showToast("تم تفعيل التجاوز اليدوي", 2000, "#10b981");
+            } else {
+                attendanceData.isVerified = false;
+                btnVerify.style.display = 'flex';
+                btnVerify.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية';
+                btnVerify.classList.remove('disabled');
             }
+            checkAllConditions();
+        }
 
+        async function startFaceVerificationProcess() {
             if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             
-            // تعديل: إجبار الموقع هنا
-            // Check GPS strictly HERE just before face check or submitting
+            // تعديل: محاولة جلب الموقع هنا بدلاً من الحظر الفوري
             if(!userLat || !userLng) {
-                // Try to get it now
+                // Show temporary loading state
+                const btn = document.getElementById('btnVerify');
+                const oldText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحديد الموقع...';
+                
                 if (navigator.geolocation) {
-                    document.getElementById('locationForceModal').style.display = 'flex';
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             userLat = pos.coords.latitude;
                             userLng = pos.coords.longitude;
-                            document.getElementById('locationForceModal').style.display = 'none';
-                            proceedToCamera();
+                            btn.innerHTML = oldText;
+                            proceedToCamera(); // Success -> Go to camera
                         },
                         (err) => {
-                            document.getElementById('locationForceModal').style.display = 'flex';
+                            btn.innerHTML = oldText;
+                            document.getElementById('locationForceModal').style.display = 'flex'; // Fail -> Show Modal
                         },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
                     );
                 } else {
+                    btn.innerHTML = oldText;
                     document.getElementById('locationForceModal').style.display = 'flex';
                 }
                 return;
@@ -1406,16 +1478,12 @@
                                 const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
                                 const result = await response.json();
                                 
-                                // التعديل: تسجيل التنبيه ولكن عدم إظهاره للطالب
                                 updateNotificationUI(result);
 
-                                // التعديل: إذا تجاوز الحد المسموح (3 مرات) -> حظر
                                 if (result.count >= 3) {
                                     document.getElementById('banModal').style.display = 'flex';
-                                    return; // Stop process
+                                    return; 
                                 }
-
-                                // التعديل: إذا كان بعيداً -> لا تحظر، فقط سجل التنبيه (تم بالفعل في updateNotificationUI) وأكمل
                                 
                                 attendanceData.isVerified = true;
                                 const verifyBtn = document.getElementById('btnVerify');
@@ -1424,7 +1492,6 @@
                                 verifyBtn.classList.add('disabled');
                                 switchScreen('screenScanQR');
                                 playSuccess();
-                                // لا نظهر رسالة للطالب بخصوص التنبيهات هنا
                                 showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981');
                                 checkAllConditions(); 
                             } catch(err) {
@@ -1448,16 +1515,14 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             
-            // تعديل: تأكد من الموقع قبل الإرسال النهائي أيضا
             if(!userLat || !userLng) {
                 if (navigator.geolocation) {
-                    document.getElementById('locationForceModal').style.display = 'flex';
+                    // Try one last time before giving up
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             userLat = pos.coords.latitude;
                             userLng = pos.coords.longitude;
-                            document.getElementById('locationForceModal').style.display = 'none';
-                            submitToGoogle(); // Retry submit
+                            submitToGoogle(); // Recursive retry
                         },
                         (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
                         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
@@ -1473,7 +1538,6 @@
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
 
-            // Hall is no longer mandatory for button logic, but beneficial to send
             if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
