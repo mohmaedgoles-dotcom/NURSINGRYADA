@@ -24,14 +24,24 @@
 
     <style>
         /* === الأساسيات === */
-        #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
+        #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 2147483647; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
-        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+        /* تعديل: السماح للصفحة بالتمدد عند فتح الكيبورد */
+        body { font-family: 'Cairo', sans-serif; min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-main); background-color: transparent !important; position: relative; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: padding-bottom 0.3s; }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; }
+        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 50px auto 40px auto; min-height: 650px; display: flex; flex-direction: column; transition: margin-top 0.3s; }
+        
+        /* تعديل: رفع الكارت عند فتح الكيبورد */
+        @media (max-height: 600px) {
+            .app-card { margin-top: 10px; min-height: 500px; }
+            .card-banner { height: 100px; }
+            .hero-icon-wrapper { width: 80px; height: 80px; margin-top: -40px; }
+            .hero-icon { font-size: 30px; }
+        }
+
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
@@ -136,9 +146,6 @@
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
         
-        /* التعديل: زر تجاوز التحقق للمسؤول */
-        .btn-admin-bypass { background: #fee2e2; color: #ef4444; width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #fecaca; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: none; }
-
         .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
@@ -251,7 +258,10 @@
         .scan-btn.scanned { background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); pointer-events: none; }
         .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(to right, transparent, #ef4444, transparent); box-shadow: 0 0 4px #ef4444; z-index: 10; animation: scanning 2s infinite alternate; display: none; }
         .scan-success-badge { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; padding: 15px; border-radius: 15px; font-weight: 700; font-size: 14px; display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; animation: popUp 0.4s; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); animation: fadeIn 0.3s ease-out; }
+        
+        /* تعديل: رفع قيمة z-index للنوافذ لتظهر فوق كل شيء */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); animation: fadeIn 0.3s ease-out; }
+        
         .modal-box { background: rgba(255, 255, 255, 0.95); width: 85%; max-width: 320px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); transform: scale(0.9); animation: popUp 0.3s; }
         .modal-title { font-size: 18px; font-weight: 900; margin-bottom: 10px; color: var(--text-main); }
         .modal-text { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
@@ -302,7 +312,7 @@
         #notificationBtn.has-alert { color: #ef4444; background: #fff1f2; animation: pulse-red 2s infinite; }
         
         /* === النافذة المنبثقة للموقع الجغرافي === */
-        #locationForceModal { z-index: 999999 !important; background: #0f172a; }
+        #locationForceModal { z-index: 999999999 !important; background: #0f172a; }
         #locationForceModal .modal-box { border: 2px solid #ef4444; }
 
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -355,7 +365,7 @@
         </div>
     </div>
     
-    <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999;">
+    <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999999;">
         <div class="modal-box">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -619,10 +629,6 @@
                     </div>
                     <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
                     <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
-                    
-                    <button id="btnAdminBypass" class="btn-admin-bypass" onclick="bypassFaceCheck()">
-                        تجاوز التحقق (للمسؤول فقط) <i class="fa-solid fa-forward"></i>
-                    </button>
                 </div>
                 
                 <div id="screenScanQR" class="section">
@@ -702,6 +708,14 @@
                     <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify">
                         <i class="fa-solid fa-fingerprint"></i> التحقق من الهوية
                     </button>
+                    
+                    <div id="adminBypassContainer" style="display:none; margin-top:10px; margin-bottom:15px; text-align:right;">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <input type="checkbox" id="bypassCheckbox" style="width:20px; height:20px; accent-color:#10b981;" onchange="checkAllConditions()">
+                            <span style="font-weight:bold; color:#ef4444; font-size:13px;">تجاوز التحقق (وضع المسؤول)</span>
+                        </label>
+                    </div>
+
                     <div id="qr-reader"><div class="scanner-laser"></div></div>
                     <div id="startScanCard" class="qr-card-trigger" onclick="safeClick(this, startQrScanner)">
                         <div class="qr-card-icon"><i class="fa-solid fa-camera"></i></div>
@@ -1008,6 +1022,10 @@
                 verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
                 verifyBtn.classList.remove('disabled');
             }
+            // Reset bypass checkbox
+            const bypassCheck = document.getElementById('bypassCheckbox');
+            if(bypassCheck) bypassCheck.checked = false;
+            
             checkStoredAlerts(); // Re-check alerts on reset
         }
 
@@ -1082,7 +1100,8 @@
             checkStoredAlerts(); 
             
             // Initialize GPS Watcher Immediately
-            startGPSWatcher();
+            // تعديل: لا تجبره هنا، فقط قم بتهيئة المراقبة
+            // startGPSWatcher(); 
 
             const hallContainer = document.getElementById('hallOptionsContainer');
             const hallSelect = document.getElementById('hallSelect');
@@ -1112,26 +1131,6 @@
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
 
-        // GPS Watcher Logic - التعديل: جعل النافذة حساسة جداً
-        function startGPSWatcher() {
-            if (navigator.geolocation) {
-                geo_watch_id = navigator.geolocation.watchPosition(
-                    (position) => {
-                        userLat = position.coords.latitude;
-                        userLng = position.coords.longitude;
-                        document.getElementById('locationForceModal').style.display = 'none'; // Hide immediately if GPS back
-                    },
-                    (error) => {
-                        // Show immediately if error/disabled
-                        document.getElementById('locationForceModal').style.display = 'flex';
-                    },
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-                );
-            } else {
-                 document.getElementById('locationForceModal').style.display = 'flex';
-            }
-        }
-
         function updateUIForMode() {
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
             const badge = document.getElementById('adminBadge');
@@ -1142,18 +1141,18 @@
             const adminFloating = document.getElementById('adminFloatingBack');
             const attemptsBadge = document.getElementById('attemptsDisplayEntry');
             const notifBtn = document.getElementById('notificationBtn');
-            const adminBypassBtn = document.getElementById('btnAdminBypass');
+            const adminBypassContainer = document.getElementById('adminBypassContainer');
             
             if (isAdmin) {
                 badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; if(attemptsBadge) attemptsBadge.style.display = 'none';
                 document.getElementById('adminDeleteAlert').style.display = 'flex';
                 notifBtn.classList.remove('locked');
-                if(adminBypassBtn) adminBypassBtn.style.display = 'block';
+                if(adminBypassContainer) adminBypassContainer.style.display = 'block';
             } else {
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; if(attemptsBadge) attemptsBadge.style.display = 'inline-flex';
                 document.getElementById('adminDeleteAlert').style.display = 'none';
                 notifBtn.classList.add('locked');
-                if(adminBypassBtn) adminBypassBtn.style.display = 'none';
+                if(adminBypassContainer) adminBypassContainer.style.display = 'none';
             }
             updateUIForAttempts();
             checkStoredAlerts(); // Refresh delete buttons
@@ -1166,22 +1165,9 @@
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             const isOnline = await checkRealConnection(); if (!isOnline) { showConnectionLostModal(); return; }
             
-            // Force check GPS before even starting
-            if(!userLat || !userLng) {
-                document.getElementById('locationForceModal').style.display = 'flex';
-                return;
-            }
-
+            // تعديل: لا نتحقق من الموقع هنا بشكل صارم، نسمح له بالدخول
             switchScreen('screenLoading');
-            // One more check
-            if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(checkPosition, handleGpsError, { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }); } else { showError("الجهاز لا يدعم GPS.", false); }
-        }
-
-        function checkPosition(position) {
-            userLat = position.coords.latitude;
-            userLng = position.coords.longitude;
-            const dist = getDistanceFromLatLonInKm(position.coords.latitude, position.coords.longitude, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
-            if (dist <= CONFIG.gps.allowedDistanceKm) { generateCodeAndShowDataEntry(); } else { showError(`📍 أنت خارج النطاق الجغرافي للكلية.<br>المسافة الحالية: ${dist.toFixed(2)} كم`, false); }
+            generateCodeAndShowDataEntry();
         }
 
         function generateCodeAndShowDataEntry() {
@@ -1229,11 +1215,41 @@
         }
 
         async function startFaceVerificationProcess() {
+            // التحقق من تجاوز المسؤول
+            if (document.getElementById('bypassCheckbox') && document.getElementById('bypassCheckbox').checked && sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
+                attendanceData.isVerified = true;
+                const verifyBtn = document.getElementById('btnVerify');
+                verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم تجاوز التحقق (مسؤول)';
+                verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                verifyBtn.classList.add('disabled');
+                playSuccess();
+                checkAllConditions();
+                return;
+            }
+
             if (!attendanceData.uniID) { showToast('حدث خطأ: لم يتم تحديد الهوية', 3000, '#ef4444'); return; }
             
-            // Check GPS again strictly
+            // تعديل: إجبار الموقع هنا
+            // Check GPS strictly HERE just before face check or submitting
             if(!userLat || !userLng) {
-                document.getElementById('locationForceModal').style.display = 'flex';
+                // Try to get it now
+                if (navigator.geolocation) {
+                    document.getElementById('locationForceModal').style.display = 'flex';
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            userLat = pos.coords.latitude;
+                            userLng = pos.coords.longitude;
+                            document.getElementById('locationForceModal').style.display = 'none';
+                            proceedToCamera();
+                        },
+                        (err) => {
+                            document.getElementById('locationForceModal').style.display = 'flex';
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    document.getElementById('locationForceModal').style.display = 'flex';
+                }
                 return;
             }
             proceedToCamera();
@@ -1277,22 +1293,6 @@
                 console.error("Camera Error:", e);
                 showToast("فشل فتح الكاميرا: " + e.message, 4000, '#ef4444');
                 switchScreen('screenScanQR'); 
-            }
-        }
-
-        // التعديل: دالة تجاوز التحقق للمسؤول
-        function bypassFaceCheck() {
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
-                clearInterval(faceCheckInterval);
-                if(videoStream) videoStream.getTracks().forEach(track => track.stop());
-                attendanceData.isVerified = true;
-                const verifyBtn = document.getElementById('btnVerify');
-                verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم تجاوز التحقق (مسؤول)';
-                verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                verifyBtn.classList.add('disabled');
-                switchScreen('screenScanQR');
-                playSuccess();
-                checkAllConditions();
             }
         }
 
@@ -1419,6 +1419,27 @@
             playClick();
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
+            
+            // تعديل: تأكد من الموقع قبل الإرسال النهائي أيضا
+            if(!userLat || !userLng) {
+                if (navigator.geolocation) {
+                    document.getElementById('locationForceModal').style.display = 'flex';
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            userLat = pos.coords.latitude;
+                            userLng = pos.coords.longitude;
+                            document.getElementById('locationForceModal').style.display = 'none';
+                            submitToGoogle(); // Retry submit
+                        },
+                        (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
+                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    );
+                } else {
+                    document.getElementById('locationForceModal').style.display = 'flex';
+                }
+                return;
+            }
+
             const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
             const selectedSubject = document.getElementById('subjectSelect').value; 
             const sessionPassVal = document.getElementById('sessionPass').value;
