@@ -73,6 +73,16 @@
             .modal-box { margin-top: 10px; margin-bottom: 50px; position: relative; top: 0; transform: none !important; }
         }
 
+        /* تعديل: رفع النافذة عند فتح الكيبورد */
+        @media (max-height: 500px) {
+             #identityAlertModal .modal-box, #dataEntryModal .modal-box, #manageStudentsModal .modal-box { 
+                 height: auto; 
+                 max-height: 95vh;
+                 margin-top: 0;
+                 transform: translateY(-20px);
+             }
+        }
+
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
@@ -112,16 +122,17 @@
         .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
         .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
         
-        /* تعديل الألوان لتكون أنيقة وعصرية (Pastel/Modern) */
-        .btn-admin-login { background: linear-gradient(135deg, #334155, #475569); color: white; box-shadow: 0 5px 15px rgba(51, 65, 85, 0.3); } /* Slate */
-        .btn-admin-logout { background: linear-gradient(135deg, #9f1239, #881337); color: white; box-shadow: 0 5px 15px rgba(136, 19, 55, 0.3); } /* Deep Rose */
+        /* تعديل: ألوان أنيقة وعصرية للأزرار (Elegant & Modern) */
+        .btn-admin-login { background: linear-gradient(135deg, #334155, #475569); color: white; box-shadow: 0 5px 15px rgba(51, 65, 85, 0.3); } /* Slate Elegant */
+        .btn-admin-logout { background: linear-gradient(135deg, #881337, #be123c); color: white; box-shadow: 0 5px 15px rgba(136, 19, 55, 0.3); } /* Deep Rose */
         .btn-report.unlocked { background: linear-gradient(135deg, #0f766e, #115e59); color: white; box-shadow: 0 5px 15px rgba(15, 118, 110, 0.3); border: none; } /* Teal */
         .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
-        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #4f46e5, #4338ca); color: white; border: none; flex-direction: row; height: 60px; margin-top: 5px; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); } /* Indigo */
-        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none; flex-direction: row; height: 55px; margin-top: 5px; border-radius: 50%; width: 55px; justify-self: center; box-shadow: 0 5px 15px rgba(2, 132, 199, 0.3); } /* Sky Blue */
+        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #4338ca, #4f46e5); color: white; border: none; flex-direction: row; height: 60px; margin-top: 5px; box-shadow: 0 5px 15px rgba(67, 56, 202, 0.3); } /* Indigo */
+        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #0369a1, #0ea5e9); color: white; border: none; flex-direction: row; height: 55px; margin-top: 5px; border-radius: 50%; width: 55px; justify-self: center; box-shadow: 0 5px 15px rgba(3, 105, 161, 0.3); } /* Sky Blue */
         .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
         
-        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; margin-top: 5px; height: 60px; flex-direction: row; box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3); }
+        /* تعديل: زر إدخال البيانات العصري */
+        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #111827, #1f2937); color: white; margin-top: 5px; height: 60px; flex-direction: row; box-shadow: 0 5px 15px rgba(17, 24, 39, 0.3); } /* Dark Charcoal */
 
         .sub-btn-icon { font-size: 24px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 20px; }
@@ -146,13 +157,9 @@
         .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 15px #f59e0b; }
         .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
         
+        /* تعديل: السماح بظهور نوافذ الإدارة الجديدة */
         #reportModal .modal-box, #manageHallsModal .modal-box, #manageSubjectsModal .modal-box, #dataEntryModal .modal-box, #manageStudentsModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* إصلاح للكيبورد لرفع النافذة */
-        @media (max-height: 500px) {
-             #identityAlertModal .modal-box, #dataEntryModal .modal-box { height: 95vh; margin-top: 0; }
-        }
-
         .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
         .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
         .btn-icon-danger { width: 40px; height: 40px; border-radius: 50%; border: none; background: #fee2e2; color: #ef4444; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
@@ -213,7 +220,10 @@
         .custom-select-wrapper.open .custom-options { transform: translateY(0); visibility: visible; pointer-events: all; }
         .sheet-handle { width: 40px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: 0 auto 20px auto; }
         .options-title { text-align: center; font-weight: 800; color: #1e293b; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; position: relative; }
+        
+        /* تعديل: زر إغلاق للقوائم المنسدلة */
         .btn-close-options { position: absolute; left: 0; top: 0; background: #f1f5f9; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; font-size: 14px; }
+        
         .custom-option { padding: 16px 20px; margin-bottom: 10px; font-size: 15px; font-weight: 700; color: #475569; border-radius: 16px; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; background: #f8fafc; }
         .custom-option:hover { background: #f1f5f9; }
         .custom-option.selected { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
@@ -309,6 +319,7 @@
         #notificationBtn { position: absolute; top: 35px; left: 35px; z-index: 500; width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s ease; font-size: 22px; }
         #notificationBtn.has-alert { color: #ef4444; background: #fff1f2; animation: pulse-red 2s infinite; }
         
+        /* تعديل: نافذة إجبار الموقع الصغيرة */
         #locationForceModal { z-index: 999999999 !important; }
         #locationForceModal .modal-box { border: 2px solid #ef4444; max-width: 280px; padding: 20px; }
 
@@ -332,6 +343,7 @@
             width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 10px;
             font-family: 'Cairo'; font-size: 13px; outline: none; background: #f8fafc;
         }
+        /* تعديل: نافذة إضافة قاعة متطورة */
         .add-hall-btn {
             width: 100%; padding: 10px; margin-top: 10px; 
             background: #ecfdf5; color: #059669; border: 1px dashed #10b981; 
@@ -397,7 +409,6 @@
     
     <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999999;">
         <div class="modal-box">
-            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <div class="modal-title" style="color:#b45309; margin:0;">تنبيهات النظام</div>
                 <div id="adminDeleteAlert" style="display:none; width:35px; height:35px; background:#fee2e2; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; color:#ef4444;" onclick="clearNotifications()">
@@ -790,10 +801,7 @@
                         <div class="custom-options-overlay" onclick="closeSelect(this.parentElement, event)"></div>
                         <div class="custom-options">
                             <div class="sheet-handle"></div>
-                            <div class="options-title">
-                                اختر المادة الدراسية
-                                <div style="position:absolute; left:20px; top:15px; width:30px;"></div> 
-                            </div>
+                            <div class="options-title">اختر المادة الدراسية</div>
                             <div id="subjectOptionsContainer"></div>
                         </div>
                         <select id="subjectSelect" style="display:none;" onchange="checkAllConditions()">
@@ -840,7 +848,8 @@
                     </div>
 
                     <div id="qr-reader"><div class="scanner-laser"></div></div>
-                    <div id="startScanCard" class="qr-card-trigger" style="display:none;"> <div class="qr-card-icon"><i class="fa-solid fa-camera"></i></div>
+                    <div id="startScanCard" class="qr-card-trigger" style="display:none;">
+                        <div class="qr-card-icon"><i class="fa-solid fa-camera"></i></div>
                         <div>
                             <div class="qr-card-text">اضغط لفتح الكاميرا</div>
                             <div class="qr-card-sub">وجه الكاميرا نحو الرمز</div>
@@ -918,10 +927,10 @@
     <script>
         const CONFIG = {
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
-            // رابط شيت الهوية (يمكنك تغييره هنا)
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbyiW8lPdWwuOv4G3fu2GT87t7QNxjXU064PNrq_a8_PyAchEcWxXSO3F77b0hr9v84t/exec",
+            // رابط شيت الهوية الجديد - طلب رقم 1
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
             adminPassword: "RYADA",
-            gps: { targetLat: 30.385852442416965, targetLong: 30.488857241117675, allowedDistanceKm: 1.5 }, // 1.5 كم كنطاق عام للكلية
+            gps: { targetLat: 30.385852442416965, targetLong: 30.488857241117675, allowedDistanceKm: 1.5 },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -932,13 +941,11 @@
         let cachedReportData = [];
         let systemAlerts = [];
 
-        // تحميل التنبيهات
         try {
             const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
             if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
         } catch (e) {}
 
-        // تحميل قاعدة بيانات الطلاب
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
             try { studentsDB = JSON.parse(savedDB); } catch(e) {}
@@ -952,7 +959,6 @@
             } 
         }).catch(e => console.log("DB Update Error", e));
 
-        // البيانات الافتراضية
         let defaultSubjects = {
             "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
             "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
@@ -966,7 +972,7 @@
         const DATA_ENTRY_TIMEOUT_SEC = 20;
         const SESSION_END_TIME_KEY = "data_entry_deadline_v3";
         const MAX_ATTEMPTS = 3;
-        const ATTEMPTS_KEY = "daily_attempts_v48_" + new Date().toLocaleDateString('en-GB');
+        const ATTEMPTS_KEY = "daily_attempts_v49_" + new Date().toLocaleDateString('en-GB');
 
         let userIP = "Unknown";
         let geo_watch_id = null;
@@ -1003,7 +1009,7 @@
         function openManageSubjects() { renderSubjectsManage(); document.getElementById('manageSubjectsModal').style.display = 'flex'; }
         function openManageStudents() { document.getElementById('manageStudentsModal').style.display = 'flex'; }
         
-        // --- إضافة طالب جديد ---
+        // --- إضافة طالب جديد (طلب رقم 6) ---
         async function addNewStudentAction() {
             const name = document.getElementById('newStudentName').value.trim();
             const id = document.getElementById('newStudentID').value.trim();
@@ -1015,7 +1021,7 @@
             btn.disabled = true;
             
             try {
-                // إضافة للشيت
+                // إضافة للشيت الجديد
                 const response = await fetch(CONFIG.identitySheetUrl, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1089,9 +1095,8 @@
             }
         }
 
-        /* --- نظام التنبيهات (محدث) --- */
+        /* --- نظام التنبيهات المطور (طلب رقم 2) --- */
         function updateNotificationUI(data) {
-            // data يأتي من السيرفر وبه: isRepeat, isFar, distance, reason (Repeat/Face/Distance), hall
             if (data.isRepeat || data.isFar) {
                 const now = new Date();
                 // تنسيق التاريخ والوقت بالإنجليزي
@@ -1129,7 +1134,8 @@
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
                     
                     let reasonHtml = `<span style="color:#ef4444; font-weight:bold; font-size:11px;">السبب: ${alert.reason}</span>`;
-                    if (alert.distance && parseInt(alert.distance) > 10) { // التحقق من المسافة (أكثر من 10 متر نسبي)
+                    // التنبيه على المسافة فقط إذا كانت > 10 متر
+                    if (alert.distance && parseInt(alert.distance) > 10) { 
                         reasonHtml += `<br><span style="color:#f59e0b; font-size:11px;">⚠️ المسافة: ${alert.distance}م</span>`;
                     }
                     
@@ -1186,13 +1192,13 @@
         }
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
         
-        // --- نظام الحظر الصارم (Strict Ban System) ---
+        // --- نظام الحظر الصارم (طلب رقم 7) ---
         function getAttemptsLeft() { 
             let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
             return Math.max(0, MAX_ATTEMPTS - used); 
         }
         function checkBanStatus() {
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') return; // المسؤول لا يُحظر
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') return;
             let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
             if (used >= MAX_ATTEMPTS) {
                 document.getElementById('banModal').style.display = 'flex';
@@ -1223,7 +1229,7 @@
             }
         }
 
-        // --- المراقبة والخصم عند الخروج ---
+        // --- المراقبة والخصم عند الخروج (طلب رقم 7) ---
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
@@ -1243,9 +1249,9 @@
             else { window.history.pushState(null, null, window.location.href); }
         };
 
-        // --- التعامل مع GPS (إجبار) ---
+        // --- التعامل مع GPS (إجبار صارم - طلب رقم 1 و 10) ---
         function checkLocationStrict(onSuccess) {
-            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { onSuccess(); return; } // تجاوز للمسؤول
+            if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { onSuccess(); return; }
             
             if (!navigator.geolocation) {
                 document.getElementById('locationForceModal').style.display = 'flex';
@@ -1268,8 +1274,6 @@
 
         function checkDistance(onSuccess) {
             let dist = getDistanceFromLatLonInKm(userLat, userLng, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
-            // السماح بالتسجيل، ولكن سيتم إرسال المسافة للسيرفر للتحذير في لوحة المسؤول إذا كانت بعيدة
-            // إذا كانت المسافة كبيرة جداً جداً (خارج الكلية تماماً) يمكن منع التسجيل هنا
             if (dist > CONFIG.gps.allowedDistanceKm) { 
                 showError("🚫 أنت خارج نطاق الكلية تماماً.", false); 
                 return; 
@@ -1328,7 +1332,7 @@
         async function handleIdSubmit() {
             playClick();
             let rawId = document.getElementById('uniID').value.trim();
-            const uniIdVal = rawId; // استخدام الأرقام الإنجليزية مباشرة (أو دالة التحويل إذا لزم الأمر)
+            const uniIdVal = rawId; 
             const alertBox = document.getElementById('dataEntryAlert');
             
             if (!uniIdVal) { alertBox.innerText = "⚠️ يرجى إدخال الكود الجامعي."; alertBox.style.display = 'block'; return; }
@@ -1342,7 +1346,7 @@
                 if(countdownInterval) clearInterval(countdownInterval); 
                 stopCameraSafely(); 
                 switchScreen('screenScanQR'); 
-                checkAllConditions(); // تحديث حالة الأزرار
+                checkAllConditions(); 
                 playSuccess();
             } else { 
                 alertBox.innerText = "❌ الكود غير صحيح."; alertBox.style.display = 'block'; if(navigator.vibrate) navigator.vibrate(300); 
@@ -1350,7 +1354,7 @@
         }
 
         async function startFaceVerificationProcess() {
-            // شرط: عدم الدخول للتحقق إلا بعد اختيار (المادة + الفرقة + المدرج)
+            // شرط: إجبارية المادة والفرقة والمدرج - طلب رقم 8
             const year = document.getElementById('yearSelect').value;
             const sub = document.getElementById('subjectSelect').value;
             const hall = document.getElementById('hallSelect').value;
@@ -1463,7 +1467,6 @@
                                 switchScreen('screenScanQR'); 
                                 playSuccess(); showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981'); 
                                 
-                                // إظهار زر فتح الكاميرا
                                 document.getElementById('btnOpenQR').style.display = 'flex';
                                 checkAllConditions(); 
                             } catch(err) { 
@@ -1481,7 +1484,6 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             
-            // تحقق أخير من الموقع عند الإرسال
             if(!userLat || !userLng) {
                 checkLocationStrict(() => submitToGoogle());
                 return;
@@ -1528,14 +1530,9 @@
             }
         }
 
-        // تحديث زر التحديث في جميع النوافذ
+        // تحديث زر التحديث في جميع النوافذ (طلب رقم 3)
         function refreshCurrentReportView() {
-            // التحقق من أي نافذة مفتوحة حالياً (مواد، قاعات، طلاب)
-            const views = document.querySelectorAll('.report-view');
-            // نقوم بإعادة تحميل البيانات من السيرفر
             openReportModal(); 
-            // بعد التحميل (في دالة openReportModal) سيتم العرض الافتراضي للمواد، 
-            // يمكننا تحسين ذلك لحفظ الحالة الحالية، لكن إعادة التحميل من البداية أضمن للبيانات الحديثة.
             showToast("تم تحديث البيانات", 1500, "#0ea5e9");
         }
 
@@ -1547,7 +1544,6 @@
             const qrPass = document.getElementById('sessionPass').value; 
             const isVerified = attendanceData.isVerified === true;
             
-            // تفعيل زر التحقق فقط إذا تم اختيار الثلاثة
             const btnVerify = document.getElementById('btnVerify');
             if (year && sub && hall) {
                 btnVerify.classList.remove('disabled');
@@ -1571,7 +1567,7 @@
             const btnVerify = document.getElementById('btnVerify');
             if(chk.checked) {
                 attendanceData.isVerified = true; btnVerify.style.display = 'none'; showToast("تم تفعيل التجاوز اليدوي", 2000, "#10b981");
-                document.getElementById('btnOpenQR').style.display = 'flex'; // إظهار زر الكاميرا
+                document.getElementById('btnOpenQR').style.display = 'flex';
             } else {
                 attendanceData.isVerified = false; btnVerify.style.display = 'flex'; btnVerify.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية'; 
                 document.getElementById('btnOpenQR').style.display = 'none';
@@ -1655,10 +1651,9 @@
             if(filteredHalls.length === 0) { hallContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#94a3b8; font-size:12px;">لا توجد نتائج</div>'; }
         }
 
-        // --- تهيئة التطبيق عند التحميل ---
         window.onload = function() {
             initGlobalGuard(); updateUIForMode(); setupCustomSelects();
-            checkBanStatus(); // التأكد من الحظر عند الفتح
+            checkBanStatus(); 
             checkStoredAlerts(); 
             if (navigator.geolocation) {
                 geo_watch_id = navigator.geolocation.watchPosition((p)=>{userLat=p.coords.latitude; userLng=p.coords.longitude;}, ()=>{}, {enableHighAccuracy:true});
@@ -1676,7 +1671,6 @@
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
 
-        // --- بقية الدوال (بدون تغيير في المنطق الأساسي) ---
         function addKey(num) { playClick(); const i = document.getElementById('uniID'); if(i.value.length<10) i.value+=num; }
         function backspaceKey() { playClick(); const i = document.getElementById('uniID'); i.value=i.value.slice(0,-1); }
         function clearKey() { playClick(); document.getElementById('uniID').value=''; }
@@ -1686,7 +1680,6 @@
             attendanceData = {}; attendanceData.isVerified = false; 
             document.getElementById('uniID').value = ''; document.getElementById('attendanceCode').value = ''; document.getElementById('sessionPass').value = '';
             
-            // تصفير القوائم
             const yearWrapper = document.getElementById('yearSelectWrapper');
             yearWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة --'; yearWrapper.classList.remove('open');
             document.getElementById('yearSelect').value = '';
@@ -1702,12 +1695,11 @@
             const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; btn.innerHTML = 'تأكيد الحضور <i class="fa-solid fa-paper-plane"></i>';
             document.getElementById('scanNameDisplay').innerText = '--'; document.getElementById('scanIDDisplay').innerText = '--';
             
-            // إعادة تعيين زر التحقق
             const verifyBtn = document.getElementById('btnVerify');
             if(verifyBtn) { verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية'; verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)'; verifyBtn.style.display = 'flex'; verifyBtn.classList.add('disabled'); verifyBtn.style.opacity = '0.5'; }
             
             document.getElementById('btnOpenQR').style.display = 'none';
-            document.getElementById('startScanCard').style.display = 'none'; // نخفيه حتى يتم التحقق
+            document.getElementById('startScanCard').style.display = 'none'; 
             
             const bypassCheck = document.getElementById('bypassCheckbox'); if(bypassCheck) bypassCheck.checked = false;
         }
