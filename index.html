@@ -102,28 +102,34 @@
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
         p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
+        
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
-        .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
         
-        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-        .admin-sub-btn { border-radius: 22px; padding: 12px 10px; font-size: 13px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); height: 90px; position: relative; overflow: hidden; }
-        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
-        .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
-        .btn-admin-login { background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
-        .btn-admin-logout { background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; box-shadow: 0 5px 15px rgba(225, 29, 72, 0.3); }
-        .btn-report.unlocked { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); border: none; }
-        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
-        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; flex-direction: row; height: 60px; margin-top: 5px; box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3); }
-        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; flex-direction: row; height: 55px; margin-top: 5px; border-radius: 50%; width: 55px; justify-self: center; box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3); }
-        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
-        
-        /* === الزر الجديد الموحد لإدخال البيانات === */
-        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #0f766e, #14b8a6); color: white; margin-top: 5px; height: 60px; flex-direction: row; }
+        /* --- New Modern Back Button Style --- */
+        .btn-modern-back { background: rgba(255, 255, 255, 0.9); border: 1px solid #e2e8f0; color: #64748b; width: 100%; padding: 12px; border-radius: 16px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: 'Cairo'; margin-top: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-modern-back:active { transform: scale(0.97); background: #f8fafc; }
 
-        .sub-btn-icon { font-size: 24px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 20px; }
+        /* --- Updated Admin Dashboard Buttons (Modern & Compact) --- */
+        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .admin-sub-btn { border-radius: 18px; padding: 8px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; height: 75px; position: relative; overflow: hidden; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+        .admin-sub-btn:active { transform: scale(0.96); }
+
+        /* Modern Color Palette */
+        .btn-admin-login { background: linear-gradient(135deg, #6366f1, #4f46e5); } /* Indigo */
+        .btn-admin-logout { background: linear-gradient(135deg, #f43f5e, #e11d48); } /* Rose */
+        .btn-report.unlocked { background: linear-gradient(135deg, #10b981, #059669); } /* Emerald */
+        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #cbd5e1; box-shadow: none; }
+        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #8b5cf6, #7c3aed); height: 55px; flex-direction: row; font-size: 14px; gap: 10px; } /* Violet */
+        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #06b6d4, #0891b2); height: 50px; width: 50px; border-radius: 50%; justify-self: center; } /* Cyan */
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); }
+        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #64748b, #475569); height: 55px; flex-direction: row; font-size: 14px; gap: 10px; } /* Slate */
+
+        .sub-btn-icon { font-size: 22px; margin-bottom: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1)); }
+        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { font-size: 18px; }
+        
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
@@ -154,18 +160,16 @@
         .report-views-container { flex: 1; position: relative; overflow: hidden; width: 100%; }
         .report-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 15px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); background: #f8fafc; }
         
-        /* تعديل: طبقات التقرير الجديد (مواد -> قاعات -> طلاب) */
+        /* تعديل: طبقات التقرير الجديد */
         #viewSubjects { transform: translateX(0); z-index: 10; }
-        #viewHalls { transform: translateX(100%); z-index: 15; background: #f8fafc; }
-        #viewStudents { transform: translateX(200%); z-index: 20; background: #f8fafc; }
+        #viewStudents { transform: translateX(100%); z-index: 20; background: #f8fafc; } /* Students view is now direct next step */
         
         .slide-out { transform: translateX(100%) !important; }
         .slide-in { transform: translateX(0) !important; }
         
-        .subject-big-card, .hall-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
-        .subject-big-card:active, .hall-big-card:active { transform: scale(0.98); background: #f0f9ff; }
+        .subject-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
+        .subject-big-card:active { transform: scale(0.98); background: #f0f9ff; }
         .subject-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 4px 0 0 4px; }
-        .hall-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: #10b981; border-radius: 4px 0 0 4px; }
         
         .sub-card-info h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
         .sub-card-info span { font-size: 12px; color: #64748b; font-weight: 600; }
@@ -531,6 +535,9 @@
                             <span id="currentSubjectTitle" style="font-weight:800; font-size:12px; color:#64748b">--</span>
                             <span id="currentHallTitle" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
                         </div>
+                        <button onclick="openReportModal()" class="btn-back-report" style="margin-right:auto;">
+                           <i class="fa-solid fa-rotate-right"></i>
+                        </button>
                     </div>
                     
                     <div class="search-box-wrapper">
@@ -658,7 +665,9 @@
                     <div id="adminAlert" style="display:none;" class="alert-box"></div>
                     <div class="input-group"><input type="password" id="adminPassword" class="modern-input" placeholder="كلمة المرور" required></div>
                     <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
-                    <button onclick="goBackToWelcome()" class="btn-secondary" style="margin-top:10px;">العودة <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal"></i></button>
+                    <button onclick="goBackToWelcome()" class="btn-modern-back">
+                        <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal"></i> العودة
+                    </button>
                 </div>
                 <div id="screenLoading" class="section">
                     <h1 style="margin-top: 10px;">جاري التحقق...</h1>
@@ -790,7 +799,7 @@
                     </div>
                     
                     <div class="custom-select-wrapper" id="hallSelectWrapper">
-                        <label class="custom-select-label">المدرج الدراسي (اختياري)</label>
+                        <label class="custom-select-label">المدرج الدراسي (مطلوب)</label>
                         <div class="custom-select-trigger" data-default-text="-- اختر المدرج --">
                             <div class="trigger-content">
                                 <div class="trigger-icon"><i class="fa-solid fa-building-columns"></i></div>
@@ -884,7 +893,7 @@
         
         const LOCAL_STORAGE_DB_KEY = "offline_students_db_v2";
         const ALERT_STORAGE_KEY = "persistent_student_alerts_v2";
-        const DEVICE_ID_KEY = "unique_device_id_v1"; // New Key for Persistent Device ID
+        const DEVICE_ID_KEY = "unique_device_id_v1"; 
 
         let studentsDB = {};
         let wakeLock = null;
@@ -903,7 +912,6 @@
 
         fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); console.log("✅ تم تحديث قاعدة البيانات:", Object.keys(d).length); } }).catch(e => console.log("DB Update Error", e));
 
-        // تحميل البيانات المحفوظة (القاعات والمواد)
         let defaultSubjects = {
             "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
             "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
@@ -921,7 +929,10 @@
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
         const MAX_ATTEMPTS = 3;
-        const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
+        
+        // --- Strict Date Key for Egypt Time ---
+        const getTodayKey = () => "daily_attempts_v48_" + new Date().toLocaleDateString('en-GB', {timeZone: 'Africa/Cairo'});
+        const ATTEMPTS_KEY = getTodayKey();
 
         let userIP = "Unknown";
         let geo_watch_id = null;
@@ -953,7 +964,6 @@
             }, 600);
         }
 
-        // --- NEW: Device & Key Generators ---
         function getUniqueDeviceId() {
             let deviceId = localStorage.getItem(DEVICE_ID_KEY);
             if (!deviceId) {
@@ -967,7 +977,6 @@
             return 'KEY-' + Math.random().toString(36).substr(2, 12).toUpperCase();
         }
 
-        // --- وظائف إدارة القاعات والمواد (للمسؤول) ---
         function openDataEntryMenu() { document.getElementById('dataEntryModal').style.display = 'flex'; }
         function openManageHalls() { renderHallsManage(); document.getElementById('manageHallsModal').style.display = 'flex'; }
         function openManageSubjects() { renderSubjectsManage(); document.getElementById('manageSubjectsModal').style.display = 'flex'; }
@@ -1020,18 +1029,43 @@
                 renderSubjectsManage();
             }
         }
-        // --- ALERT SYSTEM (UPDATED) ---
+        // --- ALERT SYSTEM (DETAILED & SECURITY FOCUSED) ---
         function updateNotificationUI(data) {
-            if (data.isRepeat || data.isFar) {
+            // ترجمة وتفصيل سبب التنبيه
+            let reasonTitle = "تنبيه أمني";
+            let reasonDetail = "";
+            let riskColor = "#f59e0b"; // برتقالي
+
+            if (data.risk_level === "DEVICE_SHARING") {
+                reasonTitle = "تكرار جهاز";
+                reasonDetail = "تم استخدام هذا الجهاز لطالب آخر اليوم.";
+                riskColor = "#ef4444"; // أحمر
+            } else if (data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat) {
+                reasonTitle = "تسجيل مكرر";
+                reasonDetail = "تم تسجيل الحضور لهذا الطالب مسبقاً.";
+                riskColor = "#3b82f6"; // أزرق
+            } else if (data.risk_level === "FACE_SPOOF") {
+                reasonTitle = "انتحال وجه";
+                reasonDetail = "تطابق بصمة الوجه مع طالب آخر.";
+                riskColor = "#b91c1c"; // أحمر غامق
+            } else if (data.risk_level === "WRONG_LOCATION" || data.isFar) {
+                reasonTitle = "خارج النطاق";
+                reasonDetail = `بعيد عن النقطة المرجعية (${data.distance}م).`;
+                riskColor = "#f97316"; // برتقالي غامق
+            }
+
+            if (data.isRepeat || data.isFar || data.risk_level !== "SAFE") {
                 const newAlert = {
                     name: attendanceData.name,
                     id: attendanceData.uniID,
                     timestamp: new Date().toLocaleString('ar-EG'),
-                    isRepeat: data.isRepeat,
-                    isFar: data.isFar,
+                    risk_level: data.risk_level,
+                    reason_title: reasonTitle,
+                    reason_detail: reasonDetail,
+                    color: riskColor,
                     count: data.count,
                     distance: data.distance,
-                    hall: data.hall, 
+                    hall: data.hall || document.getElementById('hallSelect').value, 
                     isRead: false
                 };
                 systemAlerts.unshift(newAlert);
@@ -1053,39 +1087,41 @@
                 let html = '';
                 systemAlerts.forEach((alert, index) => {
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
-                    let statusHtml = '';
-                    if(alert.isRepeat) statusHtml += `<span style="color:#ef4444; display:block; font-size:11px;">⛔ تكرار (${alert.count})</span>`;
-                    if(alert.isFar) statusHtml += `<span style="color:#f59e0b; display:block; font-size:11px;">⚠️ موقع (${alert.distance}م)</span>`;
-                    
-                    const hallInfo = alert.hall ? `<div style="font-size:11px; color:#0f766e; font-weight:bold; margin-top:2px;">🏛️ القاعة: ${alert.hall}</div>` : '';
                     const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
 
                     html += `
-                    <div class="${itemClass}" style="border-radius:12px; padding:10px; margin-bottom:8px; cursor:pointer; transition:0.3s;" onclick="toggleAlertDetails(${index})">
+                    <div class="${itemClass}" style="border-radius:12px; padding:12px; margin-bottom:8px; cursor:pointer; transition:0.3s; border:1px solid #e2e8f0;" onclick="toggleAlertDetails(${index})">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="display:flex; align-items:center;">
                                 ${deleteBtn}
-                                <div style="font-weight:bold; font-size:13px;">${alert.name || '---'}</div>
+                                <div style="font-weight:900; font-size:13px; color:#1e293b;">${alert.name || '---'}</div>
                             </div>
-                            <div style="font-size:10px; color:#94a3b8;">${alert.timestamp.split(',')[1] || ''}</div>
+                            <div style="font-size:10px; color:#94a3b8; font-weight:bold;">${alert.timestamp.split(',')[1] || ''}</div>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                            <div style="display:flex; flex-direction:column;">
-                                <div style="font-family:'Outfit'; font-size:12px; color:#64748b;">${alert.id || ''}</div>
-                                ${hallInfo}
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <div style="display:flex; flex-direction:column; gap:2px;">
+                                <div style="font-family:'Outfit'; font-size:11px; color:#64748b; font-weight:bold;">${alert.id || ''}</div>
+                                <div style="font-size:11px; color:#0f766e; font-weight:800; background:#f0fdfa; padding:2px 6px; border-radius:4px; width:fit-content;">
+                                    🏛️ ${alert.hall || 'N/A'}
+                                </div>
                             </div>
-                            <div style="text-align:left;">${statusHtml}</div>
+                            <div style="text-align:left;">
+                                <span style="color:${alert.color}; display:block; font-size:12px; font-weight:900; background:#fff; padding:4px 8px; border-radius:6px; border:1px solid ${alert.color}20;">
+                                    ⚠️ ${alert.reason_title}
+                                </span>
+                            </div>
                         </div>
-                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #e2e8f0; margin-top:8px; padding-top:8px; font-size:11px; color:#475569;">
-                            ${alert.isRepeat ? 'تم تسجيل تكرار الحضور لهذا الطالب.<br>' : ''}
-                            ${alert.isFar ? 'الطالب بعيد عن النقطة المرجعية.<br>' : ''}
-                            التاريخ: ${alert.timestamp}
+
+                        <div id="alert-detail-${index}" style="display:none; border-top:1px dashed #cbd5e1; margin-top:10px; padding-top:8px; font-size:12px; color:#475569; line-height:1.6;">
+                            <strong>التفاصيل:</strong> ${alert.reason_detail}<br>
+                            <span style="font-size:10px; color:#94a3b8;">التاريخ الكامل: ${alert.timestamp}</span>
                         </div>
                     </div>
                     `;
                 });
                 container.innerHTML = html;
-            } else { container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>'; }
+            } else { container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px; text-align:center; color:#94a3b8;">لا توجد تنبيهات مسجلة.</div>'; }
         }
 
         function toggleAlertDetails(index) {
@@ -1186,7 +1222,7 @@
             else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { goBackToWelcome(); }
         };
         
-        // --- Strict Close/Background Monitoring ---
+        // --- STRICT PENALTY: Deduct attempt on Exit/Hide/Refresh ---
         function handleStrictPenalty() {
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
@@ -1236,6 +1272,10 @@
         }
 
         window.onload = function() {
+            // --- RESET BANS ON LOAD (FRESH START) ---
+            localStorage.removeItem(ATTEMPTS_KEY);
+            localStorage.removeItem(TIMEOUT_BLOCK_KEY);
+            
             initGlobalGuard(); updateUIForMode(); setupCustomSelects();
             checkStoredAlerts(); 
             startGPSWatcher(); 
@@ -1352,6 +1392,18 @@
 
         async function startProcess(skip = false) {
             playClick();
+            
+            // --- STRICT VALIDATION: Must select Year, Subject, AND Hall first ---
+            const year = document.getElementById('yearSelect').value; 
+            const sub = document.getElementById('subjectSelect').value; 
+            const hall = document.getElementById('hallSelect').value;
+            
+            if (!year || !sub || !hall) {
+                 showToast('⚠️ يجب اختيار الفرقة والمقرر والمدرج أولاً', 3000, '#f59e0b');
+                 if(navigator.vibrate) navigator.vibrate(100);
+                 return; 
+            }
+
             if (getAttemptsLeft() === 0 && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                  document.getElementById('banModal').style.display = 'flex';
                  return;
@@ -1498,16 +1550,24 @@
                                 gps: `${userLat},${userLng}`, 
                                 time: new Date().toLocaleTimeString('ar-EG'), 
                                 hall: document.getElementById('hallSelect').value || 'N/A',
-                                device_id: deviceId, // Fixed to send both formats
-                                deviceId: deviceId,
-                                session_key: sessionKey, // Fixed to send both formats
+                                device_id: deviceId, // Send in correct format
+                                deviceId: deviceId,  // Send in correct format
+                                session_key: sessionKey, 
                                 publicKey: sessionKey
                             };
                             try {
                                 const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
                                 const result = await response.json();
                                 updateNotificationUI(result);
-                                if (result.count >= 3) { document.getElementById('banModal').style.display = 'flex'; return; }
+                                
+                                // --- STRICT SERVER-SIDE BAN TRIGGER ---
+                                // If server says count >= 3 OR any major risk detected (spoof, device share)
+                                if (result.count >= 3 || result.risk_level === "FACE_SPOOF" || result.risk_level === "DEVICE_SHARING") { 
+                                    localStorage.setItem(ATTEMPTS_KEY, "3"); // Max out attempts locally
+                                    document.getElementById('banModal').style.display = 'flex'; 
+                                    return; 
+                                }
+                                
                                 attendanceData.isVerified = true; const verifyBtn = document.getElementById('btnVerify'); verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية'; verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)'; verifyBtn.classList.add('disabled'); switchScreen('screenScanQR'); playSuccess(); showToast('تم التحقق من هويتك بنجاح', 3000, '#10b981'); checkAllConditions(); 
                             } catch(err) { console.log(err); showToast('تم التحقق محلياً (تعذر الاتصال بالسيرفر)', 3000, '#f59e0b'); attendanceData.isVerified = true; switchScreen('screenScanQR'); }
                         } else { camBorder.className = "cam-container status-wait"; statusTxt.innerText = "بص يمين يا قمر"; statusTxt.style.color = "var(--warning)"; alertBadge.style.display = "none"; }
@@ -1549,7 +1609,6 @@
             document.getElementById('receiptTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'});
             
             const finalCodeValue = `${attendanceData.code} (QR: ${sessionPassVal})`;
-            
             const deviceId = getUniqueDeviceId();
             const sessionKey = generateSessionKey();
 
@@ -1565,18 +1624,22 @@
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
             
-            // --- CRITICAL FIX: Sending data with EXACT key names the script expects ---
-            formParams.append("deviceId", deviceId);   // Matches GAS: var deviceId = data.deviceId
-            formParams.append("publicKey", sessionKey); // Matches GAS: var publicKey = data.publicKey
-            
-            // Keeping fallback names just in case
+            // --- Shotgun Approach: Send data with MULTIPLE keys to match whatever the backend expects ---
             formParams.append("device_id", deviceId);
+            formParams.append("deviceId", deviceId);
+            formParams.append("device", deviceId);
             formParams.append("session_key", sessionKey);
+            formParams.append("sessionKey", sessionKey);
+            formParams.append("publicKey", sessionKey); // Added publicKey as well
+            formParams.append("key", sessionKey);
             
             try {
-                await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
+                const response = await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
-                if (sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { localStorage.setItem(ATTEMPTS_KEY, new Date().toLocaleDateString('en-GB')); } 
+                
+                // We can't read response in no-cors mode, but if we are here, it was sent.
+                // If server side bans, it will affect NEXT attempt via Identity Check.
+                // But locally, we assume success doesn't ban unless specific logic.
                 
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
@@ -1642,8 +1705,9 @@
 
         function checkAllConditions() { 
             const year = document.getElementById('yearSelect').value; const sub = document.getElementById('subjectSelect').value; const qrPass = document.getElementById('sessionPass').value; const isVerified = attendanceData.isVerified === true;
+            const hall = document.getElementById('hallSelect').value;
             const btn = document.getElementById('submitBtn'); 
-            if(year && sub && qrPass && isVerified) { btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; } else { btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; } 
+            if(year && sub && hall && qrPass && isVerified) { btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; } else { btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; } 
         }
         
         async function stopCameraSafely() { if(html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch(e) {} } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
@@ -1681,7 +1745,7 @@
             } catch (e) { container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">خطأ في الاتصال.</div>'; }
         }
 
-        // --- تعديل: منطق العرض الجديد (مادة -> قاعة -> طلاب) ---
+        // --- UPDATED REPORT LOGIC: Subject -> Student List (Directly) ---
         function renderSubjectsList(data) {
             const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
             let html = '';
@@ -1702,40 +1766,18 @@
 
         function openSubjectDetails(subjectName) {
             playClick();
-            document.getElementById('currentSubjectTitleHalls').innerText = subjectName;
-            
-            // تصفية حسب المادة ثم تجميع القاعات
-            const filtered = cachedReportData.filter(s => s.subject === subjectName);
-            const halls = [...new Set(filtered.map(item => item.hall || "N/A"))];
-            
-            let html = '';
-            halls.forEach(hall => {
-                const count = filtered.filter(i => i.hall === hall).length;
-                html += `
-                    <div class="hall-big-card" onclick="openHallDetails('${subjectName}', '${hall}')">
-                        <div class="sub-card-info">
-                            <h3 style="color:#059669"><i class="fa-solid fa-building-columns"></i> قاعة ${hall}</h3>
-                            <span><i class="fa-solid fa-user-check"></i> الحضور: ${count}</span>
-                        </div>
-                        <div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div>
-                    </div>
-                `;
-            });
-            document.getElementById('hallsContainer').innerHTML = html;
-            document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
-            document.getElementById('viewHalls').style.transform = 'translateX(0)';
-        }
-
-        function openHallDetails(subjectName, hallName) {
-            playClick();
             document.getElementById('currentSubjectTitle').innerText = subjectName;
-            document.getElementById('currentHallTitle').innerText = "قاعة " + hallName;
             
-            const students = cachedReportData.filter(s => s.subject === subjectName && (s.hall || "N/A") === hallName);
+            // Filter by subject and get students directly
+            const students = cachedReportData.filter(s => s.subject === subjectName);
             
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
+                const hallName = item.hall || "N/A"; 
+                // Adding Time and Date to the Student Card
+                const fullDate = item.time || ""; // Assuming item.time contains time string
+                
                 html += `
                     <div class="student-detailed-card">
                         <div class="st-data-col" style="width: 100%;">
@@ -1743,27 +1785,34 @@
                                 <div class="st-name" style="font-size:14px;">${item.name}</div>
                                 <button class="btn-delete-item" onclick="deleteEntry('${item.uniID}', this)" style="margin-right:0;"><i class="fa-solid fa-trash"></i></button>
                             </div>
-                            <div style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px;">
-                                ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                <div style="font-size:12px; color:#64748b; font-weight:600;">
+                                    ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
+                                </div>
+                                <div class="std-hall-badge">
+                                    <i class="fa-solid fa-building-columns"></i> <span style="font-family:'Cairo', sans-serif;">${hallName}</span>
+                                </div>
                             </div>
-                            <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
-                                <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
-                            </div>
-                            <div style="display:flex; align-items:center;">
-                                <div class="std-time-badge"><i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${item.time}</span></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px;">
+                                    <i class="fa-solid fa-fingerprint"></i> كود: <span style="font-family:'Outfit', sans-serif;">${sessionCode}</span>
+                                </div>
+                                <div class="std-time-badge">
+                                    <i class="fa-regular fa-clock"></i> <span style="font-family:'Outfit', sans-serif;">${fullDate}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
             });
+            
             document.getElementById('studentsContainer').innerHTML = html;
-            document.getElementById('viewHalls').style.transform = 'translateX(100%)';
+            document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
             document.getElementById('viewStudents').style.transform = 'translateX(0)';
         }
 
-        function showSubjectsView() { playClick(); document.getElementById('viewSubjects').style.transform = 'translateX(0)'; document.getElementById('viewHalls').style.transform = 'translateX(100%)'; }
-        function showHallsView() { playClick(); document.getElementById('viewHalls').style.transform = 'translateX(0)'; document.getElementById('viewStudents').style.transform = 'translateX(200%)'; }
-
+        function showSubjectsView() { playClick(); document.getElementById('viewSubjects').style.transform = 'translateX(0)'; document.getElementById('viewStudents').style.transform = 'translateX(100%)'; }
+        
         function closeReportModal() { playClick(); document.getElementById('reportModal').style.display = 'none'; }
         
         let pendingAction = null;
