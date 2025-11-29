@@ -23,16 +23,23 @@
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
-        /* === الأساسيات والألوان العصرية (تعديل: ألوان مريحة للعين) === */
+        /* === الأساسيات === */
+        #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 2147483647; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
+        
         :root { 
             --primary: #0ea5e9; --primary-dark: #0284c7; 
             --text-main: #1e293b; --text-sub: #64748b; 
             --glass-bg: rgba(255, 255, 255, 0.95); 
-            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; 
-            /* ألوان لوحة التحكم الجديدة */
-            --admin-dark: #1e293b; --admin-red: #be123c; --admin-green: #047857; 
-            --admin-purple: #6d28d9; --admin-orange: #b45309; --admin-teal: #0f766e;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
+            /* ألوان جديدة عصرية (طلب رابع) */
+            --admin-bg: #1e293b; --admin-bg-grad: linear-gradient(145deg, #334155, #0f172a);
+            --btn-logout: linear-gradient(145deg, #be123c, #9f1239);
+            --btn-report: linear-gradient(145deg, #059669, #047857);
+            --btn-exams: linear-gradient(145deg, #6d28d9, #5b21b6);
+            --btn-refresh: linear-gradient(145deg, #b45309, #92400e);
+            --btn-data: linear-gradient(145deg, #0f766e, #115e59);
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
         
@@ -42,12 +49,14 @@
             justify-content: center; align-items: center; color: var(--text-main); 
             background-color: transparent !important; position: relative; 
             padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); 
-            transition: all 0.3s;
+            padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); 
+            -webkit-user-select: none; user-select: none; touch-action: manipulation; 
+            transition: all 0.3s; 
         }
 
-        /* (تعديل: رفع النافذة عند فتح الكيبورد) */
+        /* تعديل لرفع النافذة عند فتح الكيبورد (طلب ثاني) */
         body.keyboard-open #identityAlertModal .modal-box {
-            transform: translateY(-20%) !important;
+            transform: translateY(-25%) !important;
         }
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
@@ -58,170 +67,252 @@
             position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; 
             margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; 
         }
-
-        /* === تحسين أزرار المسؤول (تعديل 4) === */
-        .admin-controls-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; padding: 0 10px; }
         
-        .admin-sub-btn { 
-            border-radius: 16px; padding: 0; height: 70px; border: none; cursor: pointer; 
-            font-family: 'Cairo'; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; 
-            color: white; font-weight: 700; font-size: 11px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; overflow: hidden;
+        @media (max-height: 650px) {
+            body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
+            .app-card { margin-top: 0; margin-bottom: 50px; min-height: auto; height: auto; border-radius: 16px; overflow: visible; }
+            .card-body { overflow-y: visible; }
+            .section.active { padding-bottom: 150px; } 
+            .modal-overlay { align-items: flex-start !important; padding-top: 10px; overflow-y: auto; }
+            .modal-box { margin-top: 10px; margin-bottom: 50px; position: relative; top: 0; transform: none !important; }
         }
-        .admin-sub-btn i { font-size: 20px; margin-bottom: 2px; }
-        .admin-sub-btn:active { transform: scale(0.95); opacity: 0.9; }
 
-        /* الألوان الجديدة */
-        .btn-admin-login { grid-column: span 4; background: linear-gradient(145deg, #334155, #0f172a); height: 50px; flex-direction: row; font-size: 14px; gap: 10px; } 
-        .btn-admin-logout { grid-column: span 1; background: linear-gradient(145deg, var(--admin-red), #9f1239); }
-        .btn-report { grid-column: span 1; background: linear-gradient(145deg, var(--admin-green), #065f46); }
-        .btn-report.locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
-        .btn-exams { grid-column: span 1; background: linear-gradient(145deg, var(--admin-purple), #5b21b6); }
-        .btn-refresh { grid-column: span 1; background: linear-gradient(145deg, var(--admin-orange), #92400e); }
-        .btn-data-entry { grid-column: span 4; background: linear-gradient(145deg, var(--admin-teal), #115e59); height: 50px; flex-direction: row; font-size: 14px; gap: 10px; margin-top: 5px; }
-
-        /* === نافذة التنبيهات المتطورة (تعديل 2) === */
-        #identityAlertModal .modal-box {
-            padding: 0; background: #f8fafc; border-radius: 20px; overflow: hidden; max-height: 80vh; display: flex; flex-direction: column;
-        }
-        .alert-header-modern {
-            padding: 15px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;
-        }
-        .alert-list-modern {
-            flex: 1; overflow-y: auto; padding: 10px;
-        }
-        .alert-card {
-            background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px;
-            border-right: 4px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: 0.2s; text-align: right;
-        }
-        .alert-card.type-repeat { border-right-color: #ef4444; background: #fef2f2; }
-        .alert-card.type-far { border-right-color: #f59e0b; background: #fffbeb; }
-        .alert-meta { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 5px; font-family: 'Outfit', sans-serif; direction: ltr; }
-        .alert-reason-badge {
-            font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 4px;
-        }
-        
-        /* === نافذة GPS الإجبارية (تعديل 10) === */
-        #gpsStrictModal { z-index: 2147483647 !important; background: rgba(15, 23, 42, 0.98); }
-        #gpsStrictModal .modal-box { border: 2px solid #ef4444; background: #1e293b; color: white; width: 85%; max-width: 300px; padding: 25px; }
-        .gps-pulse { animation: pulse-red 1.5s infinite; color: #ef4444; font-size: 40px; margin-bottom: 15px; }
-
-        /* === تصميم قوائم الإدخال الحديثة (تعديل 5) === */
-        .manage-card { background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-        .manage-input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .manage-input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; outline: none; background: #f8fafc; }
-        .btn-add-modern { background: #ecfdf5; color: #059669; border: 1px solid #10b981; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-        .btn-add-modern:active { transform: scale(0.95); }
-        .list-item-modern { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f1f5f9; background: white; }
-        .btn-delete-modern { width: 32px; height: 32px; border-radius: 8px; background: #fee2e2; color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-delete-modern:active { transform: scale(0.9); background: #ef4444; color: white; }
-        
-        .manage-btn-modern {
-            width: 100%; padding: 15px; border-radius: 16px; border: none; cursor: pointer;
-            font-family: 'Cairo'; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; background: white; border: 1px solid #e2e8f0;
-        }
-        .manage-btn-modern:active { transform: scale(0.98); background: #f8fafc; }
-        .manage-btn-modern i { font-size: 18px; color: var(--primary); }
-
-        /* === زر الإغلاق الموحد للقوائم (تعديل 9) === */
-        .close-btn-floating {
-            position: absolute; left: 15px; top: 15px; width: 30px; height: 30px; 
-            background: #f1f5f9; color: #64748b; border-radius: 50%; display: flex; 
-            align-items: center; justify-content: center; cursor: pointer; z-index: 50;
-            transition: 0.2s; font-size: 14px;
-        }
-        .close-btn-floating:active { transform: scale(0.9); background: #e2e8f0; }
-
-        /* === باقي الستايلات الأساسية === */
-        .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } 
-        .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
-        /* مودال الحظر (تعديل 7) */
-        #banModal { z-index: 2147483647; background: black; }
-        #banModal .modal-box { border: 2px solid #ef4444; background: #1a0505; color: white; }
-        
-        .btn-refresh-list { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px; border-radius: 16px; border: none; cursor: pointer; font-family: 'Cairo'; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-        .input-group { margin-bottom: 15px; position: relative; width: 100%; }
-        .modern-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Cairo'; outline: none; background: #f8fafc; text-align: right; }
-        .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(14, 165, 233, 0.4); }
-        .btn-secondary { background: white; color: var(--text-sub); border: 2px solid #e2e8f0; width: 100%; padding: 12px; border-radius: 14px; cursor: pointer; font-family: 'Cairo'; font-weight: 700; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: rgba(255, 255, 255, 0.95); width: 85%; max-width: 350px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); animation: popUp 0.3s; position: relative; }
-        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* Custom Select */
-        .custom-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
-        .custom-select-trigger { padding: 15px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .custom-options { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 20px; z-index: 10000; transform: translateY(100%); transition: transform 0.3s; max-height: 60vh; overflow-y: auto; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        .custom-select-wrapper.open .custom-options { transform: translateY(0); }
-        .custom-option { padding: 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; }
-        .custom-option.selected { color: var(--primary); font-weight: bold; background: #f0f9ff; border-radius: 10px; }
-        .custom-options-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; }
-        .custom-select-wrapper.open .custom-options-overlay { display: block; }
-        
-        .report-views-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        .report-view { position: absolute; top:0; left:0; width:100%; height:100%; transition: transform 0.3s ease; background: #f8fafc; overflow-y: auto; padding: 10px; }
-        .slide-in { transform: translateX(0); } .slide-out-left { transform: translateX(-100%); } .slide-out-right { transform: translateX(100%); }
-        .subject-big-card, .hall-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between; }
-        .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; }
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
+        .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
+        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; }
         
-        .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
-        .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; }
-        .status-icon-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); opacity: 0; transform: scale(0); transition: 0.4s; border-radius: 50%; z-index: 3; }
+        .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; display: block; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 1; box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
+        .status-icon-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px); opacity: 0; transform: scale(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; z-index: 3; }
+        .hero-icon { font-size: 42px; color: var(--primary); transition: 0.3s; filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.3)); }
         .hero-icon-wrapper.show-icon .hero-img { transform: scale(0); opacity: 0; }
         .hero-icon-wrapper.show-icon .status-icon-container { opacity: 1; transform: scale(1); }
-        .hero-icon { font-size: 42px; color: var(--primary); }
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
+        
+        .notification-btn { position: absolute; top: 20px; left: 20px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .notification-btn:active { transform: scale(0.9); }
+        .notification-btn.has-alert { color: #ef4444; background: #fff1f2; border-color: #fecaca; animation: shake-bell 2s infinite; }
+        .notification-badge { position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid #fff; display: none; }
+        .notification-btn.has-alert .notification-badge { display: block; }
+        .notification-btn.locked::after { content: '\f023'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; bottom: -5px; right: -5px; font-size: 12px; background: #334155; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+        @keyframes shake-bell { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
+
+        .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
+        .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
+        .smart-title { background: linear-gradient(to right, #0ea5e9, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 10px; text-shadow: 0px 4px 10px rgba(14, 165, 233, 0.15); }
+        .academic-footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: center; width: 100%; position: relative; z-index: 5; }
+        .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
+        .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
+        p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1.6; }
+        .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
+        .btn-main:active { transform: scale(0.97); }
+        .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
+        .btn-secondary { background: #ffffff; color: var(--primary-dark); width: 100%; padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700; border: 2px solid #e0f2fe; cursor: pointer; font-family: 'Cairo'; margin-top: 10px; box-shadow: 0 2px 5px -2px rgba(0, 0, 0, 0.1); transition: 0.3s; position: relative; z-index: 5; }
+        
+        /* === تحسين أزرار المسؤول (تعديل 4) === */
+        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .admin-sub-btn { border-radius: 18px; padding: 12px 10px; font-size: 13px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 15px -5px rgba(0, 0, 0, 0.1); height: 90px; position: relative; overflow: hidden; color:white; }
+        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+        .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
+        
+        /* ألوان عصرية جديدة */
+        .btn-admin-login { background: var(--admin-bg-grad); box-shadow: 0 5px 15px rgba(30, 41, 59, 0.3); }
+        .btn-admin-logout { background: var(--btn-logout); box-shadow: 0 5px 15px rgba(190, 18, 60, 0.3); }
+        .btn-report.unlocked { background: var(--btn-report); box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3); border: none; }
+        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
+        .btn-exams { grid-column: span 2; background: var(--btn-exams); border: none; flex-direction: row; height: 60px; margin-top: 5px; box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3); }
+        .btn-refresh { grid-column: span 2; background: var(--btn-refresh); border: none; flex-direction: row; height: 55px; margin-top: 5px; border-radius: 50%; width: 55px; justify-self: center; box-shadow: 0 5px 15px rgba(180, 83, 9, 0.3); }
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
+        
+        /* زر إدارة البيانات */
+        .btn-data-entry { grid-column: span 2; background: var(--btn-data); margin-top: 5px; height: 60px; flex-direction: row; }
+
+        .sub-btn-icon { font-size: 24px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 20px; }
+        .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
+        .btn-verify-identity:active { transform: scale(0.97); }
+        .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
+        .btn-verify-identity i { font-size: 18px; }
+        
+        .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
+        #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+        .spinner { border: 4px solid rgba(14, 165, 233, 0.2); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        .large-loader-icon { font-size: 50px; color: var(--primary); margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.4)); }
+        .timer-circular-wrapper { position: absolute; top:0; left:0; width:100%; height:100%; display: none; align-items: center; justify-content: center; z-index: 10; }
+        .timer-svg-face { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .timer-circle-bg-face { fill: none; stroke: rgba(255, 255, 255, 0.3); stroke-width: 5; }
+        .timer-circle-fg-face { fill: none; stroke: #10b981; stroke-width: 5; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; stroke-linecap: round; }
+        .timer-number-face { font-size: 50px; font-weight: 900; color: #1e293b; text-shadow: 0 0 10px rgba(255,255,255,0.8); font-family: 'Outfit', sans-serif; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .alert-badge { background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: none; white-space: nowrap; z-index: 20; box-shadow: 0 5px 10px rgba(0,0,0,0.3); animation: shake 0.4s; }
+        .status-ok { border-color: #10b981 !important; box-shadow: 0 0 15px #10b981; }
+        .status-wait { border-color: #f59e0b !important; box-shadow: 0 0 15px #f59e0b; }
+        .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
+        
+        /* تعديل: السماح بظهور نوافذ الإدارة الجديدة */
+        #reportModal .modal-box, #manageHallsModal .modal-box, #manageSubjectsModal .modal-box, #dataEntryModal .modal-box, #manageStudentsModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
+        .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
+        .btn-icon-danger { width: 40px; height: 40px; border-radius: 50%; border: none; background: #fee2e2; color: #ef4444; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .btn-icon-danger:hover { background: #ef4444; color: white; transform: rotate(15deg); }
+        .report-views-container { flex: 1; position: relative; overflow: hidden; width: 100%; }
+        .report-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 15px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); background: #f8fafc; }
+        
+        /* تعديل: طبقات التقرير الجديد (مواد -> قاعات -> طلاب) */
+        #viewSubjects { transform: translateX(0); z-index: 10; }
+        #viewHalls { transform: translateX(100%); z-index: 15; background: #f8fafc; }
+        #viewStudents { transform: translateX(200%); z-index: 20; background: #f8fafc; }
+        
+        .slide-out { transform: translateX(100%) !important; }
+        .slide-in { transform: translateX(0) !important; }
+        
+        .subject-big-card, .hall-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
+        .subject-big-card:active, .hall-big-card:active { transform: scale(0.98); background: #f0f9ff; }
+        .subject-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 4px 0 0 4px; }
+        .hall-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: #10b981; border-radius: 4px 0 0 4px; }
+        
+        .sub-card-info h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .sub-card-info span { font-size: 12px; color: #64748b; font-weight: 600; }
+        .sub-arrow { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .students-list-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .btn-back-report { width: 35px; height: 35px; border-radius: 10px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .student-detailed-card { background: white; border-radius: 14px; padding: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); display: flex; justify-content: space-between; align-items: center; }
+        .student-detailed-card.alert-row { background: #fff5f5; border: 1px solid #fecaca; }
+        .student-detailed-card.alert-row .st-name { color: #b91c1c; }
+        .st-data-col { display: flex; flex-direction: column; gap: 4px; text-align: right; }
+        .st-name { font-weight: 800; font-size: 13px; color: #1e293b; }
+        .std-time-badge { background: #ecfdf5; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; direction: ltr; }
+        .std-hall-badge { background: #f0f9ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; margin-left: 5px; }
+        .st-detail-row { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #475569; margin-top: 2px; }
+        .btn-delete-item { width: 38px; height: 38px; background: #fff1f2; color: #f43f5e; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 14px; flex-shrink: 0; margin-right: 10px; }
+        .btn-delete-item:active { transform: scale(0.9); background: #f43f5e; color: white; }
+        .btn-refresh-list { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; width: 100%; padding: 14px; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        .btn-refresh-list:active { transform: scale(0.98); }
+        .btn-close-stylish { background: #f1f5f9; color: #475569; width: 100%; padding: 12px; border-radius: 16px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; font-size: 13px; }
+        #examModal .modal-box { border: 2px solid #ddd6fe; background: #ffffff; }
+        .exam-loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #7c3aed; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .input-group { margin-bottom: 15px; text-align: right; position: relative; z-index: 5; }
+        .modern-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Cairo'; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
+        .modern-input:focus { border-color: var(--primary); background: white; }
+        .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; }
+        .custom-select-label { display: block; text-align: right; margin-bottom: 8px; font-size: 13px; color: #475569; font-weight: 800; margin-right: 5px; }
+        .custom-select-trigger { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 20px; font-size: 15px; font-weight: 700; color: #334155; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
+        .custom-select-trigger:active { transform: scale(0.98); }
+        .custom-select-wrapper.open .custom-select-trigger { border-color: var(--primary); box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15); background: #f0f9ff; }
+        .trigger-content { display: flex; align-items: center; gap: 12px; }
+        .trigger-icon { width: 32px; height: 32px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 14px; transition: 0.3s; }
+        .custom-select-wrapper.open .trigger-icon { background: var(--primary); color: white; }
+        .arrow-icon { font-size: 12px; color: #94a3b8; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .custom-select-wrapper.open .arrow-icon { transform: rotate(180deg); color: var(--primary); }
+        .custom-options-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99990; opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.3s; }
+        .custom-select-wrapper.open .custom-options-overlay { opacity: 1; visibility: visible; pointer-events: all; }
+        .custom-options { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-radius: 30px 30px 0 0; padding: 25px 20px 40px 20px; z-index: 99999; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1); transform: translateY(100%); visibility: hidden; pointer-events: none; transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), visibility 0.4s; max-height: 70vh; overflow-y: auto; }
+        .custom-select-wrapper.open .custom-options { transform: translateY(0); visibility: visible; pointer-events: all; }
+        .sheet-handle { width: 40px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: 0 auto 20px auto; }
+        .options-title { text-align: center; font-weight: 800; color: #1e293b; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        .custom-option { padding: 16px 20px; margin-bottom: 10px; font-size: 15px; font-weight: 700; color: #475569; border-radius: 16px; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; background: #f8fafc; }
+        .custom-option:hover { background: #f1f5f9; }
+        .custom-option.selected { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
+        .custom-option.selected::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .custom-select-wrapper.disabled { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
+        .ticket-container { background: white; border-radius: 24px; position: relative; overflow: hidden; box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #f1f5f9; }
+        .ticket-container::before, .ticket-container::after { content: ''; position: absolute; top: 110px; width: 24px; height: 24px; background: #0f172a; border-radius: 50%; z-index: 20; }
+        .ticket-container::before { left: -12px; } .ticket-container::after { right: -12px; }
+        .ticket-header { background: linear-gradient(135deg, #10b981, #059669); padding: 20px; text-align: center; color: white; position: relative; }
+        .ticket-icon { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; font-size: 24px; border: 2px solid rgba(255, 255, 255, 0.4); }
+        .ticket-body { padding: 25px 20px; position: relative; }
+        .ticket-dashed-line { border-top: 2px dashed #cbd5e1; margin-bottom: 20px; width: 100%; height: 1px; }
+        .t-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .t-row:last-child { margin-bottom: 0; }
+        .t-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .t-value { font-size: 14px; font-weight: 700; color: #1e293b; }
+        .english-num { font-family: 'Outfit', sans-serif; direction: ltr; letter-spacing: 0.5px; font-weight: 700; }
+        .verified-badge { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) rotate(-15deg); border: 2px solid #10b981; color: #10b981; padding: 5px 15px; font-size: 16px; font-weight: 900; border-radius: 8px; opacity: 0; font-family: 'Outfit', sans-serif; letter-spacing: 2px; animation: stampEffect 0.6s 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: none; }
+        .circular-timer { position: relative; width: 80px; height: 80px; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center; }
+        .timer-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .timer-circle-bg { fill: none; stroke: #f1f5f9; stroke-width: 6; }
+        .timer-circle-fg { fill: none; stroke: #10b981; stroke-width: 6; stroke-dasharray: 220; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; stroke-linecap: round; }
+        .timer-text-box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .timer-number { font-size: 20px; font-weight: 900; color: #334155; line-height: 1; font-family: 'Cairo', sans-serif; }
+        .timer-label { font-size: 9px; color: #94a3b8; font-weight: 700; }
+        .timer-pulse { animation: pulse-red 1s infinite; }
+        .student-info-card { background: linear-gradient(135deg, #f8fafc, #e0f2fe); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2); border: 1px solid #bae6fd; text-align: right; position: relative; overflow: hidden; }
+        .student-info-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%); opacity: 0.5; pointer-events: none; }
+        .student-info-item { margin-bottom: 15px; position: relative; padding-right: 45px; z-index: 2; }
+        .student-info-item:last-child { margin-bottom: 0; }
+        .student-info-icon { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 35px; height: 35px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+        .student-info-label { font-size: 12px; color: var(--text-sub); font-weight: 700; display: block; margin-bottom: 4px; }
+        .student-info-value { font-size: 18px; font-weight: 900; color: var(--text-main); display: block; }
+        #scanIDDisplay { color: var(--primary-dark); letter-spacing: 1px; font-family: sans-serif; }
+        .qr-card-trigger { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.3s; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .qr-card-trigger:hover { background: #f1f5f9; border-color: var(--primary); }
+        .qr-card-icon { width: 60px; height: 60px; background: #e0f2fe; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; animation: pulse-blue 2s infinite; }
+        .qr-card-text { font-weight: 700; color: var(--text-main); font-size: 14px; }
+        .qr-card-sub { font-size: 11px; color: #94a3b8; }
+        #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; margin-bottom: 15px; display: none; position: relative; background: black; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); border: 0; }
+        #qr-reader video { object-fit: cover; border-radius: 24px; }
+        .scan-btn { background: #3b82f6; color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: 'Cairo'; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .scan-btn.scanned { background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); pointer-events: none; }
+        .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(to right, transparent, #ef4444, transparent); box-shadow: 0 0 4px #ef4444; z-index: 10; animation: scanning 2s infinite alternate; display: none; }
+        .scan-success-badge { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; padding: 15px; border-radius: 15px; font-weight: 700; font-size: 14px; display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; animation: popUp 0.4s; }
+        
+        /* زر إدارة الطلاب (جديد) */
+        .btn-manage-students { background: linear-gradient(145deg, #4338ca, #3730a3); color: white; } 
+        
+        /* نافذة GPS الإجبارية (جديد) */
+        #gpsStrictModal .modal-box { background: #1e293b; border: 2px solid #ef4444; color: white; }
+        .gps-pulse { font-size: 40px; color: #ef4444; animation: pulse-red 1.5s infinite; margin-bottom: 15px; }
+        
+        /* زر الإغلاق العائم (جديد) */
+        .close-btn-floating { position: absolute; left: 15px; top: 15px; width: 30px; height: 30px; background: #f1f5f9; color: #64748b; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; font-size: 14px; }
+        
+        /* تصميم بطاقة التنبيهات (جديد) */
+        .alert-card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; border-right: 4px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: right; }
+        .alert-card.type-repeat { border-right-color: #ef4444; background: #fef2f2; }
+        .alert-card.type-far { border-right-color: #f59e0b; background: #fffbeb; }
+        .alert-header { display: flex; justify-content: space-between; align-items: center; }
+        .alert-name { font-weight: 700; font-size: 13px; color: #1e293b; }
+        .alert-date { font-family: 'Outfit', sans-serif; font-size: 11px; color: #64748b; direction: ltr; }
+        .alert-meta { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 5px; font-family: 'Outfit', sans-serif; direction: ltr; }
+        .alert-details { font-size: 11px; color: #475569; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .alert-reason-badge { padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 10px; }
+        .tag-hall { color: #0f766e; background: #ccfbf1; }
+        .tag-reason { color: #991b1b; background: #fee2e2; }
+
+        /* تحسين مدخل البحث في المدرج */
+        .hall-search-box { padding: 10px 15px; border-bottom: 1px solid #f1f5f9; background: white; position: sticky; top: 0; z-index: 10; }
+        .hall-search-input { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: 'Cairo'; font-size: 13px; outline: none; background: #f8fafc; }
+        
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scanning { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+        @keyframes stampEffect { 0% { opacity: 0; transform: translateX(-50%) rotate(0deg) scale(2); } 100% { opacity: 0.4; transform: translateX(-50%) rotate(-15deg) scale(1); } }
     </style>
 </head>
 <body>
-    <div id="desktop-blocker" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0f172a; color:#ef4444; z-index:2147483647; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+    <div id="desktop-blocker">
         <i class="fa-solid fa-mobile-screen-button" style="font-size:50px; margin-bottom:20px;"></i>
         <h2>عذراً، وصول غير مصرح به</h2>
-        <p>النظام متاح فقط من الهواتف الذكية.</p>
+        <p>النظام متاح فقط من هواتف Android و iPhone الذكية.</p>
     </div>
 
-    <div id="gpsStrictModal" class="modal-overlay">
+    <div id="gpsStrictModal" class="modal-overlay" style="display:none; z-index: 2147483647;">
         <div class="modal-box">
             <i class="fa-solid fa-location-dot gps-pulse"></i>
-            <div class="modal-title" style="color:#ef4444; font-weight:900; font-size:18px; margin-bottom:10px;">الموقع مطلوب إجبارياً</div>
-            <div class="modal-text" style="color:#94a3b8; font-size:13px; margin-bottom:20px;">
-                لقد قمت بإيقاف الموقع. لا يمكن للنظام العمل بدونه.<br>قم بتفعيله الآن ثم اضغط زر التحديث.
+            <div class="modal-title" style="color:#ef4444; font-size:18px; margin-bottom:10px;">الموقع مطلوب إجبارياً</div>
+            <div class="modal-text" style="color:#cbd5e1; font-size:13px; margin-bottom:20px;">
+                لا يمكن استخدام النظام بدون تفعيل GPS.<br>يرجى تفعيل الموقع ثم الضغط على زر التحديث.
             </div>
-            <div style="display:flex; gap:10px;">
-                <button onclick="document.getElementById('gpsStrictModal').style.display='none'" class="btn-secondary" style="flex:1; background:transparent; color:#94a3b8; border:1px solid #475569;">إغلاق</button>
-                <button onclick="forceRetryGPS()" class="btn-main" style="background:#ef4444; color:white; margin-bottom:0; flex:2;">
-                    تفعيل وإعادة المحاولة <i class="fa-solid fa-rotate-right"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="banModal" class="modal-overlay" style="z-index: 999999;">
-        <div class="modal-box" style="background:#1a0505; border:2px solid #ef4444;">
-            <i class="fa-solid fa-ban" style="font-size:50px; color:#ef4444; margin-bottom:15px;"></i>
-            <h2 style="color:#ef4444; margin-bottom:10px;">تم حظرك اليوم</h2>
-            <p style="font-size:13px; color:white; line-height:1.6;">لقد استنفذت المحاولات المسموحة (3) أو خالفت سياسات النظام (تكرار/غش).<br>حاول مجدداً غداً.</p>
-        </div>
-    </div>
-
-    <div id="identityAlertModal" class="modal-overlay" style="z-index: 90000;">
-        <div class="modal-box">
-            <div class="alert-header-modern">
-                <h3 style="font-size:16px; margin:0;">سجل التنبيهات</h3>
-                <div onclick="closeIdentityAlert()" class="close-btn-floating" style="position:static;"><i class="fa-solid fa-xmark"></i></div>
-            </div>
-            <div id="alertsListContainer" class="alert-list-modern">
-                </div>
+            <button onclick="forceRetryGPS()" class="btn-main" style="background:#ef4444; color:white; margin-bottom:0;">
+                تفعيل وإعادة المحاولة <i class="fa-solid fa-rotate-right"></i>
+            </button>
         </div>
     </div>
 
@@ -230,13 +321,171 @@
     <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
     <audio id="beepSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
 
+    <div id="customLogoutModal" class="modal-overlay">
+        <div class="modal-box">
+            <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 40px; color: #ef4444; margin-bottom: 15px;"></i>
+            <div class="modal-title">تسجيل الخروج</div>
+            <div class="modal-text">هل تريد الخروج من وضع المسؤول؟</div>
+            <div class="modal-actions">
+                <button onclick="performLogout()" class="modal-btn btn-confirm">نعم</button>
+                <button onclick="closeLogoutModal()" class="modal-btn btn-cancel">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="banModal" class="modal-overlay" style="z-index: 100000;">
+        <div class="modal-box" style="border: 2px solid #ef4444; background:#1a0505;">
+            <i class="fa-solid fa-ban" style="font-size: 50px; color: #ef4444; margin-bottom: 15px;"></i>
+            <div class="modal-title" style="color: #ef4444;">تم حظرك اليوم</div>
+            <div class="modal-text" style="font-weight: bold; color:white;">لقد استنفذت المحاولات المسموحة (3) أو خالفت سياسات النظام (تكرار/غش).<br>حاول مجدداً غداً.</div>
+        </div>
+    </div>
+    
+    <div id="identityAlertModal" class="modal-overlay" style="z-index: 99999999;">
+        <div class="modal-box" style="max-height:80vh; padding:0; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #f1f5f9;">
+                <div class="modal-title" style="color:#b45309; margin:0; font-size:16px;">سجل التنبيهات</div>
+                <div class="close-btn-floating" onclick="closeIdentityAlert()" style="position:static;"><i class="fa-solid fa-xmark"></i></div>
+                <div id="adminDeleteAlert" style="display:none; width:30px; height:30px; background:#fee2e2; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; color:#ef4444; margin-right:10px;" onclick="clearNotifications()">
+                    <i class="fa-solid fa-trash-can" style="font-size:14px;"></i>
+                </div>
+            </div>
+            
+            <div class="search-box-wrapper" style="padding:10px;">
+                <i class="fa-solid fa-search" style="right:25px;"></i>
+                <input type="text" id="alertSearchInput" placeholder="بحث..." onkeyup="filterAlerts()">
+            </div>
+
+            <div id="alertsListContainer" style="flex:1; overflow-y:auto; padding:10px;">
+                <div class="empty-state" style="padding:15px; font-size:12px; color:#94a3b8;">لا توجد تنبيهات مسجلة.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminSuccessModal" class="modal-overlay" style="z-index: 99999;">
+        <div class="modal-box">
+            <i class="fa-solid fa-user-shield admin-success-icon" style="font-size:50px; color:#10b981; margin-bottom:15px;"></i>
+            <div class="modal-title" style="color: #10b981;">أهلاً بك يا دكتور</div>
+            <div class="modal-text">تم تفعيل وضع المسؤول.</div>
+        </div>
+    </div>
+    
+    <div id="modernConfirmModal" class="modal-overlay" style="z-index: 99999;">
+        <div class="modal-box confirm-box-style">
+            <div class="confirm-icon-animate">
+                <i class="fa-solid fa-trash-can" style="font-size:40px; color:#ef4444; margin-bottom:15px;"></i>
+            </div>
+            <div class="modal-title" id="modernConfirmTitle">تأكيد الحذف</div>
+            <div class="modal-text" id="modernConfirmText">هل أنت متأكد؟</div>
+            <div class="modal-actions">
+                <button id="btnConfirmYes" class="modal-btn btn-confirm">نعم</button>
+                <button onclick="closeModernConfirm()" class="modal-btn btn-cancel">تراجع</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dataEntryModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="close-btn-floating" onclick="document.getElementById('dataEntryModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
+            <div class="report-modal-header" style="border:none; padding-bottom:0;">
+                <div class="modal-title" style="margin:0; font-size:16px;">إدارة النظام</div>
+            </div>
+            <div class="report-views-container" style="padding:20px;">
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button onclick="openManageHalls()" class="admin-sub-btn btn-data-entry" style="width:100%; height:60px; font-size:14px; background:var(--btn-data);">
+                        <i class="fa-solid fa-building sub-btn-icon"></i> <span>إدارة القاعات</span>
+                    </button>
+                    <button onclick="openManageSubjects()" class="admin-sub-btn btn-data-entry" style="width:100%; height:60px; font-size:14px; background:var(--btn-data);">
+                        <i class="fa-solid fa-book sub-btn-icon"></i> <span>إدارة المواد</span>
+                    </button>
+                    <button onclick="openManageStudents()" class="admin-sub-btn btn-data-entry" style="width:100%; height:60px; font-size:14px; background:var(--btn-exams);">
+                        <i class="fa-solid fa-user-plus sub-btn-icon"></i> <span>إدارة الطلاب (جديد)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="manageHallsModal" class="modal-overlay"><div class="modal-box" id="manageHallsContent"></div></div>
+    <div id="manageSubjectsModal" class="modal-overlay"><div class="modal-box" id="manageSubjectsContent"></div></div>
+    <div id="manageStudentsModal" class="modal-overlay"><div class="modal-box" id="manageStudentsContent"></div></div>
+
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal-box" style="height:85vh; padding:0; display:flex; flex-direction:column;">
+            <div class="report-modal-header">
+                <div style="display:flex; flex-direction:column; align-items:flex-start;">
+                    <div class="modal-title" style="margin:0; font-size:16px;">سجل الحضور</div>
+                    <div id="reportDateDisplay" style="font-size:11px; color:#94a3b8; font-weight:bold;">--</div>
+                </div>
+                <div class="close-btn-floating" onclick="document.getElementById('reportModal').style.display='none'" style="position:static;"><i class="fa-solid fa-xmark"></i></div>
+            </div>
+            <div class="report-views-container">
+                <div id="viewSubjects" class="report-view slide-in">
+                    <div id="subjectsContainer"></div>
+                </div>
+                <div id="viewHalls" class="report-view">
+                    <div class="students-list-header">
+                        <button onclick="showSubjectsView()" class="btn-back-report"><i class="fa-solid fa-arrow-right"></i></button>
+                        <span id="currentSubjectTitleHalls" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
+                    </div>
+                    <div id="hallsContainer"></div>
+                </div>
+                <div id="viewStudents" class="report-view">
+                    <div class="students-list-header">
+                        <button onclick="showHallsView()" class="btn-back-report"><i class="fa-solid fa-arrow-right"></i></button>
+                        <div style="display:flex; flex-direction:column; text-align:right;">
+                            <span id="currentSubjectTitle" style="font-weight:800; font-size:12px; color:#64748b">--</span>
+                            <span id="currentHallTitle" style="font-weight:800; font-size:14px; color:var(--primary-dark)">--</span>
+                        </div>
+                    </div>
+                    <div id="studentsContainer"></div>
+                </div>
+            </div>
+            <div class="report-modal-footer">
+                <button onclick="refreshCurrentReport()" class="btn-refresh-list">تحديث <i class="fa-solid fa-rotate"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="examModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="exam-loader"></div>
+            <div class="modal-title" style="color: #7c3aed;">جاري الإعداد</div>
+            <div class="modal-text">يتم تجهيز نظام الامتحانات حالياً...</div>
+            <button onclick="closeExamModal()" class="modal-btn btn-cancel">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="cameraErrorModal" class="modal-overlay">
+        <div class="modal-box">
+            <i class="fa-solid fa-camera-slash" style="font-size: 45px; color: #ef4444; margin-bottom: 15px;"></i>
+            <div class="modal-title" style="color: #ef4444;">خطأ في الكاميرا</div>
+            <div class="modal-text" id="cameraErrorMsg">يرجى التأكد من أن الكاميرا غير مستخدمة وأن الإذن متاح للمتصفح.</div>
+            <button onclick="retryCamera()" class="modal-btn btn-confirm">إعادة تشغيل الكاميرا</button>
+        </div>
+    </div>
+
+    <div id="connectionLostModal" class="modal-overlay" style="z-index: 10000;">
+        <div class="modal-box">
+            <i class="fa-solid fa-wifi" style="font-size: 45px; color: #ef4444; margin-bottom: 15px;"></i>
+            <div class="modal-title" style="color: #ef4444;">انقطع الاتصال</div>
+            <div class="modal-text">لا يوجد اتصال بالإنترنت.<br>جاري المحاولة...</div>
+        </div>
+    </div>
+    
+    <div id="toastNotification" style="display:none;"></div> 
+
+    <div id="adminFloatingBack" class="admin-floating-back" onclick="goBackToWelcome()">
+        <i class="fa-solid fa-arrow-right"></i>
+    </div>
+
     <div class="app-card">
         <div class="card-banner"></div>
-        <div id="adminBadge" style="position:absolute; top:15px; left:50%; transform:translateX(-50%); background:#ef4444; color:white; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:bold; display:none; z-index:100;">وضع المسؤول</div>
+        <div id="adminBadge" class="admin-badge"><i class="fa-solid fa-user-shield"></i> وضع المسؤول مفعل</div>
         
-        <div id="notificationBtn" onclick="showNotificationModal()" style="position:absolute; top:20px; left:20px; width:40px; height:40px; background:rgba(255,255,255,0.8); border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:50; cursor:pointer; color:#64748b;">
+        <div id="notificationBtn" class="notification-btn" onclick="showNotificationModal()">
             <i class="fa-solid fa-bell"></i>
-            <div id="notifBadge" style="position:absolute; top:8px; right:8px; width:8px; height:8px; background:#ef4444; border-radius:50%; display:none;"></div>
+            <div class="notification-badge" id="notifBadge"></div>
         </div>
 
         <div class="card-body">
@@ -247,185 +496,272 @@
                 </div>
             </div>
 
-            <div style="text-align:center; font-family:'Outfit'; font-size:11px; color:#64748b; margin-bottom:15px; direction:ltr;">
-                <span id="currentTime">--:--</span> | <span id="currentDate">--/--</span>
+            <div class="info-bar">
+                <div class="info-pill"><i class="fa-regular fa-clock"></i> <span id="currentTime">--:--:--</span></div>
+                <div class="info-pill"><i class="fa-regular fa-calendar"></i> <span id="currentDate">--/--/----</span></div>
             </div>
 
-            <div id="screenWelcome" class="section active">
-                <h1 style="font-size:22px; margin-bottom:5px;">كشف الحضور الذكي</h1>
-                <p style="font-size:13px; color:#64748b; margin-bottom:25px;">جامعة الريادة - كلية التمريض</p>
-                
-                <button onclick="startProcess()" class="btn-main" id="mainActionBtn">
-                    تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
-                </button>
-
-                <div class="admin-controls-grid">
-                    <button id="btnLoginConfig" onclick="switchScreen('screenAdminLogin')" class="admin-sub-btn btn-admin-login">
-                        <i class="fa-solid fa-user-gear"></i> دخول المسؤول
-                    </button>
-                    
-                    <button id="btnLogoutConfig" onclick="performLogout()" class="admin-sub-btn btn-admin-logout" style="display:none;">
-                        <i class="fa-solid fa-power-off"></i> خروج
-                    </button>
-                    <button id="btnReportConfig" onclick="openReportModal()" class="admin-sub-btn btn-report locked">
-                        <i class="fa-solid fa-clipboard-list"></i> السجل
-                    </button>
-                    <button id="btnExamsConfig" onclick="openExamModal()" class="admin-sub-btn btn-exams" style="display:none;">
-                        <i class="fa-solid fa-pen-to-square"></i> امتحانات
-                    </button>
-                    <button id="btnRefreshConfig" onclick="location.reload()" class="admin-sub-btn btn-refresh" style="display:none;">
-                        <i class="fa-solid fa-rotate"></i>
-                    </button>
-                    
-                    <button id="btnDataEntryConfig" onclick="openDataEntryMenu()" class="admin-sub-btn btn-data-entry" style="display:none;">
-                        <i class="fa-solid fa-database"></i> إدارة البيانات
-                    </button>
-                </div>
-                
-                <div id="attemptsDisplay" style="margin-top:10px; font-size:11px; color:#ef4444; font-weight:bold;">
+            <div class="card-body-content">
+                <div id="screenWelcome" class="section active">
+                    <div class="faculty-title-box">
+                        <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
                     </div>
-            </div>
-
-            <div id="screenAdminLogin" class="section">
-                <h2>دخول المسؤول</h2>
-                <input type="password" id="adminPassword" class="modern-input" placeholder="كلمة المرور" style="margin:20px 0;">
-                <button onclick="checkAdminPassword()" class="btn-main">دخول</button>
-                <button onclick="switchScreen('screenWelcome')" class="btn-secondary">إلغاء</button>
-            </div>
-
-            <div id="screenLoading" class="section">
-                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary); margin:30px 0;"></i>
-                <h3>جاري التحقق...</h3>
-                <p>يرجى الانتظار، جاري تحديد الموقع.</p>
-            </div>
-
-            <div id="screenScanQR" class="section">
-                <h3>بيانات الحضور</h3>
-                
-                <div class="custom-select-wrapper" id="yearSelectWrapper">
-                    <div class="custom-select-trigger">
-                        <div class="trigger-content"><span class="trigger-text">-- اختر الفرقة --</span></div>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
-                    <div class="custom-options">
-                        <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
-                        <div class="options-title">الفرقة الدراسية</div>
-                        <div class="custom-option" data-value="first_year"><span>الفرقة الأولى</span></div>
-                        <div class="custom-option" data-value="second_year"><span>الفرقة الثانية</span></div>
-                    </div>
-                    <select id="yearSelect" style="display:none;"></select>
-                </div>
-
-                <div class="custom-select-wrapper disabled" id="subjectSelectWrapper">
-                    <div class="custom-select-trigger">
-                        <div class="trigger-content"><span class="trigger-text">-- المادة --</span></div>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
-                    <div class="custom-options">
-                        <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
-                        <div class="options-title">المادة الدراسية</div>
-                        <div id="subjectOptionsContainer"></div>
-                    </div>
-                    <select id="subjectSelect" style="display:none;"></select>
-                </div>
-
-                <div class="custom-select-wrapper" id="hallSelectWrapper">
-                    <div class="custom-select-trigger">
-                        <div class="trigger-content"><span class="trigger-text">-- المدرج (إجباري) --</span></div>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
-                    <div class="custom-options">
-                        <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
-                        <div class="options-title">اختر المدرج</div>
-                        <div class="hall-search-box">
-                            <input type="text" id="hallSearchInput" class="hall-search-input" placeholder="بحث عن القاعة..." onclick="event.stopPropagation()">
+                    <h1 class="smart-title">كشف الحضور الذكي</h1>
+                    <p>مرحباً بك. يرجى الضغط بالأسفل لتسجيل حضور المحاضرة الحالية.</p>
+                    <div style="position: relative; z-index: 2;">
+                        <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
+                            تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
+                        </button>
+                        <div class="admin-controls-grid">
+                            <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login">
+                                <i class="fa-solid fa-lock sub-btn-icon"></i>
+                                <span>دخول المسؤول</span>
+                            </button>
+                            <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout" style="display:none;">
+                                <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal sub-btn-icon"></i>
+                                <span>خروج</span>
+                            </button>
+                            <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked">
+                                <i id="reportIcon" class="fa-solid fa-list-check sub-btn-icon"></i>
+                                <span>السجل</span>
+                            </button>
+                            <button onclick="openExamModal()" class="admin-sub-btn btn-exams">
+                                <i class="fa-solid fa-file-pen sub-btn-icon"></i>
+                                <span style="font-size: 13px;">امتحانات</span>
+                            </button>
+                            <button onclick="safeClick(this, () => location.reload())" class="admin-sub-btn btn-refresh">
+                                <i class="fa-solid fa-rotate-right sub-btn-icon" style="font-size: 24px;"></i>
+                            </button>
+                            <button onclick="openDataEntryMenu()" class="admin-sub-btn btn-data-entry" id="btnDataEntry" style="display:none;">
+                                <i class="fa-solid fa-database sub-btn-icon"></i>
+                                <span>إدخال البيانات</span>
+                            </button>
                         </div>
-                        <div id="hallOptionsContainer" style="max-height:200px; overflow-y:auto;"></div>
+                        <div id="attemptsDisplay" style="margin-top:10px; font-size:11px; color:#ef4444; font-weight:bold;"></div>
                     </div>
-                    <select id="hallSelect" style="display:none;"></select>
+                    <div class="uni-watermark"></div>
                 </div>
 
-                <div id="qr-reader" style="width:100%; border-radius:15px; overflow:hidden; display:none; margin-bottom:15px;"></div>
-                <div id="startScanCard" onclick="startQrScanner()" style="border:2px dashed #cbd5e1; border-radius:15px; padding:20px; cursor:pointer; margin-bottom:15px;">
-                    <i class="fa-solid fa-camera" style="font-size:24px; color:var(--primary);"></i>
-                    <div style="font-weight:bold; margin-top:5px;">اضغط لمسح الكود</div>
+                <div id="screenAdminLogin" class="section">
+                    <h1>دخول المسؤول</h1>
+                    <p>أدخل كلمة المرور.</p>
+                    <div id="adminAlert" style="display:none;" class="alert-box"></div>
+                    <div class="input-group"><input type="password" id="adminPassword" class="modern-input" placeholder="كلمة المرور" required></div>
+                    <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
+                    <button onclick="goBackToWelcome()" class="btn-secondary" style="margin-top:10px;">العودة <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal"></i></button>
+                </div>
+                <div id="screenLoading" class="section">
+                    <h1 style="margin-top: 10px;">جاري التحقق...</h1>
+                    <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary); margin: 20px 0;"></i>
+                    <p>يرجى الانتظار، جاري تحديد الموقع.</p>
                 </div>
 
-                <button onclick="startFaceVerificationProcess()" class="btn-main" id="btnVerify" disabled style="opacity:0.6; cursor:not-allowed;">
-                    <i class="fa-solid fa-face-viewfinder"></i> التحقق من الهوية
-                </button>
-                <div style="font-size:11px; color:#ef4444; display:none; margin-top:5px;" id="hallErrorMsg">* يجب اختيار المدرج أولاً</div>
+                <div id="screenDataEntry" class="section">
+                    <div class="circular-timer">
+                        <svg class="timer-svg" viewBox="0 0 80 80">
+                            <circle class="timer-circle-bg" cx="40" cy="40" r="35"></circle>
+                            <circle class="timer-circle-fg" id="timerProgress" cx="40" cy="40" r="35"></circle>
+                        </svg>
+                        <div class="timer-text-box">
+                            <span class="timer-number" id="timerNumber">15</span>
+                            <span class="timer-label">ثانية</span>
+                        </div>
+                    </div>
+                    
+                    <div class="attempts-hearts" id="attemptsHeartsContainer">
+                        <i class="fa-solid fa-heart heart-icon"></i>
+                        <i class="fa-solid fa-heart heart-icon"></i>
+                        <i class="fa-solid fa-heart heart-icon"></i>
+                    </div>
 
-                <input type="hidden" id="sessionPass">
-            </div>
-
-            <div id="screenFaceCheck" class="section">
-                <h2>التعرف على الوجه</h2>
-                <div class="cam-container" id="camBorder" style="width:200px; height:200px; border-radius:50%; overflow:hidden; margin:20px auto; border:4px solid #e2e8f0; position:relative;">
-                    <video id="video" autoplay muted playsinline style="width:100%; height:100%; object-fit:cover; transform:scaleX(-1);"></video>
+                    <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
+                    <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
+                    <div class="input-group">
+                        <input type="text" id="uniID" class="modern-input" placeholder="أدخل الكود الجامعي" readonly style="text-align:center; font-size:20px; letter-spacing:2px; font-weight:bold; background:white;">
+                    </div>
+                    <div class="input-group"><input type="text" id="attendanceCode" class="modern-input locked" readonly></div>
+                    
+                    <div class="custom-keypad">
+                        <button type="button" class="key-btn" onclick="addKey('1')">1</button>
+                        <button type="button" class="key-btn" onclick="addKey('2')">2</button>
+                        <button type="button" class="key-btn" onclick="addKey('3')">3</button>
+                        <button type="button" class="key-btn" onclick="addKey('4')">4</button>
+                        <button type="button" class="key-btn" onclick="addKey('5')">5</button>
+                        <button type="button" class="key-btn" onclick="addKey('6')">6</button>
+                        <button type="button" class="key-btn" onclick="addKey('7')">7</button>
+                        <button type="button" class="key-btn" onclick="addKey('8')">8</button>
+                        <button type="button" class="key-btn" onclick="addKey('9')">9</button>
+                        <button type="button" class="key-btn action-btn" onclick="clearKey()">C</button>
+                        <button type="button" class="key-btn" onclick="addKey('0')">0</button>
+                        <button type="button" class="key-btn delete-btn" onclick="backspaceKey()"><i class="fa-solid fa-delete-left"></i></button>
+                    </div>
+                    
+                    <button type="button" onclick="handleIdSubmit()" class="btn-main" id="nextStepBtn" style="margin-top:20px;">التالي <i class="fa-solid fa-arrow-left"></i></button>
                 </div>
-                <h3 id="statusTxt" style="color:#0ea5e9;">جاري التشغيل...</h3>
-            </div>
 
-            <div id="screenSuccess" class="section">
-                <i class="fa-solid fa-circle-check" style="font-size:60px; color:#10b981; margin:20px 0;"></i>
-                <h2 style="color:#10b981;">تم التسجيل بنجاح</h2>
-                <div class="ticket-container" style="background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:15px; margin-top:20px; text-align:left;">
-                    <div class="t-row"><span class="t-label">Name:</span> <span id="receiptName" style="font-weight:bold;">--</span></div>
-                    <div class="t-row"><span class="t-label">ID:</span> <span id="receiptID" style="font-family:'Outfit';">--</span></div>
-                    <div class="t-row"><span class="t-label">Hall:</span> <span id="receiptHall" style="font-weight:bold; color:#0ea5e9;">--</span></div>
-                    <div class="t-row"><span class="t-label">Time:</span> <span id="receiptTime" style="font-family:'Outfit';">--</span></div>
+                <div id="screenFaceCheck" class="section">
+                    <h1>التعرف على الهوية</h1>
+                    <div class="cam-container" id="camBorder">
+                        <video id="video" autoplay muted playsinline></video>
+                        <div id="loaderSpinner" class="spinner-overlay">
+                            <i class="fa-solid fa-user-shield large-loader-icon"></i>
+                            <div class="spinner"></div>
+                            <p style="color:var(--text-main); font-size:14px; margin-top:15px; font-weight:bold;">جاري تهيئة النظام...</p>
+                        </div>
+                        <div id="modernTimerContainer" class="timer-circular-wrapper">
+                            <svg class="timer-svg-face" viewBox="0 0 100 100">
+                                <circle class="timer-circle-bg-face" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-circle-fg" id="timerProgressFace" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                            <div class="timer-text-box">
+                                <span class="timer-number-face" id="timerNumberFace">3</span>
+                            </div>
+                        </div>
+                        <div id="alertBadge" class="alert-badge">⚠️</div>
+                    </div>
+                    <h3 id="statusTxt" style="color:#0ea5e9; font-weight:bold; margin-top:10px;">جاري التشغيل...</h3>
+                    <p style="font-size:12px; margin-top:5px;">يجب أن يكون وجهك ثابتاً وبدون ضحك</p>
                 </div>
-                <button onclick="location.reload()" class="btn-main" style="margin-top:20px;">إنهاء</button>
-            </div>
-            
-            <div id="screenError" class="section">
-                <i class="fa-solid fa-triangle-exclamation" style="font-size:50px; color:#ef4444; margin:20px 0;"></i>
-                <h2 style="color:#ef4444;">تنبيه</h2>
-                <p id="errorMsg">حدث خطأ.</p>
-                <button onclick="location.reload()" class="btn-secondary" style="margin-top:15px;">إعادة المحاولة</button>
-            </div>
-        </div>
-    </div>
+                
+                <div id="screenScanQR" class="section">
+                    <h1 style="font-size:20px; margin-top:10px;">مسح رمز الحضور</h1>
+                    <div class="student-info-card">
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                            <span class="student-info-label">اسم الطالب / الطالبة</span>
+                            <span class="student-info-value" id="scanNameDisplay">--</span>
+                        </div>
+                        <div class="student-info-item">
+                            <div class="student-info-icon"><i class="fa-solid fa-id-card"></i></div>
+                            <span class="student-info-label">الكود الجامعي (ID)</span>
+                            <span class="student-info-value" id="scanIDDisplay">--</span>
+                        </div>
+                    </div>
+                    <div class="custom-select-wrapper" id="yearSelectWrapper">
+                        <label class="custom-select-label">الفرقة الدراسية</label>
+                        <div class="custom-select-trigger" data-default-text="-- اختر الفرقة --">
+                            <div class="trigger-content">
+                                <div class="trigger-icon"><i class="fa-solid fa-layer-group"></i></div>
+                                <span class="trigger-text">-- اختر الفرقة --</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </div>
+                        <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
+                        <div class="custom-options">
+                            <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
+                            <div class="sheet-handle"></div>
+                            <div class="options-title">اختر الفرقة الدراسية</div>
+                            <div class="custom-option" data-value="first_year"><span>الفرقة الأولى</span></div>
+                            <div class="custom-option" data-value="second_year"><span>الفرقة الثانية</span></div>
+                        </div>
+                        <select id="yearSelect" style="display:none;">
+                            <option value="" disabled selected>-- اختر الفرقة --</option>
+                            <option value="first_year">الفرقة الأولى</option>
+                            <option value="second_year">الفرقة الثانية</option>
+                        </select>
+                    </div>
+                    <div class="custom-select-wrapper disabled" id="subjectSelectWrapper">
+                        <label class="custom-select-label">المادة الدراسية</label>
+                        <div class="custom-select-trigger" data-default-text="-- اختر الفرقة أولاً --">
+                            <div class="trigger-content">
+                                <div class="trigger-icon"><i class="fa-solid fa-book-open"></i></div>
+                                <span class="trigger-text">-- اختر الفرقة أولاً --</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </div>
+                        <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
+                        <div class="custom-options">
+                            <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
+                            <div class="sheet-handle"></div>
+                            <div class="options-title">اختر المادة الدراسية</div>
+                            <div id="subjectOptionsContainer"></div>
+                        </div>
+                        <select id="subjectSelect" style="display:none;" onchange="checkAllConditions()">
+                            <option value="" disabled selected>-- اختر الفرقة أولاً --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="custom-select-wrapper" id="hallSelectWrapper">
+                        <label class="custom-select-label">المدرج الدراسي (إجباري)</label>
+                        <div class="custom-select-trigger" data-default-text="-- اختر المدرج --">
+                            <div class="trigger-content">
+                                <div class="trigger-icon"><i class="fa-solid fa-building-columns"></i></div>
+                                <span class="trigger-text">-- اختر المدرج --</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                        </div>
+                        <div class="custom-options-overlay" onclick="closeSelect(this)"></div>
+                        <div class="custom-options">
+                            <div class="close-btn-floating" onclick="closeSelectFromBtn(this)"><i class="fa-solid fa-xmark"></i></div>
+                            <div class="sheet-handle"></div>
+                            <div class="options-title">اختر المدرج الدراسي</div>
+                            
+                            <div class="hall-search-box">
+                                <input type="text" id="hallSearchInput" class="hall-search-input" placeholder="بحث عن القاعة..." onclick="event.stopPropagation()">
+                            </div>
+                            
+                            <div id="hallOptionsContainer" style="max-height: 250px; overflow-y: auto;"></div>
+                        </div>
+                        <select id="hallSelect" style="display:none;" onchange="checkAllConditions()">
+                            <option value="" disabled selected>-- اختر المدرج --</option>
+                        </select>
+                    </div>
 
-    <div id="dataEntryModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="close-btn-floating" onclick="document.getElementById('dataEntryModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
-            <h3>إدارة النظام</h3>
-            <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-top:15px;">
-                <button onclick="openManageHalls()" class="manage-btn-modern"><span>إدارة القاعات</span> <i class="fa-solid fa-building"></i></button>
-                <button onclick="openManageSubjects()" class="manage-btn-modern"><span>إدارة المواد</span> <i class="fa-solid fa-book"></i></button>
-                <button onclick="openManageStudents()" class="manage-btn-modern" style="background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe;">
-                    <span>إدارة الطلاب (جديد)</span> <i class="fa-solid fa-user-plus"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+                    <button onclick="safeClick(this, startFaceVerificationProcess)" class="btn-verify-identity" id="btnVerify" disabled style="opacity:0.6; cursor:not-allowed;">
+                        <i class="fa-solid fa-face-viewfinder"></i> التحقق من الهوية
+                    </button>
+                    <div style="font-size:11px; color:#ef4444; display:none; margin-top:5px;" id="hallErrorMsg">* يجب اختيار المدرج أولاً</div>
+                    
+                    <div id="adminBypassContainer" style="display:none; margin-top:10px; margin-bottom:15px; text-align:right;">
+                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:10px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <input type="checkbox" id="bypassCheckbox" style="width:20px; height:20px; accent-color:#10b981;" onchange="toggleBypassMode()">
+                            <span style="font-weight:bold; color:#ef4444; font-size:13px;">تجاوز التحقق (وضع المسؤول)</span>
+                        </label>
+                    </div>
 
-    <div id="manageHallsModal" class="modal-overlay"><div class="modal-box" id="manageHallsContent"></div></div>
-    <div id="manageSubjectsModal" class="modal-overlay"><div class="modal-box" id="manageSubjectsContent"></div></div>
-    <div id="manageStudentsModal" class="modal-overlay"><div class="modal-box" id="manageStudentsContent"></div></div>
-    <div id="modernConfirmModal" class="modal-overlay"><div class="modal-box" id="confirmModalContent"></div></div>
-    
-    <div id="reportModal" class="modal-overlay">
-        <div class="modal-box" style="height:85vh; padding:0; display:flex; flex-direction:column;">
-            <div class="alert-header-modern">
-                <div style="display:flex; flex-direction:column; align-items:flex-start;">
-                    <h3 style="margin:0;">سجل الحضور</h3>
-                    <div id="reportDateDisplay" style="font-size:11px; color:#94a3b8;">--</div>
+                    <div id="qr-reader"><div class="scanner-laser"></div></div>
+                    <div id="startScanCard" class="qr-card-trigger" onclick="safeClick(this, startQrScanner)">
+                        <div class="qr-card-icon"><i class="fa-solid fa-camera"></i></div>
+                        <div>
+                            <div class="qr-card-text">اضغط لفتح الكاميرا</div>
+                            <div class="qr-card-sub">وجه الكاميرا نحو الرمز</div>
+                        </div>
+                    </div>
+                    <div id="scanSuccessMsg" class="scan-success-badge"><i class="fa-solid fa-check-circle"></i> تم مسح الكود بنجاح</div>
+                    <button type="button" id="retryCamBtn" class="btn-secondary" onclick="startQrScanner()" style="display:none; background: #fee2e2; color: #ef4444; margin-bottom: 15px;"><i class="fa-solid fa-rotate-right"></i> إعادة تشغيل الكاميرا</button>
+                    <input type="hidden" id="sessionPass" required>
+                    <button type="button" id="submitBtn" class="btn-main" disabled style="opacity:0.6; cursor:not-allowed;">تأكيد الحضور <i class="fa-solid fa-paper-plane"></i></button>
                 </div>
-                <div class="close-btn-floating" onclick="document.getElementById('reportModal').style.display='none'" style="position:static;"><i class="fa-solid fa-xmark"></i></div>
-            </div>
-            <div class="report-views-container">
-                <div id="viewSubjects" class="report-view slide-in"><div id="subjectsContainer"></div></div>
-                <div id="viewHalls" class="report-view"><div id="hallsContainer"></div></div>
-                <div id="viewStudents" class="report-view"><div id="studentsContainer"></div></div>
-            </div>
-            <div style="padding:10px; border-top:1px solid #e2e8f0;">
-                <button onclick="refreshCurrentReport()" class="btn-refresh-list">تحديث <i class="fa-solid fa-rotate"></i></button>
+
+                <div id="screenSuccess" class="section">
+                    <h1 style="color:#10b981; margin-bottom: 15px;">تم التسجيل بنجاح</h1>
+                    <div class="ticket-container">
+                        <div class="ticket-header">
+                            <div class="ticket-icon"><i class="fa-solid fa-check"></i></div>
+                            <div style="font-weight: 900; font-size: 18px;">تأكيد حضور</div>
+                        </div>
+                        <div class="ticket-body">
+                            <div class="verified-badge">VERIFIED</div>
+                            <div class="t-row"><span class="t-label">Name</span><span class="t-value" id="receiptName">--</span></div>
+                            <div class="t-row"><span class="t-label">ID</span><span class="t-value english-num" id="receiptID">--</span></div>
+                            <div class="ticket-dashed-line"></div>
+                            <div class="t-row"><span class="t-label">Subject</span><span class="t-value" id="receiptSubject" style="color:var(--primary)">--</span></div>
+                            <div class="t-row"><span class="t-label">Hall</span><span class="t-value english-num" id="receiptHall">--</span></div>
+                            <div class="t-row"><span class="t-label">Date</span><span class="t-value english-num" id="receiptDate">--</span></div>
+                            <div class="t-row"><span class="t-label">Time</span><span class="t-value english-num" id="receiptTime">--</span></div>
+                        </div>
+                    </div>
+                    <div style="color:#64748b; font-weight:700; font-size:12px; margin-top:10px;">
+                        <i class="fa-solid fa-circle-check" style="color:#10b981;"></i> تم حفظ البيانات في النظام بنجاح
+                    </div>
+                    <button onclick="location.reload()" class="btn-main" style="margin-top:20px;">إنهاء</button>
+                </div>
+
+                <div id="screenError" class="section">
+                    <h1 style="color:#ef4444;">تنبيه</h1>
+                    <div id="errorMsg" class="alert-box"></div>
+                    <button id="retryBtn" class="btn-main" style="background:#334155; margin-top:20px;">حاول مرة أخرى</button>
+                </div>
             </div>
         </div>
     </div>
@@ -434,90 +770,101 @@
 
     <script>
         // ============================================================
-        // 1. الإعدادات والروابط (تم التحديث - طلب أول)
+        // 1. الإعدادات والروابط (تم التحديث)
         // ============================================================
         const CONFIG = {
-            // شيت الحضور العادي
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
-            // شيت الهوية الجديد (الأمني)
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbyiW8lPdWwuOv4G3fu2GT87t7QNxjXU064PNrq_a8_PyAchEcWxXSO3F77b0hr9v84t/exec",
-            
             adminPassword: "RYADA",
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models',
-            gps: { targetLat: 30.38585, targetLong: 30.48885, allowedDistanceKm: 1.5 } 
+            gps: { targetLat: 30.38585, targetLong: 30.48885, allowedDistanceKm: 1.5 }
         };
-
-        const STORAGE_KEYS = {
-            DB: "offline_students_db_v6",
-            HALLS: "halls_list_v6",
-            SUBJECTS: "subjects_data_v6",
-            ALERTS: "system_alerts_log_v6",
-            ATTEMPTS: "daily_attempts_v6_" + new Date().toLocaleDateString('en-GB'),
-            IS_BANNED: "is_banned_today_v6_" + new Date().toLocaleDateString('en-GB')
-        };
+        
+        const LOCAL_STORAGE_DB_KEY = "offline_students_db_v2";
+        const ALERT_STORAGE_KEY = "persistent_student_alerts_v2";
+        const ATTEMPTS_KEY = "daily_attempts_v47_" + new Date().toLocaleDateString('en-GB');
+        const IS_BANNED_KEY = "is_banned_today_" + new Date().toLocaleDateString('en-GB');
+        const HALLS_KEY = "halls_list_v3";
+        const SUBJECTS_KEY = "subjects_data_v3";
 
         let studentsDB = {};
-        let attendanceData = {};
+        let wakeLock = null;
+        let cachedReportData = [];
         let systemAlerts = [];
-        let html5QrCode;
+
+        // State
+        let attendanceData = {};
+        let processIsActive = false;
+        let userIP = "Unknown";
+        let userLat = null, userLng = null;
         let videoStream = null;
-        let isProcessActive = false; 
+        let html5QrCode;
+        let countdownInterval;
+        let faceCheckInterval = null;
+        let lastNoseX = 0, lastNoseY = 0;
+        const MAX_ATTEMPTS = 3;
         
         // Report State
-        let cachedReportData = [];
-        let currentReportView = 'subjects'; 
+        let currentReportView = 'subjects';
         let currentSelectedSubject = '';
         let currentSelectedHall = '';
 
-        let defaultHalls = ["037", "038", "039", "019", "025", "123", "124", "127", "131", "132"];
-        let hallsList = JSON.parse(localStorage.getItem(STORAGE_KEYS.HALLS)) || defaultHalls;
-
+        // Default Data
+        let defaultHalls = ["037", "038", "039", "019", "025", "123", "124", "127", "131", "132", "133", "134", "231", "335", "121", "118"];
+        let hallsList = JSON.parse(localStorage.getItem(HALLS_KEY)) || defaultHalls;
         let defaultSubjects = {
-            "first_year": ["تمريض بالغين", "اناتومى", "فسيولوجى", "ميكروبيولوجي", "انجليزي"],
-            "second_year": ["حالات حرجة", "اطفال", "نسا", "صحة مجتمع", "ادارة"]
+            "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
+            "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"]
         };
-        let subjectsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.SUBJECTS)) || defaultSubjects;
+        let subjectsData = JSON.parse(localStorage.getItem(SUBJECTS_KEY)) || defaultSubjects;
 
+        // ============================================================
+        // 2. التهيئة (Initialization)
+        // ============================================================
         window.onload = function() {
             if(checkBanStatus()) return;
             loadLocalData();
             updateUIForMode();
-            setupSelectListeners();
+            setupCustomSelects();
+            startGPSWatcher();
+            renderHallOptions();
             startClock();
             
-            fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => {
-                if(!d.error) { studentsDB = d; localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(d)); }
+            // Fetch DB
+            fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { 
+                if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } 
             }).catch(e => console.log("Offline Mode"));
-            
-            // تهيئة واجهة إدارة القاعات
+
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
+            document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
 
         function startClock() {
             setInterval(() => {
                 const now = new Date();
-                document.getElementById('currentTime').innerText = now.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('currentTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit'});
                 document.getElementById('currentDate').innerText = now.toLocaleDateString('en-US');
             }, 1000);
         }
 
         function loadLocalData() {
-            const savedDB = localStorage.getItem(STORAGE_KEYS.DB);
+            const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
             if (savedDB) studentsDB = JSON.parse(savedDB);
-            
-            const savedAlerts = localStorage.getItem(STORAGE_KEYS.ALERTS);
-            if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
+            try {
+                const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
+                if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
+            } catch (e) {}
             updateAlertBadge();
         }
 
         // ============================================================
-        // 3. نظام الحظر الصارم (تعديل 7: 3 محاولات + حظر نهائي)
+        // 3. نظام الحظر الصارم (Strict Ban System)
         // ============================================================
         function checkBanStatus() {
-            const isBanned = localStorage.getItem(STORAGE_KEYS.IS_BANNED);
+            const isBanned = localStorage.getItem(IS_BANNED_KEY);
             if (isBanned === 'true') {
                 document.getElementById('banModal').style.display = 'flex';
-                document.body.style.overflow = 'hidden'; 
+                document.body.style.overflow = 'hidden';
                 return true;
             }
             updateAttemptsUI();
@@ -525,19 +872,16 @@
         }
 
         function getAttempts() {
-            return parseInt(localStorage.getItem(STORAGE_KEYS.ATTEMPTS) || "3");
+            return parseInt(localStorage.getItem(ATTEMPTS_KEY) || "3");
         }
 
         function deductAttempt() {
-            // لا نخصم للمسؤول
-            if (sessionStorage.getItem('DOCTOR_MODE') === 'true') return;
-
+            if (sessionStorage.getItem("is_doctor_bypass_enabled") === 'true') return;
             let current = getAttempts();
             current--;
-            localStorage.setItem(STORAGE_KEYS.ATTEMPTS, current);
-            
+            localStorage.setItem(ATTEMPTS_KEY, current);
             if (current <= 0) {
-                localStorage.setItem(STORAGE_KEYS.IS_BANNED, 'true');
+                localStorage.setItem(IS_BANNED_KEY, 'true');
                 checkBanStatus();
             } else {
                 updateAttemptsUI();
@@ -550,40 +894,32 @@
             const left = getAttempts();
             let hearts = '';
             for(let i=0; i<left; i++) hearts += '<i class="fa-solid fa-heart"></i> ';
-            div.innerHTML = `المحاولات: ${hearts}`;
+            if(div) div.innerHTML = `المحاولات: ${hearts}`;
         }
 
-        // مراقبة الخروج من التطبيق (تعديل 7)
+        // مراقبة الخروج
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && isProcessActive) {
                 deductAttempt();
-                location.reload(); 
+                location.reload();
             }
         });
-
-        // منع الرجوع للخلف أثناء التسجيل (تعديل 7)
+        // منع الرجوع
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
-            if (isProcessActive) {
-                deductAttempt();
-                location.reload();
-            } else {
-                window.history.pushState(null, null, window.location.href);
-            }
+            if (isProcessActive) { deductAttempt(); location.reload(); } 
+            else { window.history.pushState(null, null, window.location.href); }
         };
 
         // ============================================================
-        // 4. نظام GPS الإجباري (تعديل 1 + 10)
+        // 4. نظام GPS الإجباري (Mandatory GPS)
         // ============================================================
-        let userLat = null, userLng = null;
-
         function checkLocationStrict(force = false) {
             if (!navigator.geolocation) {
                 document.getElementById('gpsStrictModal').style.display = 'flex';
                 return;
             }
             const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
-            
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     userLat = pos.coords.latitude;
@@ -591,34 +927,22 @@
                     document.getElementById('gpsStrictModal').style.display = 'none';
                     if (force) showToast("تم تحديد الموقع بنجاح", 2000, "#10b981");
                 },
-                (err) => {
-                    document.getElementById('gpsStrictModal').style.display = 'flex';
-                },
+                (err) => { document.getElementById('gpsStrictModal').style.display = 'flex'; },
                 options
             );
         }
-
-        function forceRetryGPS() {
-            checkLocationStrict(true);
-        }
-
-        function startGPSWatcher() {
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition((p) => { userLat = p.coords.latitude; userLng = p.coords.longitude; }, (e) => {});
-            }
-        }
+        function forceRetryGPS() { checkLocationStrict(true); }
+        function startGPSWatcher() { if (navigator.geolocation) navigator.geolocation.watchPosition((p)=>{userLat=p.coords.latitude; userLng=p.coords.longitude;}); }
 
         // ============================================================
-        // 5. سير العمل (Workflow) & QR
+        // 5. سير العمل (Workflow)
         // ============================================================
         function startProcess() {
             if (checkBanStatus()) return;
             if (!userLat) {
                 checkLocationStrict();
                 setTimeout(() => { if(userLat) _proceedStart(); }, 1500);
-            } else {
-                _proceedStart();
-            }
+            } else { _proceedStart(); }
         }
 
         function _proceedStart() {
@@ -627,7 +951,7 @@
             document.getElementById('sessionPass').value = '';
             document.getElementById('hallErrorMsg').style.display = 'none';
             
-            // إعادة ضبط القوائم
+            // Reset UI
             document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
             document.getElementById('yearSelect').value = '';
             document.getElementById('subjectSelect').value = '';
@@ -636,137 +960,97 @@
             document.querySelector('#subjectSelectWrapper .trigger-text').textContent = '-- المادة --';
             document.querySelector('#subjectSelectWrapper').classList.add('disabled');
             document.querySelector('#hallSelectWrapper .trigger-text').textContent = '-- المدرج --';
-            
+
             switchScreen('screenLoading');
-            setTimeout(() => {
-                switchScreen('screenScanQR');
-                startQrScanner();
-            }, 1000);
+            setTimeout(() => { switchScreen('screenScanQR'); startQrScanner(); }, 1000);
         }
 
         function startQrScanner() {
             document.getElementById('startScanCard').style.display = 'none';
             document.getElementById('qr-reader').style.display = 'block';
-            
-            if(html5QrCode) { try{ html5QrCode.stop(); }catch(e){} }
+            if(html5QrCode) try{ html5QrCode.stop(); }catch(e){}
             html5QrCode = new Html5Qrcode("qr-reader");
-            
-            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    html5QrCode.stop().then(() => {
-                        document.getElementById('qr-reader').style.display = 'none';
-                        document.getElementById('startScanCard').innerHTML = `<div style="color:#10b981; font-weight:bold;"><i class="fa-solid fa-check-circle"></i> تم مسح الكود</div>`;
-                        document.getElementById('startScanCard').style.display = 'block';
-                        document.getElementById('sessionPass').value = decodedText;
-                        checkAllConditions();
-                        document.getElementById('successSound').play();
-                    });
-                },
-                (errorMessage) => {}
-            ).catch(err => { alert("يرجى السماح للكاميرا"); });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('qr-reader').style.display = 'none';
+                    document.getElementById('startScanCard').innerHTML = `<div style="color:#10b981; font-weight:bold;"><i class="fa-solid fa-check-circle"></i> تم مسح الكود</div>`;
+                    document.getElementById('startScanCard').style.display = 'block';
+                    document.getElementById('sessionPass').value = txt;
+                    checkAllConditions();
+                    document.getElementById('successSound').play();
+                });
+            }).catch(e=>{});
         }
 
-        // التحقق من الشروط (تعديل 8: المدرج إجباري)
         function checkAllConditions() {
-            const year = document.getElementById('yearSelect').value;
-            const sub = document.getElementById('subjectSelect').value;
-            const hall = document.getElementById('hallSelect').value;
-            const pass = document.getElementById('sessionPass').value;
+            const y = document.getElementById('yearSelect').value;
+            const s = document.getElementById('subjectSelect').value;
+            const h = document.getElementById('hallSelect').value;
+            const p = document.getElementById('sessionPass').value;
             const btn = document.getElementById('btnVerify');
-            const hallMsg = document.getElementById('hallErrorMsg');
-
-            if (!hall) hallMsg.style.display = 'block'; else hallMsg.style.display = 'none';
-
-            if (year && sub && hall && pass) {
-                btn.disabled = false;
-                btn.style.opacity = "1";
-                btn.style.cursor = "pointer";
-            } else {
-                btn.disabled = true;
-                btn.style.opacity = "0.6";
-                btn.style.cursor = "not-allowed";
-            }
+            if (!h) document.getElementById('hallErrorMsg').style.display = 'block'; else document.getElementById('hallErrorMsg').style.display = 'none';
+            if(y && s && h && p) { btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; }
+            else { btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; }
         }
 
         // ============================================================
-        // 6. بصمة الوجه والإرسال (Face ID & Submit)
+        // 6. بصمة الوجه & الإرسال
         // ============================================================
         async function startFaceVerificationProcess() {
             if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop();
             switchScreen('screenFaceCheck');
-            
             const video = document.getElementById('video');
             const statusTxt = document.getElementById('statusTxt');
-
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(CONFIG.modelsUrl),
                 faceapi.nets.faceLandmark68Net.loadFromUri(CONFIG.modelsUrl),
                 faceapi.nets.faceRecognitionNet.loadFromUri(CONFIG.modelsUrl)
             ]);
-
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-                video.srcObject = stream;
-                videoStream = stream;
-            } catch (e) {
-                alert("الكاميرا مطلوبة"); return;
-            }
-
+                video.srcObject = stream; videoStream = stream;
+            } catch(e) { alert("الكاميرا مطلوبة"); return; }
+            
             video.addEventListener('play', () => {
                 const canvas = faceapi.createCanvasFromMedia(video);
                 const displaySize = { width: video.width, height: video.height };
                 faceapi.matchDimensions(canvas, displaySize);
-                
                 let checkInterval = setInterval(async () => {
-                    const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-                    
-                    if (detections) {
-                        statusTxt.innerText = "جاري التحقق... اثبت";
-                        statusTxt.style.color = "#10b981";
+                    const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                    if (det) {
+                        statusTxt.innerText = "جاري التحقق... اثبت"; statusTxt.style.color = "#10b981";
                         clearInterval(checkInterval);
-                        submitAttendance(detections.descriptor);
-                    } else {
-                        statusTxt.innerText = "وجهك غير واضح...";
-                        statusTxt.style.color = "#ef4444";
-                    }
+                        submitAttendance(det.descriptor);
+                    } else { statusTxt.innerText = "وجهك غير واضح..."; statusTxt.style.color = "#ef4444"; }
                 }, 1000);
             });
         }
 
-        async function submitAttendance(faceVector) {
+        async function submitAttendance(vector) {
             const statusTxt = document.getElementById('statusTxt');
             statusTxt.innerText = "جاري الاتصال بالسيرفر...";
-
-            // طلب الرقم الجامعي (لأننا لم نستخدم شاشة إدخال بيانات)
             let studentID = prompt("أدخل رقمك الجامعي للتأكيد:");
             if(!studentID) { location.reload(); return; }
-            
             let studentName = studentsDB[studentID] || "غير مسجل (جديد)";
-            attendanceData.name = studentName;
-            attendanceData.id = studentID;
+            attendanceData.name = studentName; attendanceData.uniID = studentID;
 
             const payload = {
                 action: "register_identity",
                 id: studentID,
                 name: studentName,
                 hall: document.getElementById('hallSelect').value,
-                vector: Array.from(faceVector),
+                vector: Array.from(vector),
                 gps: `${userLat},${userLng}`,
                 deviceId: getDeviceId(),
                 time: new Date().toLocaleTimeString('en-US')
             };
 
             try {
-                // إرسال للشيت الأمني (Identity)
-                const response = await fetch(CONFIG.identitySheetUrl, {
-                    method: 'POST', mode: 'cors',
-                    headers: {'Content-Type': 'text/plain'},
-                    body: JSON.stringify(payload)
-                });
-                
+                // 1. Identity Sheet
+                const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
                 const result = await response.json();
-                logSystemAlert(result, studentName, studentID); // تسجيل التنبيه محلياً
-
+                logSystemAlert(result, studentName, studentID);
+                
                 if (result.risk === "DEVICE_SHARING" || result.risk === "FACE_SPOOF" || result.risk === "DUPLICATE_ID") {
                     deductAttempt();
                     alert(result.ui_alert.message);
@@ -774,7 +1058,7 @@
                     return;
                 }
 
-                // إرسال لشيت الحضور (Attendance)
+                // 2. Attendance Sheet
                 const formParams = new URLSearchParams();
                 formParams.append("action", "register");
                 formParams.append("id", studentID);
@@ -782,20 +1066,11 @@
                 formParams.append("hall", payload.hall);
                 formParams.append("subject", document.getElementById('subjectSelect').value);
                 formParams.append("code", document.getElementById('sessionPass').value);
-                
-                await fetch(CONFIG.sheetApiUrl, {
-                    method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formParams.toString()
-                });
+                await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
 
                 isProcessActive = false;
                 showSuccessScreen(studentName, studentID, payload.hall);
-
-            } catch (e) {
-                console.error(e);
-                showError("فشل الاتصال بالسيرفر.");
-            }
+            } catch(e) { showError("فشل الاتصال بالسيرفر."); }
         }
 
         function showSuccessScreen(name, id, hall) {
@@ -803,353 +1078,244 @@
             document.getElementById('receiptID').innerText = id;
             document.getElementById('receiptHall').innerText = hall;
             document.getElementById('receiptTime').innerText = new Date().toLocaleTimeString('en-US');
-            
-            if(videoStream) videoStream.getTracks().forEach(t => t.stop());
+            if(videoStream) videoStream.getTracks().forEach(t=>t.stop());
             switchScreen('screenSuccess');
             document.getElementById('successSound').play();
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
         }
 
         // ============================================================
-        // 7. نظام التنبيهات (تعديل 2: تفاصيل إنجليزية)
+        // 7. التنبيهات
         // ============================================================
-        function logSystemAlert(serverResult, name, id) {
-            if (serverResult.status === 'warning') {
+        function logSystemAlert(res, name, id) {
+            if (res.status === 'warning') {
                 const newAlert = {
-                    name: name,
-                    id: id,
-                    timestamp: new Date().toLocaleString('en-US'), // التاريخ إنجليزي
-                    hall: serverResult.system_data.hall || "N/A",
-                    reason: serverResult.risk, 
-                    details: serverResult.ui_alert.message
+                    name: name, id: id,
+                    timestamp: new Date().toLocaleString('en-US'),
+                    hall: res.system_data.hall || "N/A",
+                    reason: res.risk,
+                    details: res.ui_alert.message
                 };
                 systemAlerts.unshift(newAlert);
-                localStorage.setItem(STORAGE_KEYS.ALERTS, JSON.stringify(systemAlerts));
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
                 updateAlertBadge();
             }
         }
-
         function updateAlertBadge() {
             const badge = document.getElementById('notifBadge');
             badge.style.display = systemAlerts.length > 0 ? 'block' : 'none';
         }
-
         function showNotificationModal() {
-            if (sessionStorage.getItem('DOCTOR_MODE') !== 'true') {
-                showToast("خاص بالمسؤولين فقط", 2000, "#ef4444"); return;
-            }
+            if (sessionStorage.getItem("is_doctor_bypass_enabled") !== 'true') { showToast("خاص بالمسؤولين فقط", 2000, "#ef4444"); return; }
             const container = document.getElementById('alertsListContainer');
             container.innerHTML = '';
-            
-            if (systemAlerts.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">لا توجد تنبيهات</div>';
-            } else {
-                systemAlerts.forEach(alert => {
+            if (systemAlerts.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">لا توجد تنبيهات</div>'; }
+            else {
+                systemAlerts.forEach((alert, index) => {
                     let typeClass = '', reasonTag = '';
-                    if(alert.reason.includes('REPEAT') || alert.reason.includes('DUPLICATE') || alert.reason.includes('SHARING')) {
-                        typeClass = 'type-repeat'; reasonTag = '<span class="alert-reason-badge tag-reason">Fraud/Repeat</span>';
-                    } else if (alert.reason.includes('LOCATION')) {
-                        typeClass = 'type-far'; reasonTag = '<span class="alert-reason-badge tag-hall">Location</span>';
-                    }
+                    if(alert.reason.includes('REPEAT') || alert.reason.includes('SHARING')) { typeClass='type-repeat'; reasonTag='<span class="alert-reason-badge tag-reason">Fraud</span>'; }
+                    else if(alert.reason.includes('LOCATION')) { typeClass='type-far'; reasonTag='<span class="alert-reason-badge tag-hall">Location</span>'; }
                     
-                    const html = `
-                        <div class="alert-card ${typeClass}">
-                            <div class="alert-header">
-                                <span class="alert-name">${alert.name}</span>
-                                <span class="alert-date" style="font-family:'Outfit'">${alert.timestamp}</span>
-                            </div>
-                            <div class="alert-meta">
-                                <span>ID: ${alert.id}</span>
-                                <span>Hall: ${alert.hall}</span>
-                            </div>
-                            <div class="alert-details">
-                                ${reasonTag}
-                                <span>${alert.details}</span>
-                            </div>
-                        </div>`;
-                    container.innerHTML += html;
+                    container.innerHTML += `
+                    <div class="alert-card ${typeClass}">
+                        <div class="alert-header">
+                            <span class="alert-name">${alert.name}</span>
+                            <span class="alert-date">${alert.timestamp}</span>
+                        </div>
+                        <div class="alert-meta">
+                            <span>ID: ${alert.id}</span><span>Hall: ${alert.hall}</span>
+                        </div>
+                        <div class="alert-details">${reasonTag} <span>${alert.details}</span></div>
+                    </div>`;
                 });
             }
             document.getElementById('identityAlertModal').style.display = 'flex';
         }
-
         function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
+        function clearNotifications() { systemAlerts = []; localStorage.removeItem(ALERT_STORAGE_KEY); closeIdentityAlert(); updateAlertBadge(); }
 
         // ============================================================
-        // 8. أدوات الإدارة والطلاب (تعديل 5 و 6)
+        // 8. إدارة البيانات
         // ============================================================
-        
-        // إدارة الطلاب (جديد)
         function openManageStudents() {
             renderManagementList('manageStudentsContent', 'إضافة طالب (محلي)', [], (val) => {
-                // دالة إضافة خاصة للطلاب
                 const parts = val.split(',');
                 if(parts.length >= 2) {
                     studentsDB[parts[0].trim()] = parts[1].trim();
-                    localStorage.setItem(STORAGE_KEYS.DB, JSON.stringify(studentsDB));
+                    localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(studentsDB));
                     showToast("تم الحفظ", 2000, "#10b981");
                 } else { alert("اكتب: الرقم, الاسم"); }
             }, null, 'manageStudentsModal');
-            // تعديل Placeholder
             document.getElementById('input_manageStudentsModal').placeholder = "الرقم الجامعي, الاسم الثلاثي";
         }
 
-        // إدارة القاعات
         function openManageHalls() {
             renderManagementList('manageHallsContent', 'إدارة القاعات', hallsList, (val) => {
-                hallsList.push(val); localStorage.setItem(STORAGE_KEYS.HALLS, JSON.stringify(hallsList));
-                renderHallOptions();
+                hallsList.push(val); localStorage.setItem(HALLS_KEY, JSON.stringify(hallsList)); renderHallOptions();
             }, (idx) => {
-                hallsList.splice(idx, 1); localStorage.setItem(STORAGE_KEYS.HALLS, JSON.stringify(hallsList));
-                renderHallOptions();
+                hallsList.splice(idx, 1); localStorage.setItem(HALLS_KEY, JSON.stringify(hallsList)); renderHallOptions();
             }, 'manageHallsModal');
         }
 
-        // إدارة المواد
         function openManageSubjects() {
             let allSubs = [...subjectsData.first_year, ...subjectsData.second_year];
             renderManagementList('manageSubjectsContent', 'إدارة المواد', allSubs, (val) => {
-                subjectsData.first_year.push(val); localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjectsData));
+                subjectsData.first_year.push(val); localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjectsData));
             }, (idx) => {
                 const v = allSubs[idx];
-                subjectsData.first_year = subjectsData.first_year.filter(s => s !== v);
-                subjectsData.second_year = subjectsData.second_year.filter(s => s !== v);
-                localStorage.setItem(STORAGE_KEYS.SUBJECTS, JSON.stringify(subjectsData));
+                subjectsData.first_year = subjectsData.first_year.filter(s=>s!==v);
+                subjectsData.second_year = subjectsData.second_year.filter(s=>s!==v);
+                localStorage.setItem(SUBJECTS_KEY, JSON.stringify(subjectsData));
             }, 'manageSubjectsModal');
         }
 
-        function renderManagementList(containerId, title, dataList, addCallback, deleteCallback, modalId) {
-            const container = document.getElementById(containerId);
-            let listHtml = dataList.map((item, idx) => `
-                <div class="list-item-modern">
-                    <span>${item}</span>
-                    ${deleteCallback ? `<button class="btn-delete-modern" onclick="handleDelete('${modalId}', ${idx})"><i class="fa-solid fa-trash"></i></button>` : ''}
-                </div>
-            `).join('');
-
-            container.innerHTML = `
+        function renderManagementList(contId, title, list, addCb, delCb, modalId) {
+            const cont = document.getElementById(contId);
+            let html = list.map((it, i) => `<div class="list-item-modern"><span>${it}</span>${delCb?`<button class="btn-delete-modern" onclick="handleDelete('${modalId}',${i})"><i class="fa-solid fa-trash"></i></button>`:''}</div>`).join('');
+            cont.innerHTML = `
                 <div class="close-btn-floating" onclick="document.getElementById('${modalId}').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
                 <h3>${title}</h3>
-                <div class="manage-card">
-                    <div class="manage-input-row">
-                        <input id="input_${modalId}" type="text" class="manage-input" placeholder="إضافة جديد...">
-                        <button id="btn_add_${modalId}" class="btn-add-modern">إضافة</button>
-                    </div>
-                </div>
-                <div style="max-height:300px; overflow-y:auto;">${listHtml}</div>
-            `;
-            
-            document.getElementById(`btn_add_${modalId}`).onclick = function() {
-                const val = document.getElementById(`input_${modalId}`).value;
-                if(val) { addCallback(val); document.getElementById(modalId).style.display='none'; setTimeout(()=>eval(`open${modalId.replace('Content','').replace('Modal','')}('')`), 100); }
+                <div class="manage-card"><div class="manage-input-row"><input id="input_${modalId}" class="manage-input" placeholder="جديد..."><button id="btn_add_${modalId}" class="btn-add-modern">إضافة</button></div></div>
+                <div style="max-height:300px; overflow-y:auto;">${html}</div>`;
+            document.getElementById(`btn_add_${modalId}`).onclick = () => {
+                const v = document.getElementById(`input_${modalId}`).value;
+                if(v) { addCb(v); document.getElementById(modalId).style.display='none'; setTimeout(()=>eval(`open${modalId.replace('Content','').replace('Modal','')}('')`), 100); }
             };
-
-            window.handleDelete = function(mId, idx) {
-                if(confirm("حذف؟")) { deleteCallback(idx); document.getElementById(mId).style.display='none'; setTimeout(()=>eval(`open${mId.replace('Content','').replace('Modal','')}('')`), 100); }
+            window.handleDelete = (mId, idx) => {
+                showModernConfirm('حذف', 'هل أنت متأكد؟', () => { delCb(idx); document.getElementById(mId).style.display='none'; setTimeout(()=>eval(`open${mId.replace('Content','').replace('Modal','')}('')`), 100); });
             };
             document.getElementById(modalId).style.display = 'flex';
         }
 
         // ============================================================
-        // 9. التقارير والتحديث الذكي (تعديل 3)
+        // 9. التقرير
         // ============================================================
         async function openReportModal() {
             document.getElementById('reportModal').style.display = 'flex';
-            currentReportView = 'subjects';
-            refreshCurrentReport();
+            currentReportView = 'subjects'; refreshCurrentReport();
         }
-
         async function refreshCurrentReport() {
             const d = new Date().toLocaleDateString('en-GB');
             document.getElementById('reportDateDisplay').innerText = d;
-            
-            // إذا كنا في الصفحة الرئيسية، نجلب البيانات
             if (currentReportView === 'subjects') {
-                const container = document.getElementById('subjectsContainer');
-                container.innerHTML = `<div style="text-align:center; padding:50px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary);"></i></div>`;
+                const cont = document.getElementById('subjectsContainer');
+                cont.innerHTML = `<div style="text-align:center; padding:50px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary);"></i></div>`;
                 try {
-                    const response = await fetch(`${CONFIG.sheetApiUrl}?action=getReport&date=${encodeURIComponent(d)}`);
-                    const data = await response.json();
+                    const r = await fetch(`${CONFIG.sheetApiUrl}?action=getReport&date=${encodeURIComponent(d)}`);
+                    const data = await r.json();
                     cachedReportData = data.reverse();
                     renderSubjectsList(cachedReportData);
-                } catch (e) { container.innerHTML = '<div style="color:red; text-align:center;">خطأ في الاتصال</div>'; }
-            } 
-            // إذا كنا داخل مادة أو قاعة، نعيد الريندر فقط
-            else if (currentReportView === 'halls') {
-                openSubjectDetails(currentSelectedSubject);
-            } 
-            else if (currentReportView === 'students') {
-                openHallDetails(currentSelectedSubject, currentSelectedHall);
-            }
+                } catch(e) { cont.innerHTML = 'خطأ اتصال'; }
+            } else if (currentReportView === 'halls') openSubjectDetails(currentSelectedSubject);
+            else if (currentReportView === 'students') openHallDetails(currentSelectedSubject, currentSelectedHall);
         }
-
         function renderSubjectsList(data) {
-            const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
-            let html = '';
-            subjects.forEach(subject => {
-                const count = data.filter(i => i.subject === subject).length;
-                html += `<div class="subject-big-card" onclick="currentSelectedSubject='${subject}'; openSubjectDetails('${subject}')">
-                            <div class="sub-card-info"><h3>${subject}</h3><span><i class="fa-solid fa-users"></i> الحضور: ${count}</span></div>
-                            <div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div>
-                         </div>`;
+            const subs = [...new Set(data.map(i => i.subject || "غير محدد"))];
+            let h = '';
+            subs.forEach(s => {
+                const c = data.filter(i => i.subject === s).length;
+                h += `<div class="subject-big-card" onclick="currentSelectedSubject='${s}'; openSubjectDetails('${s}')"><div class="sub-card-info"><h3>${s}</h3><span><i class="fa-solid fa-users"></i> ${c}</span></div><div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div></div>`;
             });
-            document.getElementById('subjectsContainer').innerHTML = html;
-            showView('viewSubjects');
+            document.getElementById('subjectsContainer').innerHTML = h; showView('viewSubjects');
         }
-
-        function openSubjectDetails(subject) {
-            currentReportView = 'halls';
-            currentSelectedSubject = subject;
-            const filtered = cachedReportData.filter(s => s.subject === subject);
-            const halls = [...new Set(filtered.map(item => item.hall || "N/A"))];
-            let html = `<div class="students-list-header"><button onclick="currentReportView='subjects'; showView('viewSubjects')" class="btn-back-report"><i class="fa-solid fa-arrow-right"></i></button><span style="font-weight:bold;">${subject}</span></div>`;
-            
-            halls.forEach(hall => {
-                const count = filtered.filter(i => i.hall === hall).length;
-                html += `<div class="hall-big-card" onclick="currentSelectedHall='${hall}'; openHallDetails('${subject}', '${hall}')">
-                            <div class="sub-card-info"><h3 style="color:#059669">${hall}</h3><span><i class="fa-solid fa-check"></i> ${count}</span></div>
-                            <div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div>
-                         </div>`;
+        function openSubjectDetails(s) {
+            currentReportView = 'halls'; currentSelectedSubject = s;
+            const f = cachedReportData.filter(i => i.subject === s);
+            const halls = [...new Set(f.map(i => i.hall || "N/A"))];
+            let h = '';
+            halls.forEach(ha => {
+                const c = f.filter(i => i.hall === ha).length;
+                h += `<div class="hall-big-card" onclick="currentSelectedHall='${ha}'; openHallDetails('${s}','${ha}')"><div class="sub-card-info"><h3>${ha}</h3><span>${c}</span></div><div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div></div>`;
             });
-            document.getElementById('hallsContainer').innerHTML = html;
+            document.getElementById('hallsContainer').innerHTML = h;
+            document.getElementById('currentSubjectTitleHalls').innerText = s;
             showView('viewHalls');
         }
-
-        function openHallDetails(subject, hall) {
+        function openHallDetails(s, ha) {
             currentReportView = 'students';
-            const students = cachedReportData.filter(s => s.subject === subject && (s.hall||"N/A") === hall);
-            let html = `<div class="students-list-header"><button onclick="currentReportView='halls'; showView('viewHalls')" class="btn-back-report"><i class="fa-solid fa-arrow-right"></i></button>
-                        <div style="text-align:right;"><span style="font-size:10px; display:block;">${subject}</span><span style="font-weight:bold;">${hall}</span></div></div>`;
-            
-            students.forEach(item => {
-                html += `<div class="student-detailed-card">
-                            <div style="display:flex; justify-content:space-between;">
-                                <div style="font-weight:bold;">${item.name}</div>
-                                <div style="font-family:'Outfit'; color:#64748b;">${item.time}</div>
-                            </div>
-                            <div style="font-size:11px; color:#64748b;">ID: ${item.uniID}</div>
-                         </div>`;
+            const st = cachedReportData.filter(i => i.subject === s && (i.hall||"N/A") === ha);
+            let h = '';
+            st.forEach(i => {
+                h += `<div class="student-detailed-card"><div style="display:flex; justify-content:space-between;"><div style="font-weight:bold;">${i.name}</div><div>${i.time}</div></div><div style="font-size:11px; color:#64748b;">${i.uniID}</div></div>`;
             });
-            document.getElementById('studentsContainer').innerHTML = html;
+            document.getElementById('studentsContainer').innerHTML = h;
+            document.getElementById('currentSubjectTitle').innerText = s;
+            document.getElementById('currentHallTitle').innerText = ha;
             showView('viewStudents');
         }
-
-        function showView(viewId) {
+        function showView(id) {
             ['viewSubjects', 'viewHalls', 'viewStudents'].forEach(v => {
-                const el = document.getElementById(v);
-                if(v === viewId) { el.style.transform = 'translateX(0)'; }
-                else { el.style.transform = 'translateX(100%)'; } // إزاحة لليمين
+                document.getElementById(v).style.transform = (v===id)?'translateX(0)':'translateX(100%)';
             });
-            // إصلاح خاص للأول
-            if(viewId === 'viewSubjects') document.getElementById('viewSubjects').style.transform = 'translateX(0)';
+            if(id==='viewSubjects') document.getElementById('viewSubjects').style.transform = 'translateX(0)';
         }
+        function showSubjectsView() { showView('viewSubjects'); currentReportView='subjects'; }
+        function showHallsView() { showView('viewHalls'); currentReportView='halls'; }
 
         // ============================================================
-        // 10. أدوات مساعدة (Utilities)
+        // Utilities
         // ============================================================
         function switchScreen(id) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            
-            // الأزرار العائمة للمسؤول
-            const adminBack = document.getElementById('adminFloatingBack');
-            const isAdmin = sessionStorage.getItem('DOCTOR_MODE') === 'true';
-            if (isAdmin && id !== 'screenWelcome' && id !== 'screenAdminLogin') { adminBack.style.display = 'flex'; } else { adminBack.style.display = 'none'; }
+            const ab = document.getElementById('adminFloatingBack');
+            if(sessionStorage.getItem("is_doctor_bypass_enabled")==='true' && id!=='screenWelcome' && id!=='screenAdminLogin') ab.style.display='flex'; else ab.style.display='none';
         }
-
-        function getDeviceId() {
-            let id = localStorage.getItem('device_id');
-            if(!id) { id = 'DEV_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('device_id', id); }
-            return id;
-        }
-
-        function showToast(msg, duration, color) {
-            const div = document.createElement('div');
-            div.style.cssText = `position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:${color}; color:white; padding:12px 25px; border-radius:30px; z-index:999999; font-weight:bold; box-shadow:0 5px 20px rgba(0,0,0,0.2); animation:fadeIn 0.3s;`;
-            div.innerHTML = msg;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), duration);
-        }
-
+        function getDeviceId() { let id=localStorage.getItem('device_id'); if(!id){id='DEV_'+Math.random().toString(36).substr(2,9);localStorage.setItem('device_id',id);} return id; }
+        function showToast(m, d, c) { const t=document.getElementById('toastNotification'); t.style.backgroundColor=c; t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none', d); }
         function checkAdminPassword() {
             if (document.getElementById('adminPassword').value === CONFIG.adminPassword) {
-                sessionStorage.setItem('DOCTOR_MODE', 'true');
+                sessionStorage.setItem("is_doctor_bypass_enabled", 'true');
                 document.getElementById('adminPassword').value = '';
-                updateUIForMode();
-                switchScreen('screenWelcome');
-                showToast("أهلاً بك يا دكتور", 2000, "#10b981");
-            } else { showToast("كلمة المرور خاطئة", 2000, "#ef4444"); }
+                updateUIForMode(); switchScreen('screenWelcome');
+            } else { showToast("خطأ", 2000, "#ef4444"); }
         }
-
-        function performLogout() {
-            sessionStorage.removeItem('DOCTOR_MODE');
-            updateUIForMode();
-            location.reload();
-        }
-
+        function performLogout() { sessionStorage.removeItem("is_doctor_bypass_enabled"); updateUIForMode(); location.reload(); }
         function updateUIForMode() {
-            const isAdmin = sessionStorage.getItem('DOCTOR_MODE') === 'true';
+            const isAdmin = sessionStorage.getItem("is_doctor_bypass_enabled") === 'true';
             document.getElementById('adminBadge').style.display = isAdmin ? 'block' : 'none';
             document.getElementById('btnLoginConfig').style.display = isAdmin ? 'none' : 'flex';
-            const display = isAdmin ? 'flex' : 'none';
-            document.getElementById('btnLogoutConfig').style.display = display;
-            document.getElementById('btnExamsConfig').style.display = display;
-            document.getElementById('btnRefreshConfig').style.display = display;
-            document.getElementById('btnDataEntryConfig').style.display = display;
-            const btnReport = document.getElementById('btnReportConfig');
-            if(isAdmin) btnReport.classList.remove('locked'); else btnReport.classList.add('locked');
+            const d = isAdmin ? 'flex' : 'none';
+            ['btnLogoutConfig', 'btnExamsConfig', 'btnRefreshConfig', 'btnDataEntryConfig'].forEach(id => document.getElementById(id).style.display = d);
+            const r = document.getElementById('btnReportConfig');
+            if(isAdmin) r.classList.remove('locked'); else r.classList.add('locked');
         }
-
         function openDataEntryMenu() { document.getElementById('dataEntryModal').style.display = 'flex'; }
+        function closeSelect(o) { o.parentElement.classList.remove('open'); }
+        function closeSelectFromBtn(b) { b.closest('.custom-select-wrapper').classList.remove('open'); event.stopPropagation(); }
         
-        // إعداد القوائم المنسدلة
-        function setupSelectListeners() {
+        function setupCustomSelects() {
             renderHallOptions();
-            const yearOptions = document.querySelectorAll('#yearSelectWrapper .custom-option');
-            yearOptions.forEach(opt => {
-                opt.addEventListener('click', function() {
-                    const val = this.getAttribute('data-value');
-                    document.getElementById('yearSelect').value = val;
-                    updateTriggerText('yearSelectWrapper', this.innerText);
-                    renderSubjectOptions(val);
-                });
-            });
+            document.querySelectorAll('.custom-select-trigger').forEach(t => t.addEventListener('click', function() {
+                const w = this.parentElement;
+                if(!w.classList.contains('disabled')) {
+                    document.querySelectorAll('.custom-select-wrapper').forEach(x => x!==w && x.classList.remove('open'));
+                    w.classList.toggle('open');
+                }
+            }));
+            const yo = document.querySelectorAll('#yearSelectWrapper .custom-option');
+            yo.forEach(o => o.addEventListener('click', function() {
+                const v = this.getAttribute('data-value');
+                document.getElementById('yearSelect').value = v;
+                updateTriggerText('yearSelectWrapper', this.innerText);
+                renderSubjectOptions(v);
+            }));
         }
-
-        function renderHallOptions() {
-            const container = document.getElementById('hallOptionsContainer');
-            container.innerHTML = '';
-            hallsList.forEach(h => {
-                const div = document.createElement('div');
-                div.className = 'custom-option';
-                div.innerHTML = `<span>${h}</span>`;
-                div.onclick = function() {
-                    document.getElementById('hallSelect').value = h;
-                    updateTriggerText('hallSelectWrapper', h);
-                    checkAllConditions();
-                };
-                container.appendChild(div);
-            });
-        }
-
-        function renderSubjectOptions(year) {
-            const container = document.getElementById('subjectOptionsContainer');
-            const wrapper = document.getElementById('subjectSelectWrapper');
-            container.innerHTML = '';
-            if (subjectsData[year]) {
-                wrapper.classList.remove('disabled');
-                subjectsData[year].forEach(s => {
-                    const div = document.createElement('div');
-                    div.className = 'custom-option';
-                    div.innerHTML = `<span>${s}</span>`;
-                    div.onclick = function() {
+        function renderSubjectOptions(y) {
+            const c = document.getElementById('subjectOptionsContainer'); const w = document.getElementById('subjectSelectWrapper');
+            c.innerHTML = '';
+            if(subjectsData[y]) {
+                w.classList.remove('disabled');
+                subjectsData[y].forEach(s => {
+                    const d = document.createElement('div'); d.className='custom-option'; d.innerHTML=`<span>${s}</span>`;
+                    d.onclick = function() {
                         document.getElementById('subjectSelect').value = s;
                         updateTriggerText('subjectSelectWrapper', s);
                         checkAllConditions();
                     };
-                    container.appendChild(div);
+                    c.appendChild(d);
                 });
-            } else { wrapper.classList.add('disabled'); }
+            } else w.classList.add('disabled');checkAllConditions();
         }
 
         function updateTriggerText(wrapperId, text) {
@@ -1159,9 +1325,10 @@
             wrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
         }
 
-        function closeSelect(overlay) { overlay.parentElement.classList.remove('open'); }
-        function closeSelectFromBtn(btn) { btn.closest('.custom-select-wrapper').classList.remove('open'); event.stopPropagation(); }
+        function openLogoutModal() { document.getElementById('customLogoutModal').style.display = 'flex'; }
+        function closeLogoutModal() { document.getElementById('customLogoutModal').style.display = 'none'; }
 
+        // تفعيل القوائم المنسدلة
         document.querySelectorAll('.custom-select-trigger').forEach(trigger => {
             trigger.addEventListener('click', function() {
                 const wrapper = this.parentElement;
