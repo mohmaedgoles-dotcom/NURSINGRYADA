@@ -696,8 +696,7 @@
                         </div>
                     </div>
                     
-                    <div class="attempts-hearts" id="attemptsHeartsContainer">
-                        </div>
+                    <div class="attempts-hearts" id="attemptsHeartsContainer"></div>
 
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
@@ -890,7 +889,9 @@
 
     <script>
         const CONFIG = {
+            // *** ضع رابط الشيت الجديد هنا ***
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
+            // رابط شيت الهوية
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.438418189773845, targetLong: 30.836747001552258, allowedDistanceKm: 1.5 },
@@ -906,17 +907,27 @@
         let cachedReportData = [];
         let systemAlerts = [];
 
+        // استعادة التنبيهات
         try {
             const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
             if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
         } catch (e) {}
 
+        // استعادة قاعدة البيانات المحلية
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
             try { studentsDB = JSON.parse(savedDB); } catch(e) {}
         }
 
-        fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => {});
+        // جلب الأسماء من الشيت الجديد (بدون Action يجلب الأسماء)
+        fetch(CONFIG.sheetApiUrl)
+            .then(r => r.json())
+            .then(d => { 
+                if(!d.error) { 
+                    studentsDB = d; 
+                    localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); 
+                } 
+            }).catch(e => console.log("DB Fetch Error"));
 
         let defaultSubjects = {
             "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
@@ -936,7 +947,7 @@
         
         // --- LOGIC FOR STRICT ATTEMPTS (RESET DAILY) ---
         const MAX_ATTEMPTS = 3;
-        // Key changes every day (e.g., attempts_30-11-2025)
+        // Key changes every day to reset automatically
         const TODAY_DATE_KEY = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
         const ATTEMPTS_KEY = "strict_attempts_" + TODAY_DATE_KEY;
         const BAN_KEY = "daily_ban_" + TODAY_DATE_KEY;
@@ -1038,12 +1049,11 @@
 
         // --- UPDATED ALERT SYSTEM WITH SECURITY DETAILS & BAN LOGIC ---
         function updateNotificationUI(data) {
-            // Check if there are security risks to report
             if (data.isRepeat || data.isFar || data.risk_level) {
                 
-                // --- IMMEDIATE BAN IF DUPLICATE IS DETECTED ---
+                // --- IMMEDIATE BAN ON DUPLICATE/CHEAT ---
                 if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat || data.risk_level === "FACE_SPOOF") {
-                    localStorage.setItem(BAN_KEY, "true"); // Ban user locally for today
+                    localStorage.setItem(BAN_KEY, "true"); 
                 }
 
                 let reasonText = "نشاط مشبوه";
@@ -1063,7 +1073,6 @@
                     detailText = `المسافة: ${Math.round(data.distance || 0)} متر عن القاعة.`;
                 }
 
-                // Add Current Date and Time
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('ar-EG');
                 const dateString = now.toLocaleDateString('ar-EG');
@@ -1102,10 +1111,8 @@
                 let html = '';
                 systemAlerts.forEach((alert, index) => {
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
-                    
-                    let badgeColor = "#f59e0b"; // Default warning
-                    if (alert.reason === "تكرار جهاز" || alert.reason === "انتحال وجه" || alert.reason === "تسجيل مكرر") badgeColor = "#ef4444"; // Danger
-                    
+                    let badgeColor = "#f59e0b"; 
+                    if (alert.reason === "تكرار جهاز" || alert.reason === "انتحال وجه" || alert.reason === "تسجيل مكرر") badgeColor = "#ef4444"; 
                     const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
 
                     html += `
@@ -1151,7 +1158,7 @@
             }
         }
 
-        // --- MODERN DELETE CONFIRMATION LOGIC ---
+        // --- MODERN DELETE CONFIRMATION ---
         function openDeleteAlertsConfirm() {
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
                 document.getElementById('deleteAlertsConfirmModal').style.display = 'flex';
@@ -1276,7 +1283,6 @@
              // If process is active and user tries to leave/refresh/close -> Deduct attempt
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
-                // We cannot show UI here as page is unloading, but state is saved
             }
         }
 
@@ -1288,8 +1294,7 @@
             if (document.visibilityState === 'hidden') {
                 if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
                     decrementAttempts(); 
-                    // Reload to enforce the penalty visually when they return
-                    location.reload(); 
+                    location.reload(); // Reload to enforce visual penalty
                 }
                 releaseWakeLock();
             } else { if(processIsActive) requestWakeLock(); }
@@ -1342,7 +1347,6 @@
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
                 const now = new Date();
-                // Cairo Time
                 const timeStr = now.toLocaleTimeString('ar-EG', {hour12: true, hour:'2-digit', minute:'2-digit'});
                 const dateStr = now.toLocaleDateString('ar-EG');
                 const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
@@ -1632,13 +1636,14 @@
             document.getElementById('receiptID').innerText = attendanceData.uniID; 
             document.getElementById('receiptSubject').innerText = selectedSubject; 
             document.getElementById('receiptHall').innerText = selectedHall || 'N/A'; 
-            document.getElementById('receiptDate').innerText = now.toLocaleDateString('ar-EG'); 
-            document.getElementById('receiptTime').innerText = now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
+            document.getElementById('receiptDate').innerText = now.toLocaleDateString('en-GB'); 
+            document.getElementById('receiptTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'});
             
             const finalCodeValue = `${attendanceData.code} (QR: ${sessionPassVal})`;
             const deviceId = getUniqueDeviceId();
             const sessionKey = generateSessionKey();
 
+            // إعداد البيانات بما يتوافق مع سكربت جوجل الجديد
             const formParams = new URLSearchParams();
             formParams.append("action", "register");
             formParams.append("id", attendanceData.uniID);
@@ -1646,15 +1651,11 @@
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
-            if(selectedHall) formParams.append("hall", selectedHall);
+            formParams.append("hall", selectedHall || "N/A"); // إضافة القاعة
             if (attendanceData.vector) formParams.append("face_vector", JSON.stringify(attendanceData.vector));
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
-            
-            formParams.append("deviceId", deviceId);   
-            formParams.append("publicKey", sessionKey); 
-            formParams.append("device_id", deviceId);
-            formParams.append("session_key", sessionKey);
+            formParams.append("deviceId", deviceId);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
@@ -1752,11 +1753,13 @@
         
         async function openReportModal() {
             playClick(); document.getElementById('reportModal').style.display = 'flex'; showSubjectsView();
-            const d = new Date().toLocaleDateString('ar-EG'); document.getElementById('reportDateDisplay').innerText = d;
+            // استخدام صيغة التاريخ المطابقة لسكربت جوجل (dd/MM/yyyy)
+            const d = new Date().toLocaleDateString('en-GB'); 
+            document.getElementById('reportDateDisplay').innerText = d;
             const container = document.getElementById('subjectsContainer');
             container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري جلب المواد...</div></div>`;
             try {
-                // Ensure date is sent for filtering if needed backend side, currently backend sends all day's data
+                // جلب البيانات مع التاريخ كفلتر
                 const response = await fetch(`${CONFIG.sheetApiUrl}?action=getReport&date=${encodeURIComponent(d)}`);
                 const data = await response.json();
                 if (!data || data.length === 0) { container.innerHTML = `<div class="empty-state" style="margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>لا توجد سجلات اليوم.</div>`; return; }
@@ -1790,18 +1793,21 @@
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
                 const hallName = item.hall || "N/A";
+                // تأكد أن الاسم يأتي من السكربت بخاصية name
+                const studentName = item.name || "غير معروف";
+                const studentID = item.uniID || "---";
                 const timeStr = item.time || "--:--";
                 
                 html += `
                     <div class="student-detailed-card">
                         <div class="st-data-col" style="width: 100%;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <div class="st-name" style="font-size:14px;">${item.name}</div>
-                                <button class="btn-delete-item" onclick="deleteEntry('${item.uniID}', this)" style="margin-right:0;"><i class="fa-solid fa-trash"></i></button>
+                                <div class="st-name" style="font-size:14px;">${studentName}</div>
+                                <button class="btn-delete-item" onclick="deleteEntry('${studentID}', this)" style="margin-right:0;"><i class="fa-solid fa-trash"></i></button>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                                 <div style="font-size:12px; color:#64748b; font-weight:600;">
-                                    ID: <span style="font-family:'Outfit', sans-serif;">${item.uniID}</span>
+                                    ID: <span style="font-family:'Outfit', sans-serif;">${studentID}</span>
                                 </div>
                                 <div class="std-hall-badge">
                                     <i class="fa-solid fa-building-columns"></i> <span style="font-family:'Cairo', sans-serif;">${hallName}</span>
