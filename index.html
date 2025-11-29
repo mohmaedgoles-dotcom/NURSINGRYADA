@@ -870,9 +870,7 @@
 
     <script>
         const CONFIG = {
-            // *** رابط السكربت الجديد ***
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
-            // رابط شيت الهوية
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
             adminPassword: "RYADA",
             gps: { targetLat: 30.438418189773845, targetLong: 30.836747001552258, allowedDistanceKm: 1.5 },
@@ -888,27 +886,17 @@
         let cachedReportData = [];
         let systemAlerts = [];
 
-        // استعادة التنبيهات
         try {
             const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
             if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
         } catch (e) {}
 
-        // استعادة قاعدة البيانات المحلية
         const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
         if (savedDB) {
             try { studentsDB = JSON.parse(savedDB); } catch(e) {}
         }
 
-        // جلب الأسماء من الشيت الجديد
-        fetch(CONFIG.sheetApiUrl)
-            .then(r => r.json())
-            .then(d => { 
-                if(!d.error) { 
-                    studentsDB = d; 
-                    localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); 
-                } 
-            }).catch(e => console.log("DB Fetch Error"));
+        fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => console.log("DB Fetch Error"));
 
         let defaultSubjects = {
             "first_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
@@ -926,9 +914,8 @@
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
         
-        // --- STRICT ATTEMPTS LOGIC (3 ATTEMPTS - RESET DAILY) ---
+        // --- LOGIC FOR STRICT ATTEMPTS (RESET DAILY) ---
         const MAX_ATTEMPTS = 3;
-        // Key changes every day to reset automatically
         const TODAY_DATE_KEY = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
         const ATTEMPTS_KEY = "strict_attempts_" + TODAY_DATE_KEY;
         const BAN_KEY = "daily_ban_" + TODAY_DATE_KEY;
@@ -1028,11 +1015,8 @@
             }
         }
 
-        // --- UPDATED ALERT SYSTEM WITH SECURITY DETAILS & BAN LOGIC ---
         function updateNotificationUI(data) {
             if (data.isRepeat || data.isFar || data.risk_level) {
-                
-                // --- IMMEDIATE BAN ON DUPLICATE/CHEAT ---
                 if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat || data.risk_level === "FACE_SPOOF") {
                     localStorage.setItem(BAN_KEY, "true"); 
                 }
@@ -1055,8 +1039,8 @@
                 }
 
                 const now = new Date();
-                const timeString = now.toLocaleTimeString('en-US'); // Force English Time
-                const dateString = now.toLocaleDateString('en-GB'); // Force English Date
+                const timeString = now.toLocaleTimeString('en-US');
+                const dateString = now.toLocaleDateString('en-GB');
 
                 const newAlert = {
                     name: attendanceData.name || 'مجهول',
@@ -1139,7 +1123,6 @@
             }
         }
 
-        // --- MODERN DELETE CONFIRMATION ---
         function openDeleteAlertsConfirm() {
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') {
                 document.getElementById('deleteAlertsConfirmModal').style.display = 'flex';
@@ -1155,7 +1138,6 @@
                 checkStoredAlerts(); 
                 closeDeleteAlertsConfirm();
                 closeIdentityAlert(); 
-                showToast("تم مسح التنبيهات بنجاح", 3000, "#10b981");
             }
         }
         
@@ -1223,7 +1205,6 @@
             return Math.max(0, MAX_ATTEMPTS - used); 
         }
         function decrementAttempts() { 
-            // Fix: Check if we are active to avoid double deduction from subsequent events
             if (!processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') return getAttemptsLeft();
 
             let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
@@ -1236,25 +1217,31 @@
                     localStorage.setItem(BAN_KEY, "true");
                 }
             }
-            // IMPORTANT: Stop tracking to prevent 'beforeunload' from triggering a second penalty
             processIsActive = false;
             return MAX_ATTEMPTS - used; 
         }
         function updateUIForAttempts() { 
-            const left = getAttemptsLeft(); 
+            // Re-read strictly from storage to ensure sync
+            const used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
+            const left = Math.max(0, MAX_ATTEMPTS - used);
             const container = document.getElementById('attemptsHeartsContainer');
             if(container) {
                 container.innerHTML = '';
                 for(let i=0; i<MAX_ATTEMPTS; i++) {
                     const icon = document.createElement('i'); icon.className = 'fa-solid fa-heart heart-icon';
-                    if(i >= left) icon.classList.add('lost'); container.appendChild(icon);
+                    // Visual Logic: If I have 2 left (used=1), then i=0,1 (Hearts), i=2 (Lost)
+                    // If MAX=3, Used=1, Left=2
+                    // i=0 < 2 ? True (Heart)
+                    // i=1 < 2 ? True (Heart)
+                    // i=2 < 2 ? False (Lost)
+                    if(i >= left) icon.classList.add('lost'); 
+                    container.appendChild(icon);
                 }
             }
         }
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
-            // Trigger Penalty on Back Button
             if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
                 decrementAttempts();
                 checkBanStatus();
@@ -1265,7 +1252,6 @@
         };
         
         function handleStrictPenalty() {
-             // If process is active and user tries to leave/refresh/close -> Deduct attempt
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
             }
@@ -1318,6 +1304,10 @@
             allSections.forEach(el => { if (el.classList.contains('active')) el.classList.remove('active'); });
             nextScreen.classList.add('active');
             updateHeaderState(id);
+            
+            // Force update UI for attempts on every screen switch to keep hearts synced
+            updateUIForAttempts(); 
+            
             const adminBack = document.getElementById('adminFloatingBack');
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
             if (isAdmin && id !== 'screenWelcome' && id !== 'screenAdminLogin') { adminBack.style.display = 'flex'; } else { adminBack.style.display = 'none'; }
@@ -1332,9 +1322,8 @@
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
                 const now = new Date();
-                // Force English Time
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit'});
-                const dateStr = now.toLocaleDateString('en-GB'); // Force English Date
+                const dateStr = now.toLocaleDateString('en-GB'); 
                 const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
                 if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
             }, 1000);
@@ -1880,3 +1869,4 @@
     </script>
 </body>
 </html>
+               
