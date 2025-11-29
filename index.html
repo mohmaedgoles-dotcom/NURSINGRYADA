@@ -1186,6 +1186,7 @@
             else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { goBackToWelcome(); }
         };
         
+        // --- Strict Close/Background Monitoring ---
         function handleStrictPenalty() {
              if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
                 decrementAttempts();
@@ -1497,8 +1498,10 @@
                                 gps: `${userLat},${userLng}`, 
                                 time: new Date().toLocaleTimeString('ar-EG'), 
                                 hall: document.getElementById('hallSelect').value || 'N/A',
-                                device_id: deviceId,
-                                session_key: sessionKey
+                                device_id: deviceId, // Fixed to send both formats
+                                deviceId: deviceId,
+                                session_key: sessionKey, // Fixed to send both formats
+                                publicKey: sessionKey
                             };
                             try {
                                 const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
@@ -1546,6 +1549,7 @@
             document.getElementById('receiptTime').innerText = now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'});
             
             const finalCodeValue = `${attendanceData.code} (QR: ${sessionPassVal})`;
+            
             const deviceId = getUniqueDeviceId();
             const sessionKey = generateSessionKey();
 
@@ -1561,13 +1565,13 @@
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
             
-            // --- Shotgun Approach: Send data with MULTIPLE keys to match whatever the backend expects ---
+            // --- CRITICAL FIX: Sending data with EXACT key names the script expects ---
+            formParams.append("deviceId", deviceId);   // Matches GAS: var deviceId = data.deviceId
+            formParams.append("publicKey", sessionKey); // Matches GAS: var publicKey = data.publicKey
+            
+            // Keeping fallback names just in case
             formParams.append("device_id", deviceId);
-            formParams.append("deviceId", deviceId);
-            formParams.append("device", deviceId);
             formParams.append("session_key", sessionKey);
-            formParams.append("sessionKey", sessionKey);
-            formParams.append("key", sessionKey);
             
             try {
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
