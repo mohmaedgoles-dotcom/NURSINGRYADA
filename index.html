@@ -48,8 +48,19 @@
             transition: all 0.3s; 
         }
         
-        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
-        
+   .bg-image { 
+     background: url('./background.jpg') no-repeat center center; /* تم التعديل هنا */
+    background-size: cover; 
+    filter: blur(12px) brightness(0.9); 
+    transform: scale(1.2); 
+    z-index: -1; 
+    position: fixed; 
+    top: -10vh; 
+    left: -10vw; 
+    width: 120vw; 
+    height: 120vh; 
+    pointer-events: none; 
+}        
         .app-card { 
             background: var(--glass-bg); 
             width: 90%; max-width: 400px; 
@@ -1872,4 +1883,5 @@
         if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
     </script>
 </body>
+
 </html>
