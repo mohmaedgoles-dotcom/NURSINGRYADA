@@ -80,7 +80,6 @@
         
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
         
-        /* تعديل: الخط الساحر والمميز للعنوان */
         .smart-title { 
             background: linear-gradient(to right, #0ea5e9, #0284c7); 
             -webkit-background-clip: text; 
@@ -89,7 +88,7 @@
             font-weight: 700; 
             margin-bottom: 10px; 
             text-shadow: 0px 5px 15px rgba(14, 165, 233, 0.3);
-            font-family: 'Reem Kufi', sans-serif; /* خط ساحر */
+            font-family: 'Reem Kufi', sans-serif; 
             letter-spacing: -1px;
         }
 
@@ -104,22 +103,19 @@
         
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         
-        /* تعديل: أزرار الأدوات بنفس لون السماوي لكن بشفافية أقل */
         .admin-sub-btn { 
             border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; 
-            border: 1px solid rgba(14, 165, 233, 0.3); /* حدود سماوي */
+            border: 1px solid rgba(14, 165, 233, 0.3); 
             cursor: pointer; font-family: 'Cairo'; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
             box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; 
             position: relative; overflow: hidden; 
             color: var(--primary-dark); 
-            /* لون الخلفية: سماوي شفاف جداً (اقل من الزر الرئيسي) */
             background: rgba(14, 165, 233, 0.08); 
         }
         .admin-sub-btn:active { transform: scale(0.95); background: rgba(14, 165, 233, 0.15); box-shadow: none; }
         
-        /* تطبيق اللون الشفاف على الأزرار المحددة */
         .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry {
             background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5));
         }
@@ -207,7 +203,6 @@
         .modern-input:focus { border-color: var(--primary); background: white; }
         .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
         
-        /* تعديل: حقل كلمة المرور مودرن وجميل */
         #adminPassword {
             background: rgba(255, 255, 255, 0.9);
             border: none;
@@ -296,7 +291,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 99999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); animation: fadeIn 0.3s ease-out; }
         
         .modal-box { background: rgba(255, 255, 255, 0.95); width: 85%; max-width: 320px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2); transform: scale(0.9); animation: popUp 0.3s; }
-        /* تصميم خاص لنافذة الموقع */
+        
         #locationForceModal .modal-box {
             border: none;
             background: rgba(255, 255, 255, 0.98);
@@ -318,7 +313,6 @@
         #connectionLostModal { z-index: 20000 !important; }
         #connectionLostModal .modal-box { border: 2px solid #ef4444; position: relative; }
         
-        /* تعديل: زر الإغلاق "X" للنوافذ */
         .btn-close-modal-x {
             position: absolute; top: 15px; left: 15px; 
             width: 30px; height: 30px; 
@@ -327,15 +321,13 @@
             cursor: pointer; color: #94a3b8; font-weight: bold; border: none;
         }
         
-        /* تعديل: الصورة بالأسفل أكثر وضوحاً وعائمة */
         .uni-watermark { 
             position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; 
             background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; 
             background-size: cover; 
-            opacity: 0.85; /* زيادة الوضوح */
+            opacity: 0.85; 
             pointer-events: none; z-index: 0; 
             mix-blend-mode: normal; 
-            /* تأثير التداخل العائم */
             -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
             mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
         }
@@ -961,19 +953,20 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
         const CONFIG = {
-            sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
+            // 👇👇 ضع رابط الشيت الخاص بك هنا في الخانتين 👇👇
+            sheetApiUrl: "https://script.google.com/macros/s/...../exec",
+            identitySheetUrl: "https://script.google.com/macros/s/...../exec",
+            
             adminPassword: "RYADA",
             gps: { 
-        targetLat: 30.38583242213182,  // خط العرض الجديد
-        targetLong: 30.48886130751606, // خط الطول الجديد
-        allowedDistanceKm: 1.25       // 1.25 كيلومتر (كيلو وربع)
-    },
+                targetLat: 30.438407795431814,  // إحداثياتك الجديدة
+                targetLong: 30.836742112798724,
+                allowedDistanceKm: 1.25       // المسافة المسموح بها (كيلو وربع)
+            },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -1112,6 +1105,62 @@
                 const year = document.getElementById('manageYearSelect').value;
                 subjectsData[year] = subjectsData[year].filter(s => s !== val); localStorage.setItem('subjectsData_v3', JSON.stringify(subjectsData));
                 renderSubjectsManage();
+            }
+        }
+
+        // ==========================================
+        //  دالة المزامنة (المصححة لتعرض العربية)
+        // ==========================================
+        async function syncGlobalAlerts() {
+            const btn = document.getElementById('notificationBtn');
+            try {
+                // جلب التنبيهات من السيرفر
+                const response = await fetch(`${CONFIG.sheetApiUrl}?action=getAlerts`);
+                const data = await response.json();
+                
+                if (data && Array.isArray(data)) {
+                    const serverAlerts = data.map(item => {
+                        // 1. ترجمة التفاصيل
+                        let detailText = "تم اكتشاف حالة غير طبيعية.";
+                        if (item.risk_level === "DEVICE_SHARING") detailText = "تم استخدام نفس الجهاز لطالب آخر.";
+                        else if (item.risk_level === "FACE_SPOOF") detailText = "عدم تطابق بصمة الوجه مع الهوية.";
+                        else if (item.risk_level === "WRONG_LOCATION") detailText = "الطالب سجل خارج نطاق القاعة.";
+                        else if (item.risk_level && item.risk_level.includes("LIMIT")) detailText = "تم حظر الطالب لتجاوز المحاولات.";
+                        
+                        // 2. ترجمة السبب (العنوان الأصفر) محلياً لضمان عدم ظهور undefined
+                        let arabicReason = "نشاط مشبوه";
+                        if (item.risk_level === "DEVICE_SHARING") arabicReason = "تكرار جهاز";
+                        else if (item.risk_level === "FACE_SPOOF") arabicReason = "انتحال وجه";
+                        else if (item.risk_level === "DUPLICATE_ENTRY") arabicReason = "تسجيل مكرر";
+                        else if (item.risk_level === "WRONG_LOCATION") arabicReason = "خارج الموقع";
+                        else if (item.risk_level === "DEVICE_LIMIT_EXCEEDED") arabicReason = "حظر جهاز";
+                        else if (item.risk_level === "FACE_LIMIT_EXCEEDED") arabicReason = "حظر وجه";
+                        else if (item.risk_level === "LIMIT_EXCEEDED") arabicReason = "تجاوز الحد";
+
+                        // نستخدم الترجمة المحلية إذا لم يرسل السيرفر السبب
+                        const finalReason = item.reason || arabicReason;
+
+                        return {
+                            name: item.name,
+                            id: item.id,
+                            timestamp: item.timestamp,
+                            risk_level: item.risk_level,
+                            reason: finalReason, 
+                            detail: detailText,
+                            hall: item.hall,
+                            isRead: false
+                        };
+                    });
+
+                    if (serverAlerts.length > 0) {
+                        systemAlerts = serverAlerts;
+                        localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                        checkStoredAlerts(); // تحديث أيقونة الجرس
+                        showToast("تم تحديث التنبيهات من السيرفر", 2000, "#2563eb");
+                    }
+                }
+            } catch (e) {
+                console.error("Sync Error:", e);
             }
         }
 
@@ -1498,6 +1547,9 @@
                 document.getElementById('adminDeleteAlert').style.display = 'flex'; notifBtn.classList.remove('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'block';
                 if(btnDataEntry) btnDataEntry.style.display = 'flex';
+                
+                // >>>>> المزامنة عند دخول المسؤول (هنا يتم استدعاء الدالة) <<<<<
+                syncGlobalAlerts();
             } else {
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; 
                 document.getElementById('adminDeleteAlert').style.display = 'none'; notifBtn.classList.add('locked');
@@ -1843,7 +1895,6 @@
         function closeLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'none'; }
         function showConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'flex'; }
         
-        // تعديل: دالة إخفاء النافذة دون إعادة تحميل
         function hideConnectionLostModal() { 
             document.getElementById('connectionLostModal').style.display = 'none'; 
         }
