@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>كشف الحضور الذكي - كلية التمريض</title>
+    <title>كشف الحضور - كلية التمريض</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0f172a">
@@ -36,19 +36,8 @@
         /* كلاس إجباري للأرقام والتواريخ بالإنجليزية */
         .en-font { font-family: 'Outfit', sans-serif !important; direction: ltr !important; unicode-bidi: embed; letter-spacing: 0.5px; }
         
-.bg-image { 
-    background: url('./background.jpg') no-repeat center center; /* تم التعديل هنا */
-    background-size: cover; 
-    filter: blur(12px) brightness(0.9); 
-    transform: scale(1.2); 
-    z-index: -1; 
-    position: fixed; 
-    top: -10vh; 
-    left: -10vw; 
-    width: 120vw; 
-    height: 120vh; 
-    pointer-events: none; 
-}        
+        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
+        
         .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; }
         
         @media (max-height: 650px) {
@@ -86,7 +75,20 @@
         .info-pill span { font-family: 'Outfit', sans-serif !important; } /* Force English nums */
         
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
-        .smart-title { background: linear-gradient(to right, #0ea5e9, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 10px; text-shadow: 0px 4px 10px rgba(14, 165, 233, 0.15); }
+        
+        /* === تعديل 1: عنوان مودرن وأنيق مع تأثيرات === */
+        .smart-title { 
+            background: linear-gradient(to right, #0ea5e9, #0284c7); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-size: 32px; /* تكبير الخط */
+            font-weight: 900; 
+            letter-spacing: 0px; 
+            margin-bottom: 10px; 
+            text-shadow: 0px 8px 25px rgba(14, 165, 233, 0.25); /* تأثير ظل أنيق */
+            font-family: 'Outfit', 'Cairo', sans-serif;
+        }
+
         .academic-footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: center; width: 100%; position: relative; z-index: 5; }
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
@@ -98,27 +100,37 @@
         
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         
+        /* === تعديل 2: أزرار الأدوات بألوان السماوي والأبيض ومودرن === */
         .admin-sub-btn { 
             border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; 
-            border: none; cursor: pointer; font-family: 'Cairo'; 
+            border: 1px solid #bae6fd; /* حدود سماوي فاتح */
+            cursor: pointer; font-family: 'Cairo'; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
-            box-shadow: 0 6px 15px -4px rgba(0, 0, 0, 0.1); height: 75px; 
-            position: relative; overflow: hidden; color: white;
+            box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; 
+            position: relative; overflow: hidden; 
+            color: var(--primary-dark); /* نص أزرق غامق */
+            background: #f0f9ff; /* خلفية سماوي فاتح جداً/أبيض */
         }
-        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
-        .admin-sub-btn:active { transform: scale(0.95); box-shadow: none; }
+        .admin-sub-btn::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+        .admin-sub-btn:active { transform: scale(0.95); background: #e0f2fe; box-shadow: none; }
         
-        .btn-admin-login { background: linear-gradient(135deg, #6366f1, #4338ca); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.25); }
-        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); box-shadow: 0 5px 15px rgba(190, 18, 60, 0.25); } 
-        .btn-report.unlocked { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 5px 15px rgba(245, 158, 11, 0.25); }
-        .btn-report.locked { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
-        .btn-exams { grid-column: span 2; background: linear-gradient(135deg, #10b981, #059669); flex-direction: row; height: 50px; margin-top: 5px; box-shadow: 0 5px 15px rgba(16, 185, 129, 0.25); }
-        .btn-refresh { grid-column: span 2; background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: 50px; width: 50px; height: 50px; justify-self: center; margin-top: 5px; box-shadow: 0 5px 15px rgba(6, 182, 212, 0.25); }
-        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
-        .btn-data-entry { grid-column: span 2; background: linear-gradient(135deg, #3b82f6, #2563eb); margin-top: 5px; height: 50px; flex-direction: row; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.25); }
+        /* توحيد الألوان لجميع الأزرار المطلوبة */
+        .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        }
 
-        .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); color: white; border: none; } 
+        
+        .btn-report.unlocked { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #bae6fd; color: var(--primary-dark); box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.15); }
+        .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
+        
+        .btn-exams { grid-column: span 2; flex-direction: row; height: 50px; margin-top: 5px; }
+        .btn-refresh { grid-column: span 2; border-radius: 50px; width: 50px; height: 50px; justify-self: center; margin-top: 5px; }
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
+        .btn-data-entry { grid-column: span 2; margin-top: 5px; height: 50px; flex-direction: row; }
+
+        .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: none; color: var(--primary); }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
         
         .btn-back-modern { background: rgba(255, 255, 255, 0.9); color: var(--text-main); width: 100%; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
@@ -190,6 +202,27 @@
         .modern-input { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Outfit', sans-serif !important; font-size: 14px; outline: none; transition: 0.3s; background: #f8fafc; }
         .modern-input:focus { border-color: var(--primary); background: white; }
         .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
+        
+        /* === تعديل 4: حقل كلمة المرور مودرن وأنيق === */
+        #adminPassword {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #bae6fd;
+            border-radius: 20px;
+            padding: 15px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 3px;
+            box-shadow: 0 5px 20px rgba(14, 165, 233, 0.1);
+            transition: all 0.3s ease;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+        #adminPassword:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.2);
+            transform: translateY(-2px);
+        }
+
         .custom-select-wrapper { position: relative; user-select: none; width: 100%; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; }
         .custom-select-label { display: block; text-align: right; margin-bottom: 8px; font-size: 13px; color: #475569; font-weight: 800; margin-right: 5px; }
         .custom-select-trigger { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 20px; font-size: 15px; font-weight: 700; color: #334155; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
@@ -276,7 +309,10 @@
         .btn-cancel { background: #f1f5f9; color: #475569; }
         #connectionLostModal { z-index: 20000 !important; }
         #connectionLostModal .modal-box { border: 2px solid #ef4444; }
-        .uni-watermark { position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; background-size: cover; opacity: 0.2; pointer-events: none; z-index: 0; mix-blend-mode: multiply; -webkit-mask-image: radial-gradient(ellipse at bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%); mask-image: radial-gradient(ellipse at bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%); }
+        
+        /* === تعديل 3: الصورة بالأسفل أكثر وضوحاً === */
+        .uni-watermark { position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; background-size: cover; opacity: 0.7; /* زيادة الوضوح */ pointer-events: none; z-index: 0; mix-blend-mode: normal; -webkit-mask-image: radial-gradient(ellipse at bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%); mask-image: radial-gradient(ellipse at bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 40%, rgba(0, 0, 0, 0) 75%); }
+        
         #screenWelcome { padding-bottom: 120px; }
         .admin-badge { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3); z-index: 100; display: none; }
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
@@ -616,7 +652,7 @@
         <div class="card-body">
             
             <div class="hero-icon-wrapper" id="heroIconWrapper">
-                 <img src="./icon.png" class="hero-img" id="heroImage">                 
+                <img src="https://k.top4top.io/p_3615d3vek1.png" class="hero-img" id="heroImage">
                 <div class="status-icon-container" id="statusIconContainer">
                     <i class="fa-solid fa-user-nurse hero-icon" id="statusIcon"></i>
                 </div>
@@ -632,7 +668,7 @@
                     <div class="faculty-title-box">
                         <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
                     </div>
-                    <h1 class="smart-title">كشف الحضور الذكي</h1>
+                    <h1 class="smart-title">كشف الحضور</h1>
                     <p>مرحباً بك. يرجى الضغط بالأسفل لتسجيل حضور المحاضرة الحالية.</p>
                     <div style="position: relative; z-index: 2;">
                         <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
@@ -670,18 +706,20 @@
                     </div>
                     <div class="uni-watermark"></div>
                 </div>
-
                 <div id="screenAdminLogin" class="section">
                     <h1>دخول المسؤول</h1>
                     <p>أدخل كلمة المرور.</p>
                     <div id="adminAlert" style="display:none;" class="alert-box"></div>
-                    <div class="input-group"><input type="password" id="adminPassword" class="modern-input" placeholder="كلمة المرور" required></div>
+                    <div class="input-group">
+                        <input type="password" id="adminPassword" placeholder="كلمة المرور" required>
+                    </div>
                     <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
                     <button onclick="goBackToWelcome()" class="btn-back-modern">
                         العودة للصفحة الرئيسية
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
+
                 <div id="screenLoading" class="section">
                     <h1 style="margin-top: 10px;">جاري التحقق...</h1>
                     <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary); margin: 20px 0;"></i>
@@ -1893,7 +1931,7 @@
         document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
         
         if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
-</script>
+    </script>
     
     <script>
         // ===========================================
@@ -1913,7 +1951,3 @@
     </script> 
 </body>
 </html>
-
-
-
-
