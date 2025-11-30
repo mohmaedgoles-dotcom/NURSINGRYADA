@@ -17,7 +17,6 @@
     
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
 
     <style>
         /* === الأساسيات === */
@@ -40,20 +39,10 @@
         
         .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; }
         
-        /* --- تعديل: كرات الثلج الكبيرة والقابلة للمس --- */
-        .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; border-radius: 24px; }
-        .snowflake { 
-            position: absolute; top: -60px; color: #e0f2fe; 
-            font-size: 35px; /* حجم كبير */
-            opacity: 0.9; 
-            filter: drop-shadow(0 0 5px rgba(14, 165, 233, 0.4));
-            cursor: grab; pointer-events: auto; /* تفعيل اللمس */
-            transition: transform 0.05s; /* حركة سريعة عند السحب */
-            user-select: none;
-            z-index: 101;
-        }
-        .snowflake:active { cursor: grabbing; transform: scale(1.2); color: #0ea5e9; }
-        @keyframes fall { to { transform: translateY(800px); } }
+        /* تأثير الثلج */
+        .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; border-radius: 24px; }
+        .snowflake { position: absolute; top: -10px; color: #bae6fd; font-size: 1em; opacity: 0.8; animation: fall linear infinite; text-shadow: 0 0 5px rgba(186, 230, 253, 0.4); }
+        @keyframes fall { to { transform: translateY(700px); } }
 
         @media (max-height: 650px) {
             body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -66,10 +55,8 @@
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
-        
-        /* --- تعديل: إزالة الحواف البيضاء من الأسفل للصورة --- */
-        .card-body { padding: 0 25px 0 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
-        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; padding-bottom: 40px; }
+        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
+        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; }
         
         .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; display: block; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 1; box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
@@ -93,7 +80,7 @@
         
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
         
-        /* --- تعديل: خط ساحر للعنوان --- */
+        /* تعديل: الخط الساحر والمميز للعنوان */
         .smart-title { 
             background: linear-gradient(to right, #0ea5e9, #0284c7); 
             -webkit-background-clip: text; 
@@ -102,7 +89,7 @@
             font-weight: 700; 
             margin-bottom: 10px; 
             text-shadow: 0px 5px 15px rgba(14, 165, 233, 0.3);
-            font-family: 'Reem Kufi', sans-serif;
+            font-family: 'Reem Kufi', sans-serif; /* خط ساحر */
             letter-spacing: -1px;
         }
 
@@ -115,83 +102,40 @@
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
         
-        /* --- تعديل: شبكة الأزرار لاحتواء أيقونة التحديث في المنتصف --- */
-        .admin-controls-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 60px 1fr; /* عمود يمين، عمود وسط، عمود يسار */
-            grid-template-rows: auto auto auto;
-            gap: 10px; 
-            margin-top: 10px; 
-            align-items: center;
-            position: relative;
-        }
+        .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         
-        /* تنسيق عام للأزرار الفرعية */
+        /* تعديل: أزرار الأدوات بنفس لون السماوي لكن بشفافية أقل */
         .admin-sub-btn { 
             border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; 
-            border: 1px solid rgba(14, 165, 233, 0.3); 
+            border: 1px solid rgba(14, 165, 233, 0.3); /* حدود سماوي */
             cursor: pointer; font-family: 'Cairo'; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
             box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; 
             position: relative; overflow: hidden; 
             color: var(--primary-dark); 
-            /* تعديل: لون سماوي شفاف */
+            /* لون الخلفية: سماوي شفاف جداً (اقل من الزر الرئيسي) */
             background: rgba(14, 165, 233, 0.08); 
         }
         .admin-sub-btn:active { transform: scale(0.95); background: rgba(14, 165, 233, 0.15); box-shadow: none; }
         
-        /* --- تعديل هام: القطع الدائري (Notch) --- */
-        /* الزر اليمين (دخول مسؤول) - يحتاج قطع في جهته اليسرى (باتجاه الوسط) */
-        .btn-right-side { 
-            grid-column: 1; 
-            border-top-left-radius: 50px; 
-            border-bottom-left-radius: 50px;
-            /* Mask to cut the left side */
-            -webkit-mask-image: radial-gradient(circle at left center, transparent 35px, black 36px);
-            mask-image: radial-gradient(circle at left center, transparent 35px, black 36px);
-            margin-left: -10px; /* تداخل بسيط */
+        /* تطبيق اللون الشفاف على الأزرار المحددة */
+        .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry {
+            background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5));
         }
 
-        /* الزر اليسار (سجل الحضور) - يحتاج قطع في جهته اليمنى (باتجاه الوسط) */
-        .btn-left-side {
-            grid-column: 3;
-            border-top-right-radius: 50px;
-            border-bottom-right-radius: 50px;
-            /* Mask to cut the right side */
-            -webkit-mask-image: radial-gradient(circle at right center, transparent 35px, black 36px);
-            mask-image: radial-gradient(circle at right center, transparent 35px, black 36px);
-            margin-right: -10px; /* تداخل بسيط */
-        }
-
-        /* --- تعديل: زر التحديث في المنتصف تماماً --- */
-        .btn-refresh-center { 
-            grid-column: 2; grid-row: 1;
-            border-radius: 50%; width: 65px; height: 65px; 
-            justify-self: center; z-index: 20;
-            background: white; 
-            border: 4px solid #f0f9ff; /* إطار يدمجها مع الخلفية */
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-refresh-center:active { transform: rotate(180deg) scale(0.9); }
-        
-        /* تطبيق اللون الشفاف */
-        .btn-admin-login, .btn-report, .btn-exams, .btn-data-entry {
-            background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(186, 230, 253, 0.6));
-        }
-        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); color: white; border: none; -webkit-mask-image: none; mask-image: none; border-radius: 18px; } 
+        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); color: white; border: none; } 
         
         .btn-report.unlocked { background: rgba(14, 165, 233, 0.1); border: 1px solid #bae6fd; color: var(--primary-dark); }
         .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
         
-        .btn-exams { grid-column: span 3; flex-direction: row; height: 50px; margin-top: 5px; }
-        .btn-data-entry { grid-column: span 3; margin-top: 5px; height: 50px; flex-direction: row; }
+        .btn-exams { grid-column: span 2; flex-direction: row; height: 50px; margin-top: 5px; }
+        .btn-refresh { grid-column: span 2; border-radius: 50px; width: 50px; height: 50px; justify-self: center; margin-top: 5px; }
+        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
+        .btn-data-entry { grid-column: span 2; margin-top: 5px; height: 50px; flex-direction: row; }
 
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: none; color: var(--primary); }
-        .btn-exams .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
+        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
         
         .btn-back-modern { background: rgba(255, 255, 255, 0.9); color: var(--text-main); width: 100%; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
         .btn-back-modern:active { transform: scale(0.97); background: #f8fafc; }
@@ -263,7 +207,7 @@
         .modern-input:focus { border-color: var(--primary); background: white; }
         .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
         
-        /* --- تعديل: حقل كلمة المرور مودرن --- */
+        /* تعديل: حقل كلمة المرور مودرن وجميل */
         #adminPassword {
             background: rgba(255, 255, 255, 0.9);
             border: none;
@@ -374,7 +318,7 @@
         #connectionLostModal { z-index: 20000 !important; }
         #connectionLostModal .modal-box { border: 2px solid #ef4444; position: relative; }
         
-        /* --- تعديل: زر الإغلاق "X" للنوافذ --- */
+        /* تعديل: زر الإغلاق "X" للنوافذ */
         .btn-close-modal-x {
             position: absolute; top: 15px; left: 15px; 
             width: 30px; height: 30px; 
@@ -383,17 +327,17 @@
             cursor: pointer; color: #94a3b8; font-weight: bold; border: none;
         }
         
-        /* --- تعديل: الصورة بالأسفل عائمة بدون فراغات --- */
+        /* تعديل: الصورة بالأسفل أكثر وضوحاً وعائمة */
         .uni-watermark { 
             position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; 
             background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; 
             background-size: cover; 
-            opacity: 0.95; 
+            opacity: 0.85; /* زيادة الوضوح */
             pointer-events: none; z-index: 0; 
             mix-blend-mode: normal; 
-            /* تأثير التداخل */
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+            /* تأثير التداخل العائم */
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
         }
         
         #screenWelcome { padding-bottom: 120px; }
@@ -436,12 +380,10 @@
 
         #modernConfirmModal { z-index: 2147483647 !important; }
 
-        /* --- تعديل: تنسيق القلوب --- */
         .attempts-hearts { 
             display: flex; gap: 5px; align-items: center; justify-content: center; 
-            background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 20px; 
+            background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 20px; 
             margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            backdrop-filter: blur(4px);
         }
         .heart-icon { font-size: 18px; color: #ef4444; transition: 0.3s; }
         .heart-icon.lost { color: #cbd5e1; }
@@ -767,29 +709,26 @@
                         <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
                             تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
                         </button>
-                        
                         <div class="admin-controls-grid">
-                            <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login btn-right-side">
+                            <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login">
                                 <i class="fa-solid fa-lock sub-btn-icon"></i>
                                 <span>دخول المسؤول</span>
                             </button>
-                            <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout btn-right-side" style="display:none;">
+                            <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout" style="display:none;">
                                 <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal sub-btn-icon"></i>
                                 <span>خروج المسؤول</span>
                             </button>
-                            
-                            <button onclick="safeClick(this, () => location.reload())" class="btn-refresh-center">
-                                <i class="fa-solid fa-arrows-rotate" style="font-size: 26px; color: var(--primary);"></i>
-                            </button>
-
-                            <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked btn-left-side">
+                            <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked">
                                 <i id="reportIcon" class="fa-solid fa-list-check sub-btn-icon"></i>
                                 <span>سجل الحضور</span>
                             </button>
-                            
                             <button onclick="openExamModal()" class="admin-sub-btn btn-exams">
                                 <i class="fa-solid fa-file-pen sub-btn-icon"></i>
                                 <span style="font-size: 13px;">تنظيم الامتحانات</span>
+                            </button>
+                            
+                            <button onclick="safeClick(this, () => location.reload())" class="admin-sub-btn btn-refresh">
+                                <i class="fa-solid fa-arrows-rotate sub-btn-icon" style="font-size: 22px;"></i>
                             </button>
 
                             <button onclick="openDataEntryMenu()" class="admin-sub-btn btn-data-entry" id="btnDataEntry" style="display:none;">
@@ -797,20 +736,17 @@
                                 <span>إدخال البيانات</span>
                             </button>
                         </div>
-                        
                         <div class="academic-footer">
                             </div>
                     </div>
                     <div class="uni-watermark"></div>
                 </div>
-                <div id="globalHearts" class="attempts-hearts" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 50; display: none; width: auto;"></div>
-
                 <div id="screenAdminLogin" class="section">
                     <h1>دخول المسؤول</h1>
                     <p>أدخل كلمة المرور.</p>
                     <div id="adminAlert" style="display:none;" class="alert-box"></div>
                     <div class="input-group">
-                        <input type="password" id="adminPassword" placeholder="••••••" required>
+                        <input type="password" id="adminPassword" placeholder="كلمة المرور" required>
                     </div>
                     <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
                     <button onclick="goBackToWelcome()" class="btn-back-modern">
@@ -836,6 +772,8 @@
                             <span class="timer-label">ثانية</span>
                         </div>
                     </div>
+                    
+                    <div class="attempts-hearts" id="attemptsHeartsContainer"></div>
 
                     <h1 style="font-size:20px; margin-top:5px;">بيانات الطالب / الطالبة</h1>
                     <div id="dataEntryAlert" class="alert-box" style="display:none; margin-bottom: 25px; color:#ef4444; font-weight:bold;"></div>
@@ -1032,10 +970,10 @@
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
             adminPassword: "RYADA",
             gps: { 
-                targetLat: 30.38583242213182, 
-                targetLong: 30.48886130751606, 
-                allowedDistanceKm: 1.25 
-            },
+        targetLat: 30.38583242213182,  // خط العرض الجديد
+        targetLong: 30.48886130751606, // خط الطول الجديد
+        allowedDistanceKm: 1.25       // 1.25 كيلومتر (كيلو وربع)
+    },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
         
@@ -1076,7 +1014,7 @@
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
         
-        // --- LOGIC FOR STRICT ATTEMPTS ---
+        // --- LOGIC FOR STRICT ATTEMPTS (RESET DAILY) ---
         const MAX_ATTEMPTS = 3;
         const TODAY_DATE_KEY = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
         const ATTEMPTS_KEY = "strict_attempts_" + TODAY_DATE_KEY;
@@ -1178,10 +1116,8 @@
         }
 
         function updateNotificationUI(data) {
-            // منطق جديد: إظهار التنبيه لأي نوع من أنواع المخاطر
-            if (data.isRepeat || data.isFar || data.risk_level || data.count > 3) {
-                // الحظر التلقائي للحالات الخطرة
-                if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat || data.risk_level === "FACE_SPOOF" || data.count >= 3) {
+            if (data.isRepeat || data.isFar || data.risk_level) {
+                if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat || data.risk_level === "FACE_SPOOF") {
                     localStorage.setItem(BAN_KEY, "true"); 
                 }
 
@@ -1191,7 +1127,7 @@
                 if (data.risk_level === "DEVICE_SHARING") {
                     reasonText = "تكرار جهاز";
                     detailText = "هذا الجهاز استخدم لطالب آخر.";
-                } else if (data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat || data.count > 1) {
+                } else if (data.risk_level === "DUPLICATE_ENTRY" || data.isRepeat) {
                     reasonText = "تسجيل مكرر";
                     detailText = `الطالب مسجل بالفعل ${data.count || 1} مرات اليوم.`;
                 } else if (data.risk_level === "FACE_SPOOF") {
@@ -1388,22 +1324,20 @@
             // Re-read strictly from storage to ensure sync
             const used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
             const left = Math.max(0, MAX_ATTEMPTS - used);
-            
-            // تحديث القلوب العائمة العامة (فقط للطالب)
-            const globalContainer = document.getElementById('globalHearts');
-            if(globalContainer) {
-                globalContainer.innerHTML = generateHeartsHTML(left);
+            const container = document.getElementById('attemptsHeartsContainer');
+            if(container) {
+                container.innerHTML = '';
+                for(let i=0; i<MAX_ATTEMPTS; i++) {
+                    const icon = document.createElement('i'); icon.className = 'fa-solid fa-heart heart-icon';
+                    // Visual Logic: If I have 2 left (used=1), then i=0,1 (Hearts), i=2 (Lost)
+                    // If MAX=3, Used=1, Left=2
+                    // i=0 < 2 ? True (Heart)
+                    // i=1 < 2 ? True (Heart)
+                    // i=2 < 2 ? False (Lost)
+                    if(i >= left) icon.classList.add('lost'); 
+                    container.appendChild(icon);
+                }
             }
-        }
-        
-        function generateHeartsHTML(left) {
-            let html = '';
-            for(let i=0; i<MAX_ATTEMPTS; i++) {
-                let cls = 'fa-solid fa-heart heart-icon';
-                if(i >= left) cls += ' lost';
-                html += `<i class="${cls}"></i>`;
-            }
-            return html;
         }
 
         window.history.pushState(null, null, window.location.href);
@@ -1471,16 +1405,8 @@
             nextScreen.classList.add('active');
             updateHeaderState(id);
             
-            // Force update UI for attempts on every screen switch
+            // Force update UI for attempts on every screen switch to keep hearts synced
             updateUIForAttempts(); 
-            
-            // تعديل: التحكم في ظهور القلوب العامة (فقط للطالب وفي الصفحات الداخلية)
-            const globalHearts = document.getElementById('globalHearts');
-            if (id === 'screenWelcome' || id === 'screenAdminLogin') {
-                globalHearts.style.display = 'none';
-            } else {
-                globalHearts.style.display = 'flex';
-            }
             
             const adminBack = document.getElementById('adminFloatingBack');
             const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
@@ -1488,47 +1414,21 @@
             if (!isAdmin && (id === 'screenDataEntry' || id === 'screenScanQR' || id === 'screenFaceCheck' || id === 'screenLoading')) { processIsActive = true; requestWakeLock(); } else { processIsActive = false; releaseWakeLock(); }
         }
 
-        // تعديل: دالة توليد الثلج التفاعلي باستخدام interact.js
+        // تعديل: دالة توليد الثلج
         function createSnow() {
             const container = document.getElementById('snowContainer');
             if(!container) return;
-            const snowflakeCount = 15;
+            const snowflakeCount = 20;
             for (let i = 0; i < snowflakeCount; i++) {
                 const flake = document.createElement('div');
                 flake.className = 'snowflake';
                 flake.textContent = '❄';
-                // موضع عشوائي
                 flake.style.left = Math.random() * 100 + '%';
-                // سرعة عشوائية
-                flake.style.animationDuration = Math.random() * 5 + 5 + 's'; 
+                flake.style.animationDuration = Math.random() * 3 + 2 + 's'; 
                 flake.style.opacity = Math.random();
-                // إضافة data attributes لتعقب الموقع أثناء السحب
-                flake.setAttribute('data-x', 0);
-                flake.setAttribute('data-y', 0);
+                flake.style.fontSize = Math.random() * 10 + 10 + 'px';
                 container.appendChild(flake);
             }
-            
-            // تفعيل السحب
-            interact('.snowflake').draggable({
-                listeners: {
-                    move (event) {
-                        var target = event.target;
-                        // حساب الموقع الجديد
-                        var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                        var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-                        // تطبيق التحريك
-                        target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-
-                        // تخزين الإحداثيات
-                        target.setAttribute('data-x', x);
-                        target.setAttribute('data-y', y);
-                        
-                        // إيقاف الانيميشن الافتراضي عند السحب لتجنب التعارض
-                        target.style.animation = 'none';
-                    }
-                }
-            });
         }
 
         window.onload = function() {
@@ -1942,7 +1842,12 @@
         function openLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'flex'; }
         function closeLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'none'; }
         function showConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'flex'; }
-        function hideConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'none'; }
+        
+        // تعديل: دالة إخفاء النافذة دون إعادة تحميل
+        function hideConnectionLostModal() { 
+            document.getElementById('connectionLostModal').style.display = 'none'; 
+        }
+        
         async function checkRealConnection() { return true; }
         function initGlobalGuard() { setInterval(async () => { const o = await checkRealConnection(); if (!o) showConnectionLostModal(); else hideConnectionLostModal(); }, 2000); 
             if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
@@ -1990,10 +1895,11 @@
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
                 const hallName = item.hall || "N/A";
-                // تأكد أن الاسم يأتي من السكربت بخاصية name
                 const studentName = item.name || "غير معروف";
                 const studentID = item.uniID || "---";
                 const timeStr = item.time || "--:--";
+                // تعديل: عرض التاريخ (المفترض أن السكربت يرجعه، أو نستخدم تاريخ اليوم إذا لم يتوفر)
+                const dateStr = item.date || new Date().toLocaleDateString('en-GB');
                 
                 html += `
                     <div class="student-detailed-card">
@@ -2014,7 +1920,10 @@
                                 <i class="fa-solid fa-fingerprint"></i> كود: <span class="en-font">${sessionCode}</span>
                             </div>
                             <div style="display:flex; align-items:center;">
-                                <div class="std-time-badge"><i class="fa-regular fa-clock"></i> <span class="en-font">${timeStr}</span></div>
+                                <div class="std-time-badge">
+                                    <i class="fa-regular fa-clock"></i> 
+                                    <span class="en-font">${timeStr} - ${dateStr}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
