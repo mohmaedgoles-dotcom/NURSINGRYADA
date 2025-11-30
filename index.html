@@ -1114,40 +1114,38 @@
             }
         }
 
-        // ==========================================
-        //  مزامنة التنبيهات من السيرفر (Action=getAlerts)
+// ==========================================
+        //  مزامنة التنبيهات (من شيت الهوية/كشف الغش)
         // ==========================================
         async function syncGlobalAlerts() {
             const btn = document.getElementById('notificationBtn');
             try {
-                // جلب البيانات من الباك-إند
-                const response = await fetch(`${CONFIG.sheetApiUrl}?action=getAlerts`);
+                const nocache = new Date().getTime();
+                
+                // التعديل هنا: استخدمنا رابط الهوية (identitySheetUrl) لأن التنبيهات مخزنة هناك
+                const response = await fetch(`${CONFIG.identitySheetUrl}?action=getAlerts&t=${nocache}`);
                 const data = await response.json();
                 
                 if (data && Array.isArray(data)) {
-                    // تحويل البيانات لتنسيق التخزين المحلي
                     const serverAlerts = data.map(item => {
                         return {
                             name: item.name,
                             id: item.id,
-                            timestamp: item.timestamp, // التوقيت من الشيت
+                            timestamp: item.timestamp,
                             risk_level: item.risk_level,
-                            reason: item.reason,       // سبب الغش (بالعربي)
-                            detail: item.detail,       // التفاصيل
-                            hall: item.hall,           // القاعة
+                            reason: item.reason,
+                            detail: item.detail,
+                            hall: item.hall,
                             distance: item.distance,
                             isRead: false
                         };
                     });
 
-                    // تحديث القائمة المحلية فقط إذا وجدنا تنبيهات
                     if (serverAlerts.length > 0) {
-                        // دمج التنبيهات الجديدة مع القديمة (اختياري) أو استبدالها
-                        // هنا سنستبدلها لضمان تطابق الشيت
                         systemAlerts = serverAlerts;
                         localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
                         checkStoredAlerts(); 
-                        showToast("تم مزامنة التنبيهات", 2000, "#2563eb");
+                        showToast("تم تحديث التنبيهات الأمنية 🚨", 2500, "#2563eb");
                     }
                 }
             } catch (e) {
@@ -2030,5 +2028,6 @@
     </script> 
 </body>
 </html>
+
 
 
