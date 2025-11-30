@@ -321,17 +321,6 @@
             cursor: pointer; color: #94a3b8; font-weight: bold; border: none;
         }
         
-        .uni-watermark { 
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; 
-            background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; 
-            background-size: cover; 
-            opacity: 0.85; 
-            pointer-events: none; z-index: 0; 
-            mix-blend-mode: normal; 
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 90%);
-        }
-        
         #screenWelcome { padding-bottom: 120px; }
         .admin-badge { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3); z-index: 100; display: none; }
         .section { display: none; opacity: 0; transition: opacity 0.3s ease; width: 100%; } .section.active { display: block; opacity: 1; animation: fadeIn 0.5s; }
@@ -457,6 +446,15 @@
             <div class="modal-title" style="color: #ef4444;">تم حظرك</div>
             <div class="modal-text" style="font-weight: bold;">لقد استنفذت محاولاتك (3 مرات) أو تم اكتشاف تكرار في البيانات.</div>
             <button onclick="location.reload()" class="modal-btn btn-confirm" style="margin-top: 10px;">إغلاق</button>
+        </div>
+    </div>
+    
+    <div id="timeoutModal" class="modal-overlay" style="z-index: 200000;">
+        <div class="modal-box">
+            <i class="fa-solid fa-hourglass-end" style="font-size: 50px; color: #f59e0b; margin-bottom: 15px;"></i>
+            <div class="modal-title" style="color: #f59e0b;">انتهى الوقت</div>
+            <div class="modal-text" id="timeoutMessage" style="font-weight: bold; font-size: 15px;">--</div>
+            <button onclick="closeTimeoutModal()" class="modal-btn btn-confirm" style="background: #334155;">حاول مرة أخرى</button>
         </div>
     </div>
     
@@ -620,7 +618,7 @@
             </div>
 
             <div class="report-modal-footer">
-                <button onclick="openReportModal()" class="btn-refresh-list">
+                <button id="btnRefreshReport" onclick="openReportModal()" class="btn-refresh-list">
                     تحديث <i class="fa-solid fa-rotate"></i>
                 </button>
                 <button onclick="closeReportModal()" class="btn-close-stylish" style="margin-top:10px;">
@@ -731,7 +729,6 @@
                         <div class="academic-footer">
                             </div>
                     </div>
-                    <div class="uni-watermark"></div>
                 </div>
                 <div id="screenAdminLogin" class="section">
                     <h1>دخول المسؤول</h1>
@@ -963,14 +960,10 @@
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwrTLWZopcN2Q6Rfq1-yW9ni8Qe1ge8dqSUiynf5IARnVM0Hf9WTeOmfoBYcUmmSd9Y/exec",
             
             adminPassword: "RYADA",
-                gps: { 
-
-                targetLat: 30.438407795431814,  // إحداثياتك الجديدة
-
-                targetLong: 30.836742112798724,
-
-                allowedDistanceKm: 1.25       // المسافة المسموح بها (كيلو وربع)
-
+            gps: { 
+                targetLat: 30.438407795431814,  
+                targetLong: 30.836742112798724, 
+                allowedDistanceKm: 1.25        
             },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
@@ -1114,15 +1107,13 @@
             }
         }
 
-// ==========================================
-        //  مزامنة التنبيهات (من شيت الهوية/كشف الغش)
+        // ==========================================
+        //  مزامنة التنبيهات (من شيت الهوية)
         // ==========================================
         async function syncGlobalAlerts() {
             const btn = document.getElementById('notificationBtn');
             try {
                 const nocache = new Date().getTime();
-                
-                // التعديل هنا: استخدمنا رابط الهوية (identitySheetUrl) لأن التنبيهات مخزنة هناك
                 const response = await fetch(`${CONFIG.identitySheetUrl}?action=getAlerts&t=${nocache}`);
                 const data = await response.json();
                 
@@ -1153,7 +1144,6 @@
             }
         }
 
-        // عرض التنبيهات في القائمة
         function checkStoredAlerts() {
             const btn = document.getElementById('notificationBtn');
             const container = document.getElementById('alertsListContainer');
@@ -1167,12 +1157,10 @@
                 let html = '';
                 systemAlerts.forEach((alert, index) => {
                     const deleteBtn = isAdmin ? `<i class="fa-solid fa-trash-can" style="color:#ef4444; cursor:pointer; margin-left:10px;" onclick="deleteSingleAlert(${index}); event.stopPropagation();"></i>` : '';
-                    
-                    let badgeColor = "#f59e0b"; // برتقالي افتراضي
+                    let badgeColor = "#f59e0b"; 
                     if (alert.risk_level === "DEVICE_SHARING" || alert.risk_level === "FACE_SPOOF" || alert.risk_level === "LIMIT_EXCEEDED") {
-                        badgeColor = "#ef4444"; // أحمر للخطر الشديد
+                        badgeColor = "#ef4444"; 
                     }
-                    
                     const itemClass = alert.isRead ? 'read-alert' : 'unread-alert';
 
                     html += `
@@ -1204,10 +1192,8 @@
             } else { container.innerHTML = '<div class="empty-state" style="padding:15px; font-size:12px;">لا توجد تنبيهات مسجلة.</div>'; }
         }
 
-        // إضافة تنبيه محلي مؤقت (لحين التحديث من السيرفر)
         function updateNotificationUI(data) {
             if (data.risk_level && data.risk_level !== "SAFE") {
-                // في حالة الخطر، نحفظ البيانات محلياً أيضاً لسرعة العرض
                 if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.risk_level === "FACE_SPOOF") {
                     localStorage.setItem(BAN_KEY, "true"); 
                 }
@@ -1215,7 +1201,6 @@
                 let reasonText = "نشاط مشبوه";
                 let detailText = "يرجى المراجعة";
                 
-                // ترجمة سريعة للواجهة (تكرار لما في السيرفر لضمان العرض الفوري)
                 if (data.risk_level === "DEVICE_SHARING") { reasonText = "مشاركة جهاز"; detailText = "الجهاز مستخدم لطالب آخر"; }
                 else if (data.risk_level === "FACE_SPOOF") { reasonText = "انتحال وجه"; detailText = "الوجه غير مطابق"; }
                 else if (data.risk_level === "WRONG_LOCATION") { reasonText = "خارج الموقع"; detailText = `يبعد مسافة ${Math.round(data.distance)} م`; }
@@ -1268,7 +1253,6 @@
                 checkStoredAlerts(); 
                 closeDeleteAlertsConfirm();
                 closeIdentityAlert(); 
-                // اختياري: يمكن إرسال أمر للسيرفر لمسح التنبيهات أيضاً إذا أردت
             }
         }
         
@@ -1428,7 +1412,6 @@
             allSections.forEach(el => { if (el.classList.contains('active')) el.classList.remove('active'); });
             nextScreen.classList.add('active');
             updateHeaderState(id);
-            
             updateUIForAttempts(); 
             
             const adminBack = document.getElementById('adminFloatingBack');
@@ -1459,6 +1442,11 @@
             startGPSWatcher(); 
             renderHallOptions(); 
             createSnow(); 
+            
+            // إزالة الصورة من الكارت الأبيض (تنفيذ الطلب 1)
+            const watermark = document.querySelector('.uni-watermark');
+            if(watermark) watermark.style.display = 'none';
+
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
                 const now = new Date();
@@ -1520,8 +1508,6 @@
                 document.getElementById('adminDeleteAlert').style.display = 'flex'; notifBtn.classList.remove('locked');
                 if(adminBypassContainer) adminBypassContainer.style.display = 'block';
                 if(btnDataEntry) btnDataEntry.style.display = 'flex';
-                
-                // جلب التنبيهات فور دخول المسؤول
                 syncGlobalAlerts();
             } else {
                 badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; 
@@ -1553,10 +1539,8 @@
         async function startProcess(skip = false) {
             playClick();
             if (checkBanStatus()) return;
-            
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
-            
             switchScreen('screenLoading');
             checkLocationStrict(() => { generateCodeAndShowDataEntry(); });
         }
@@ -1570,6 +1554,7 @@
             switchScreen('screenDataEntry'); startCountdown();
         }
 
+        // دالة التايمر المعدلة (تنفيذ الطلب 3)
         function startCountdown() {
             const savedDeadline = sessionStorage.getItem(SESSION_END_TIME_KEY);
             if (savedDeadline) sessionEndTime = parseInt(savedDeadline); else { sessionEndTime = Date.now() + (DATA_ENTRY_TIMEOUT_SEC * 1000); sessionStorage.setItem(SESSION_END_TIME_KEY, sessionEndTime.toString()); }
@@ -1585,13 +1570,25 @@
                     if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { text.innerText = "0"; return; }
                     document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
                     
-                    let left = decrementAttempts();
+                    let left = decrementAttempts(); // خصم المحاولة
+                    updateUIForAttempts(); // تحديث القلوب فوراً
+                    
                     if (left === 0) { 
                         localStorage.setItem(BAN_KEY, "true");
                         document.getElementById('banModal').style.display = 'flex'; 
-                    } else { showError(`⏳ انتهى الوقت. (المتبقي: ${left})`, false); }
+                    } else { 
+                        // إظهار نافذة التايمر المدرن
+                        document.getElementById('timeoutMessage').innerText = `المتبقي: ${left} محاولات`;
+                        document.getElementById('timeoutModal').style.display = 'flex';
+                        if(navigator.vibrate) navigator.vibrate(300);
+                    }
                 }
             }, 100);
+        }
+        
+        function closeTimeoutModal() {
+            document.getElementById('timeoutModal').style.display = 'none';
+            location.reload();
         }
 
         async function handleIdSubmit() {
@@ -1871,12 +1868,13 @@
             if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
         }
         
+        // تعديل الطلب 2: تغيير النص إلى "جاري التحديث..."
         async function openReportModal() {
             playClick(); document.getElementById('reportModal').style.display = 'flex'; showSubjectsView();
             const d = new Date().toLocaleDateString('en-GB'); 
             document.getElementById('reportDateDisplay').innerText = d;
             const container = document.getElementById('subjectsContainer');
-            container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري جلب المواد...</div></div>`;
+            container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري التحديث...</div></div>`;
             try {
                 const response = await fetch(`${CONFIG.sheetApiUrl}?action=getReport&date=${encodeURIComponent(d)}`);
                 const data = await response.json();
@@ -2028,6 +2026,3 @@
     </script> 
 </body>
 </html>
-
-
-
