@@ -38,21 +38,22 @@
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
         
-        /* تعديل: إزالة الـ overflow:hidden للسماح للصورة بالأسفل بالتموضع الصحيح */
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; animation: slideUp 0.6s ease-out; margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; overflow: hidden; }
+        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; }
         
-        /* تعديل: كرات ثلج كبيرة وقابلة للمس */
+        /* --- تعديل: كرات الثلج الكبيرة والقابلة للمس --- */
         .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; border-radius: 24px; }
         .snowflake { 
-            position: absolute; top: -50px; color: #fff; 
-            font-size: 2em; /* حجم أكبر */
+            position: absolute; top: -60px; color: #e0f2fe; 
+            font-size: 35px; /* حجم كبير */
             opacity: 0.9; 
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.5); 
-            cursor: grab; pointer-events: auto; /* قابل للمس */
-            transition: transform 0.1s;
+            filter: drop-shadow(0 0 5px rgba(14, 165, 233, 0.4));
+            cursor: grab; pointer-events: auto; /* تفعيل اللمس */
+            transition: transform 0.05s; /* حركة سريعة عند السحب */
             user-select: none;
+            z-index: 101;
         }
-        .snowflake:active { cursor: grabbing; transform: scale(1.2); }
+        .snowflake:active { cursor: grabbing; transform: scale(1.2); color: #0ea5e9; }
+        @keyframes fall { to { transform: translateY(800px); } }
 
         @media (max-height: 650px) {
             body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -65,9 +66,10 @@
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
-        /* تعديل: إلغاء padding السفلي للسماح للصورة بملء العرض */
+        
+        /* --- تعديل: إزالة الحواف البيضاء من الأسفل للصورة --- */
         .card-body { padding: 0 25px 0 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
-        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; padding-bottom: 30px; }
+        .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; padding-bottom: 40px; }
         
         .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
         .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(0.94); border-radius: 50%; display: block; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 1; box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
@@ -91,6 +93,7 @@
         
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
         
+        /* --- تعديل: خط ساحر للعنوان --- */
         .smart-title { 
             background: linear-gradient(to right, #0ea5e9, #0284c7); 
             -webkit-background-clip: text; 
@@ -112,16 +115,18 @@
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
         
-        /* تعديل: تصميم الشبكة الجديد لاحتواء زر التحديث في المنتصف */
+        /* --- تعديل: شبكة الأزرار لاحتواء أيقونة التحديث في المنتصف --- */
         .admin-controls-grid { 
             display: grid; 
-            grid-template-columns: 1fr 60px 1fr; /* عمود لزر يسار، عمود للتحديث، عمود لزر يمين */
+            grid-template-columns: 1fr 60px 1fr; /* عمود يمين، عمود وسط، عمود يسار */
             grid-template-rows: auto auto auto;
             gap: 10px; 
             margin-top: 10px; 
             align-items: center;
+            position: relative;
         }
         
+        /* تنسيق عام للأزرار الفرعية */
         .admin-sub-btn { 
             border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; 
             border: 1px solid rgba(14, 165, 233, 0.3); 
@@ -131,50 +136,62 @@
             box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; 
             position: relative; overflow: hidden; 
             color: var(--primary-dark); 
+            /* تعديل: لون سماوي شفاف */
             background: rgba(14, 165, 233, 0.08); 
         }
         .admin-sub-btn:active { transform: scale(0.95); background: rgba(14, 165, 233, 0.15); box-shadow: none; }
         
-        /* تنسيق الأزرار العلوية مع القطع الدائري */
-        .btn-top-left { 
-            border-top-left-radius: 18px; border-bottom-left-radius: 18px;
-            /* شكل يوحي بوجود دائرة في المنتصف */
-            clip-path: polygon(0% 0%, 100% 0%, 100% 30%, 85% 50%, 100% 70%, 100% 100%, 0% 100%);
-            margin-right: -15px; /* تداخل بسيط */
-            z-index: 1;
-        }
-        .btn-top-right {
-            border-top-right-radius: 18px; border-bottom-right-radius: 18px;
-            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 70%, 15% 50%, 0% 30%);
-            margin-left: -15px;
-            z-index: 1;
+        /* --- تعديل هام: القطع الدائري (Notch) --- */
+        /* الزر اليمين (دخول مسؤول) - يحتاج قطع في جهته اليسرى (باتجاه الوسط) */
+        .btn-right-side { 
+            grid-column: 1; 
+            border-top-left-radius: 50px; 
+            border-bottom-left-radius: 50px;
+            /* Mask to cut the left side */
+            -webkit-mask-image: radial-gradient(circle at left center, transparent 35px, black 36px);
+            mask-image: radial-gradient(circle at left center, transparent 35px, black 36px);
+            margin-left: -10px; /* تداخل بسيط */
         }
 
-        .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry {
-            background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5));
+        /* الزر اليسار (سجل الحضور) - يحتاج قطع في جهته اليمنى (باتجاه الوسط) */
+        .btn-left-side {
+            grid-column: 3;
+            border-top-right-radius: 50px;
+            border-bottom-right-radius: 50px;
+            /* Mask to cut the right side */
+            -webkit-mask-image: radial-gradient(circle at right center, transparent 35px, black 36px);
+            mask-image: radial-gradient(circle at right center, transparent 35px, black 36px);
+            margin-right: -10px; /* تداخل بسيط */
         }
 
-        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); color: white; border: none; } 
+        /* --- تعديل: زر التحديث في المنتصف تماماً --- */
+        .btn-refresh-center { 
+            grid-column: 2; grid-row: 1;
+            border-radius: 50%; width: 65px; height: 65px; 
+            justify-self: center; z-index: 20;
+            background: white; 
+            border: 4px solid #f0f9ff; /* إطار يدمجها مع الخلفية */
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-refresh-center:active { transform: rotate(180deg) scale(0.9); }
+        
+        /* تطبيق اللون الشفاف */
+        .btn-admin-login, .btn-report, .btn-exams, .btn-data-entry {
+            background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(186, 230, 253, 0.6));
+        }
+        .btn-admin-logout { background: linear-gradient(135deg, #be123c, #9f1239); color: white; border: none; -webkit-mask-image: none; mask-image: none; border-radius: 18px; } 
         
         .btn-report.unlocked { background: rgba(14, 165, 233, 0.1); border: 1px solid #bae6fd; color: var(--primary-dark); }
         .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
         
         .btn-exams { grid-column: span 3; flex-direction: row; height: 50px; margin-top: 5px; }
-        
-        /* تعديل: زر التحديث في المنتصف */
-        .btn-refresh { 
-            grid-column: 2; grid-row: 1;
-            border-radius: 50%; width: 60px; height: 60px; 
-            justify-self: center; z-index: 10;
-            background: white; border: 4px solid #f0f9ff;
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
         .btn-data-entry { grid-column: span 3; margin-top: 5px; height: 50px; flex-direction: row; }
 
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: none; color: var(--primary); }
-        .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
+        .btn-exams .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
         
         .btn-back-modern { background: rgba(255, 255, 255, 0.9); color: var(--text-main); width: 100%; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
         .btn-back-modern:active { transform: scale(0.97); background: #f8fafc; }
@@ -246,6 +263,7 @@
         .modern-input:focus { border-color: var(--primary); background: white; }
         .modern-input.locked { background: #f1f5f9; color: #64748b; text-align: center; font-weight: bold; cursor: not-allowed; letter-spacing: 1px; }
         
+        /* --- تعديل: حقل كلمة المرور مودرن --- */
         #adminPassword {
             background: rgba(255, 255, 255, 0.9);
             border: none;
@@ -356,6 +374,7 @@
         #connectionLostModal { z-index: 20000 !important; }
         #connectionLostModal .modal-box { border: 2px solid #ef4444; position: relative; }
         
+        /* --- تعديل: زر الإغلاق للنوافذ --- */
         .btn-close-modal-x {
             position: absolute; top: 15px; left: 15px; 
             width: 30px; height: 30px; 
@@ -364,15 +383,15 @@
             cursor: pointer; color: #94a3b8; font-weight: bold; border: none;
         }
         
-        /* تعديل: الصورة بالأسفل أكثر وضوحاً وعائمة - مع إزالة الفراغات */
+        /* --- تعديل: الصورة بالأسفل عائمة بدون فراغات --- */
         .uni-watermark { 
             position: absolute; bottom: 0; left: 0; width: 100%; height: 320px; 
             background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center bottom; 
             background-size: cover; 
-            opacity: 0.95; /* زيادة الوضوح */
+            opacity: 0.95; 
             pointer-events: none; z-index: 0; 
             mix-blend-mode: normal; 
-            /* تأثير التداخل العائم */
+            /* تأثير التداخل */
             -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
             mask-image: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
         }
@@ -417,10 +436,12 @@
 
         #modernConfirmModal { z-index: 2147483647 !important; }
 
+        /* --- تعديل: تنسيق القلوب --- */
         .attempts-hearts { 
             display: flex; gap: 5px; align-items: center; justify-content: center; 
-            background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 20px; 
+            background: rgba(255,255,255,0.9); padding: 8px 15px; border-radius: 20px; 
             margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            backdrop-filter: blur(4px);
         }
         .heart-icon { font-size: 18px; color: #ef4444; transition: 0.3s; }
         .heart-icon.lost { color: #cbd5e1; }
@@ -746,21 +767,22 @@
                         <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
                             تسجيل الحضور <i class="fa-solid fa-fingerprint"></i>
                         </button>
+                        
                         <div class="admin-controls-grid">
-                            <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login btn-top-left">
+                            <button id="btnAdminLogin" onclick="safeClick(this, () => switchScreen('screenAdminLogin'))" class="admin-sub-btn btn-admin-login btn-right-side">
                                 <i class="fa-solid fa-lock sub-btn-icon"></i>
                                 <span>دخول المسؤول</span>
                             </button>
-                            <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout btn-top-left" style="display:none;">
+                            <button id="btnAdminLogout" onclick="safeClick(this, openLogoutModal)" class="admin-sub-btn btn-admin-logout btn-right-side" style="display:none;">
                                 <i class="fa-solid fa-arrow-right-from-bracket fa-flip-horizontal sub-btn-icon"></i>
                                 <span>خروج المسؤول</span>
                             </button>
                             
-                            <button onclick="safeClick(this, () => location.reload())" class="btn-refresh">
-                                <i class="fa-solid fa-arrows-rotate" style="font-size: 22px; color: var(--primary);"></i>
+                            <button onclick="safeClick(this, () => location.reload())" class="btn-refresh-center">
+                                <i class="fa-solid fa-arrows-rotate" style="font-size: 26px; color: var(--primary);"></i>
                             </button>
 
-                            <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked btn-top-right">
+                            <button id="btnViewReport" onclick="handleReportClick()" class="admin-sub-btn btn-report locked btn-left-side">
                                 <i id="reportIcon" class="fa-solid fa-list-check sub-btn-icon"></i>
                                 <span>سجل الحضور</span>
                             </button>
@@ -775,19 +797,20 @@
                                 <span>إدخال البيانات</span>
                             </button>
                         </div>
+                        
                         <div class="academic-footer">
                             </div>
                     </div>
                     <div class="uni-watermark"></div>
                 </div>
-                <div id="globalHearts" class="attempts-hearts" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 50; display: none; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);"></div>
+                <div id="globalHearts" class="attempts-hearts" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 50; display: none; width: auto;"></div>
 
                 <div id="screenAdminLogin" class="section">
                     <h1>دخول المسؤول</h1>
                     <p>أدخل كلمة المرور.</p>
                     <div id="adminAlert" style="display:none;" class="alert-box"></div>
                     <div class="input-group">
-                        <input type="password" id="adminPassword" placeholder="كلمة المرور" required>
+                        <input type="password" id="adminPassword" placeholder="••••••" required>
                     </div>
                     <button onclick="checkAdminPassword()" class="btn-main">تفعيل <i class="fa-solid fa-key"></i></button>
                     <button onclick="goBackToWelcome()" class="btn-back-modern">
@@ -1366,7 +1389,7 @@
             const used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
             const left = Math.max(0, MAX_ATTEMPTS - used);
             
-            // تحديث القلوب في الصفحة الحالية
+            // تحديث القلوب في الصفحة الحالية (إذا كانت موجودة)
             const container = document.getElementById('attemptsHeartsContainer');
             if(container) {
                 container.innerHTML = generateHeartsHTML(left);
@@ -1382,7 +1405,6 @@
         function generateHeartsHTML(left) {
             let html = '';
             for(let i=0; i<MAX_ATTEMPTS; i++) {
-                // i < left ? heart : lost
                 let cls = 'fa-solid fa-heart heart-icon';
                 if(i >= left) cls += ' lost';
                 html += `<i class="${cls}"></i>`;
@@ -1458,9 +1480,9 @@
             // Force update UI for attempts on every screen switch
             updateUIForAttempts(); 
             
-            // تعديل: التحكم في ظهور القلوب العامة
+            // تعديل: التحكم في ظهور القلوب العامة (فقط للطالب وفي الصفحات الداخلية)
             const globalHearts = document.getElementById('globalHearts');
-            if (id === 'screenWelcome') {
+            if (id === 'screenWelcome' || id === 'screenAdminLogin') {
                 globalHearts.style.display = 'none';
             } else {
                 globalHearts.style.display = 'flex';
@@ -1481,9 +1503,7 @@
                 const flake = document.createElement('div');
                 flake.className = 'snowflake';
                 flake.textContent = '❄';
-                // موضع عشوائي
                 flake.style.left = Math.random() * 100 + '%';
-                // سرعة عشوائية
                 flake.style.animationDuration = Math.random() * 5 + 5 + 's'; 
                 flake.style.opacity = Math.random();
                 container.appendChild(flake);
@@ -1494,18 +1514,11 @@
                 listeners: {
                     move (event) {
                         var target = event.target;
-                        // حساب الموقع الجديد
                         var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
                         var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-                        // تطبيق التحريك
                         target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-
-                        // تخزين الإحداثيات
                         target.setAttribute('data-x', x);
                         target.setAttribute('data-y', y);
-                        
-                        // إيقاف الانيميشن الافتراضي عند السحب
                         target.style.animation = 'none';
                     }
                 }
