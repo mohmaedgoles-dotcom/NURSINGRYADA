@@ -2052,23 +2052,6 @@
         function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
         function showToast(message, duration = 3000, bgColor = '#334155') { const toast = document.getElementById('toastNotification'); toast.style.backgroundColor = bgColor; toast.innerText = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, duration); }
 
-        (function() {
-            let devtoolsOpen = false; const threshold = 160; 
-            const checkDevTools = () => {
-                if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
-                    if (!devtoolsOpen) {
-                        devtoolsOpen = true;
-                        const blocker = document.getElementById('desktop-blocker');
-                        blocker.innerHTML = '<i class="fa-solid fa-code" style="font-size:50px; margin-bottom:20px; color:#f59e0b;"></i><h2>تنبيه أمني</h2><p>تم اكتشاف محاولة تصحيح (Debugging). تم حظر النظام.</p>';
-                        blocker.style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("DevTools Detected and Blocked.");
-                    }
-                }
-            };
-            window.addEventListener('resize', checkDevTools);
-            window.addEventListener('keydown', (e) => { if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && e.keyCode === 73) || (e.metaKey && e.altKey && e.keyCode === 73)) { e.preventDefault(); if(!devtoolsOpen) showToast('أدوات المطور محظورة.', 2000, '#ef4444'); } });
-            checkDevTools();
-        })();
-
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
         document.addEventListener('copy', function(e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
         document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
@@ -2095,5 +2078,3 @@
     </script> 
 </body>
 </html>
-
-
