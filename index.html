@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>كشف الحضور - كلية التمريض</title>
+    <title>نظام كشف الحضور - كلية التمريض</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0f172a">
@@ -37,7 +37,13 @@
         
         .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
         
-        .app-card { background: var(--glass-bg); width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; margin: 20px auto; min-height: 650px; display: flex; flex-direction: column; }
+        .app-card { 
+            background: linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%); 
+            width: 90%; max-width: 400px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            text-align: center; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; 
+            margin: 20px auto; min-height: 650px; display: flex; flex-direction: column;
+            border: none; /* تم إزالة الخط الأبيض */
+        }
         
         /* تأثير الثلج */
         .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; border-radius: 24px; }
@@ -54,7 +60,7 @@
         }
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
-        .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(255, 255, 255, 1), transparent); }
+        .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); }
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
         .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; }
         
@@ -66,22 +72,36 @@
         .hero-icon-wrapper.show-icon .status-icon-container { opacity: 1; transform: scale(1); }
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
         
-        /* New Top Toast Style */
-        #topToast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: white; padding: 12px 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 999999; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); font-weight: bold; color: #10b981; display: flex; align-items: center; gap: 10px; border: 1px solid #e2e8f0; }
-        #topToast.show { top: 20px; }
+        #topToast { 
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%); 
+            background: linear-gradient(135deg, #0f172a, #334155); 
+            padding: 12px 25px; border-radius: 30px; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3); 
+            z-index: 999999; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); 
+            font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            backdrop-filter: blur(10px);
+            font-size: 13px;
+        }
+        #topToast.show { top: 30px; }
+        #topToast i { color: #38bdf8; font-size: 16px; }
 
-        /* Animation for Right Arrow */
         .arrow-anim { font-size: 20px; color: var(--warning); animation: moveRight 0.8s infinite alternate; }
         @keyframes moveRight { from { transform: translateX(0); } to { transform: translateX(8px); } }
 
-        /* Horizontal Progress Bar */
         .progress-container { width: 80%; background-color: #e2e8f0; border-radius: 10px; margin: 15px auto; height: 8px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1); width: 0%; animation: fillBar 3s ease-in-out infinite; border-radius: 10px; }
         @keyframes fillBar { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
 
-        /* Verification Success Modal Style */
-        #verificationSuccessModal .modal-box { border-top: 5px solid #10b981; }
-        .success-icon-large { font-size: 60px; color: #10b981; margin-bottom: 20px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #verificationSuccessModal .modal-box { 
+            border-top: none; 
+            border-radius: 30px;
+            max-width: 260px;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+        }
+        .success-icon-large { font-size: 50px; color: #10b981; margin-bottom: 15px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         .notification-btn { position: absolute; top: 20px; left: 20px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.5); }
         .notification-btn:active { transform: scale(0.9); }
@@ -137,7 +157,6 @@
             background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5));
         }
 
-        /* Light Blue Logout Button */
         .btn-admin-logout { 
             background: linear-gradient(135deg, #38bdf8, #0284c7); 
             color: white; border: none; 
@@ -431,9 +450,9 @@
 
     <div id="verificationSuccessModal" class="modal-overlay" style="z-index: 999999;">
         <div class="modal-box">
-            <i class="fa-solid fa-face-smile-beam success-icon-large"></i>
-            <div class="modal-title" style="color: #10b981;">تم التحقق من هويتك</div>
-            <div class="modal-text" style="font-weight:bold; color:#64748b;">جاري الإبلاغ...</div>
+            <i class="fa-solid fa-check-circle success-icon-large"></i>
+            <div class="modal-title" style="color: #10b981; font-size: 16px;">تم التحقق</div>
+            <div class="modal-text" style="font-weight:bold; color:#64748b; font-size: 13px;">جاري الفحص...</div>
             <div style="margin-top:15px;"><i class="fa-solid fa-circle-notch fa-spin" style="color:var(--primary);"></i></div>
         </div>
     </div>
@@ -697,7 +716,6 @@
     <div id="adminFloatingBack" class="admin-floating-back" onclick="goBackToWelcome()">
         <i class="fa-solid fa-arrow-right"></i>
     </div>
-
     <div class="app-card">
         <div class="card-banner"></div>
         <div id="adminBadge" class="admin-badge"><i class="fa-solid fa-user-shield"></i> وضع المسؤول مفعل</div>
@@ -728,7 +746,7 @@
                     <div class="faculty-title-box">
                         <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
                     </div>
-                    <h1 class="smart-title">كشف الحضور</h1>
+                    <h1 class="smart-title">نظام كشف الحضور</h1>
                     <p>مرحباً بك. يرجى الضغط بالأسفل لتسجيل حضور المحاضرة الحالية.</p>
                     <div style="position: relative; z-index: 2;">
                         <button onclick="safeClick(this, () => startProcess(false))" class="btn-main" id="mainActionBtn">
@@ -1055,7 +1073,7 @@
         let userLat = "", userLng = ""; 
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
-        let videoStream = null;       
+        let videoStream = null;        
         const FACE_MODELS_URL = CONFIG.modelsUrl;
         const TIMER_DURATION_FACE = 3; 
         const TIMER_CIRCUMFERENCE_FACE = 282.7;
@@ -1452,6 +1470,7 @@
         }
 
         function switchScreen(id) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // التمرير للأعلى تلقائياً
             const allSections = document.querySelectorAll('.section');
             const nextScreen = document.getElementById(id);
             allSections.forEach(el => { if (el.classList.contains('active')) el.classList.remove('active'); });
@@ -1844,6 +1863,13 @@
                 await fetch(CONFIG.sheetApiUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formParams.toString() });
                 processIsActive = false; releaseWakeLock();
                 
+                // تعديل رقم 7: خصم محاولة عند النجاح وحظر إذا زاد عن 3
+                let left = decrementAttempts(); 
+                updateUIForAttempts();
+                if (left === 0) {
+                    localStorage.setItem(BAN_KEY, "true");
+                }
+
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
             } catch (error) { btn.innerHTML = originalText; btn.disabled = false; showConnectionLostModal(); }
