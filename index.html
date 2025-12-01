@@ -988,11 +988,11 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
         const CONFIG = {
-            // رابط نشر السكربت (Backend) - تأكد أن هذا هو الرابط الجديد الذي قمت بنشره
+            // رابط نشر السكربت (Backend)
             sheetApiUrl: "https://script.google.com/macros/s/AKfycbz5ywIwwwwVOEYSwA7Ldgxq-kkbpMBPJ6mnR-cvB5K2BzMXrXgw5Z-6rkMSDniW8qtI/exec",
             
             // رابط شيت الهوية (Identity Sheet)
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbxQK3doLXe4NPA-S8R_8BfGZ5Ux3apt60anJdW3Wa87yNblvxtimjmQ-Lk04XmRMPtK/exec",
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwBkId1lGwoHfuX6VrHSgqGOyDuYQ5rpMRDjP8Ysew_q34H3LvBHtiDzY8rBnFe6aB4WQ/exec",
             
             adminPassword: "RYADA",
             gps: { 
@@ -1140,7 +1140,7 @@
         }
 
         // ==========================================
-        //  مزامنة التنبيهات
+        //  مزامنة التنبيهات (نافذة علوية صغيرة)
         // ==========================================
         async function syncGlobalAlerts() {
             const btn = document.getElementById('notificationBtn');
@@ -1168,7 +1168,7 @@
                         systemAlerts = serverAlerts;
                         localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
                         checkStoredAlerts(); 
-                        showTopToast("تم تحديث التنبيهات الأمنية");
+                        showTopToast("تم تحديث التنبيهات الأمنية"); // النافذة العلوية الجديدة
                     }
                 }
             } catch (e) {
@@ -1836,11 +1836,8 @@
             formParams.append("subject", selectedSubject);
             formParams.append("hall", selectedHall || "N/A"); 
             if (attendanceData.vector) formParams.append("vector", JSON.stringify(attendanceData.vector));
-            
-            // <<<<<<<<<<<<<<<<<< التصحيح هنا >>>>>>>>>>>>>>>>>>
-            // دمج خط الطول والعرض في متغير واحد gps كما يتوقعه السيرفر
-            formParams.append("gps", `${userLat},${userLng}`);
-            
+            formParams.append("gps_lat", userLat);
+            formParams.append("gps_lng", userLng);
             formParams.append("deviceId", deviceId);
             
             try {
@@ -2098,4 +2095,3 @@
     </script> 
 </body>
 </html>
-
