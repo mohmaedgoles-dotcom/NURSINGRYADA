@@ -35,7 +35,8 @@
         
         .en-font { font-family: 'Outfit', sans-serif !important; direction: ltr !important; unicode-bidi: embed; letter-spacing: 0.5px; }
         
-        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
+        /* تم إزالة الصورة الثقيلة واستبدالها بلون داكن خفيف */
+        .bg-image { background: #0f172a; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
         
         .app-card { 
             background: linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%); 
@@ -45,10 +46,7 @@
             border: none; 
         }
         
-        /* تأثير الثلج */
-        .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; border-radius: 24px; }
-        .snowflake { position: absolute; top: -10px; color: #bae6fd; font-size: 1em; opacity: 0.8; animation: fall linear infinite; text-shadow: 0 0 5px rgba(186, 230, 253, 0.4); }
-        @keyframes fall { to { transform: translateY(700px); } }
+        /* تم حذف كود الثلج (Snow) بالكامل من هنا */
 
         @media (max-height: 650px) {
             body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -82,8 +80,10 @@
         .btn-google-maps:active { transform: scale(0.97); background: #f8fafc; }
         .maps-icon-img { width: 24px; height: 24px; object-fit: contain; }
 
-        .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
+        /* تم إزالة الصورة الثقيلة من ترويسة الكارت واستبدالها بتدرج لوني */
+        .card-banner { width: 100%; height: 140px; background: linear-gradient(135deg, #0ea5e9, #0284c7); position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); }
+        
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
         .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; }
         
@@ -710,8 +710,6 @@
             </div>
 
             <div class="card-body-content">
-                <div id="snowContainer" class="snow-container"></div>
-
                 <div id="screenWelcome" class="section active">
                     <div class="faculty-title-box">
                         <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
@@ -777,7 +775,6 @@
                         <span>فتح الخريطة (لتنشيط GPS)</span>
                     </button>
                 </div>
-
                 <div id="screenReadyToStart" class="section">
                     <div style="margin: 30px 0;">
                         <i class="fa-solid fa-map-location-dot" style="font-size: 60px; color: #10b981; animation: popUp 0.5s;"></i>
@@ -785,11 +782,6 @@
                     <h1 style="color: #10b981;">الموقع مطابق</h1>
                     <p>تم التحقق من تواجدك في الكلية بنجاح.</p>
                     
-                    <button onclick="openMapsToRefreshGPS()" class="btn-google-maps">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" class="maps-icon-img" alt="Maps">
-                        <span>فتح الخريطة (تأكيد الموقع)</span>
-                    </button>
-
                     <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 10px;">
                         سجل الآن <i class="fa-solid fa-arrow-left"></i>
                     </button>
@@ -1023,6 +1015,7 @@
         let wakeLock = null;
         let cachedReportData = [];
         let systemAlerts = [];
+        let isOpeningMaps = false; // Flag to prevent reload when opening maps
 
         try {
             const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
@@ -1421,13 +1414,27 @@
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
+                // إذا كان المستخدم قد ضغط على زر فتح الخرائط، لا تقم بالمعاقبة
+                if (isOpeningMaps) {
+                    return;
+                }
+
                 if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
                     decrementAttempts(); 
                     updateUIForAttempts();
                     location.reload(); 
                 }
                 releaseWakeLock();
-            } else { if(processIsActive) requestWakeLock(); }
+            } else { 
+                if (isOpeningMaps) {
+                    isOpeningMaps = false; // إعادة تعيين العلم
+                    // عند العودة، نتحقق من الموقع مرة أخرى دون إعادة تحميل
+                    if (processIsActive) {
+                        // لا شيء إضافي، النظام ينتظر الـ callback
+                    }
+                }
+                if(processIsActive) requestWakeLock(); 
+            }
         });
 
         function checkBanStatus() {
@@ -1476,23 +1483,10 @@
             if (!isAdmin && (id === 'screenDataEntry' || id === 'screenScanQR' || id === 'screenFaceCheck' || id === 'screenLoading')) { processIsActive = true; requestWakeLock(); } else { processIsActive = false; releaseWakeLock(); }
         }
 
-        function createSnow() {
-            const container = document.getElementById('snowContainer');
-            if(!container) return;
-            const snowflakeCount = 20;
-            for (let i = 0; i < snowflakeCount; i++) {
-                const flake = document.createElement('div');
-                flake.className = 'snowflake';
-                flake.textContent = '❄';
-                flake.style.left = Math.random() * 100 + '%';
-                flake.style.animationDuration = Math.random() * 3 + 2 + 's'; 
-                flake.style.opacity = Math.random();
-                flake.style.fontSize = Math.random() * 10 + 10 + 'px';
-                container.appendChild(flake);
-            }
-        }
+        // تم حذف وظيفة createSnow لتخفيف الحمل
 
         function openMapsToRefreshGPS() {
+            isOpeningMaps = true; // تعيين العلم لمنع إعادة التحميل عند الخروج
             const lat = CONFIG.gps.targetLat;
             const lng = CONFIG.gps.targetLong;
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -1504,7 +1498,7 @@
             checkStoredAlerts(); 
             startGPSWatcher();
             renderHallOptions(); 
-            createSnow(); 
+            // createSnow(); // تم إيقاف الثلج
             
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
