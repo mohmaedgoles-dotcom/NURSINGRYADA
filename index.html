@@ -771,6 +771,11 @@
                     <h1 style="margin-top: 10px;">جاري التحقق...</h1>
                     <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--primary); margin: 20px 0;"></i>
                     <p>يرجى السماح للمتصفح بتحديد موقعك الجغرافي.</p>
+                    
+                    <button onclick="openMapsToRefreshGPS()" class="btn-google-maps" style="margin-top: 20px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" class="maps-icon-img" alt="Maps">
+                        <span>فتح الخريطة (لتنشيط GPS)</span>
+                    </button>
                 </div>
 
                 <div id="screenReadyToStart" class="section">
@@ -782,7 +787,7 @@
                     
                     <button onclick="openMapsToRefreshGPS()" class="btn-google-maps">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" class="maps-icon-img" alt="Maps">
-                        <span>اضغط هنا لفتح الخريطة (تأكيد الموقع)</span>
+                        <span>فتح الخريطة (تأكيد الموقع)</span>
                     </button>
 
                     <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 10px;">
@@ -1002,9 +1007,9 @@
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwx09rtHtsefAcu-09Bn5boBsLKGpivHgFcpYcnwSQIaSLja-wRzq3PLgAHTCx2te2E/exec",
             adminPassword: "RYADA",
             gps: { 
-                targetLat: 30.385820708310472,  
-                targetLong: 30.4888877573593, 
-                allowedDistanceKm: 1.65        
+                targetLat: 30.438414487852256,  
+                targetLong: 30.836754276800118, 
+                allowedDistanceKm: 2       
             },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
@@ -1487,6 +1492,13 @@
             }
         }
 
+        function openMapsToRefreshGPS() {
+            const lat = CONFIG.gps.targetLat;
+            const lng = CONFIG.gps.targetLong;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            window.open(mapsUrl, '_blank');
+        }
+
         window.onload = function() {
             initGlobalGuard(); updateUIForMode(); setupCustomSelects();
             checkStoredAlerts(); 
@@ -1585,7 +1597,7 @@
 
         async function startProcess(skip = false) {
             playClick();
-            if (checkBanStatus()) return;
+            // removed checkBanStatus from here
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             switchScreen('screenLoading');
@@ -1597,6 +1609,8 @@
 
         function generateCodeAndShowDataEntry() {
             playClick();
+            if (checkBanStatus()) return; // Ban check moved here
+            
             attendanceData = {};
             let code = (Math.floor(142 + Math.random() * 1280) * 7); if (code < 1000) code += 7000;
             attendanceData.code = code.toString(); document.getElementById('attendanceCode').value = code; sessionStorage.setItem(TEMP_CODE_KEY, code.toString());
