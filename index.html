@@ -2000,9 +2000,17 @@
             document.getElementById('connectionLostModal').style.display = 'none'; 
         }
         
-        async function checkRealConnection() { return true; }
-        function initGlobalGuard() { setInterval(async () => { const o = await checkRealConnection(); if (!o) showConnectionLostModal(); else hideConnectionLostModal(); }, 2000); 
-            if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
+async function checkRealConnection() { return true; }
+
+        function initGlobalGuard() { 
+            // دالة فحص الاتصال بتشتغل كل 2 ثانية
+            setInterval(async () => { 
+                const o = await checkRealConnection(); 
+                if (!o) showConnectionLostModal(); 
+                else hideConnectionLostModal(); 
+            }, 2000); 
+            
+            // ⚠️ أنا مسحت سطر الحظر من هنا عشان يشتغل معاك ⚠️
         }
         
         function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
