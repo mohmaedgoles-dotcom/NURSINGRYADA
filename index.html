@@ -19,25 +19,6 @@
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
-        /* === إصلاح مشكلة ظهور عناصر فوق الكارت === */
-        #toastNotification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 25px;
-            border-radius: 30px;
-            color: white;
-            font-weight: 800;
-            z-index: 9999999; /* رقم عالي جداً ليظهر فوق الكل */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            font-size: 13px;
-            display: none; /* مخفي افتراضياً */
-            min-width: 250px;
-            text-align: center;
-            font-family: 'Cairo', sans-serif;
-        }
-
         /* === الأساسيات === */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 2147483647; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
@@ -77,6 +58,29 @@
             .modal-overlay { align-items: flex-start !important; padding-top: 10px; overflow-y: auto; }
             .modal-box { margin-top: 10px; margin-bottom: 50px; position: relative; top: 0; transform: none !important; }
         }
+
+        /* تنسيقات الزر الجديد الخاص بجوجل ماب */
+        .btn-google-maps { 
+            background: #ffffff; 
+            color: #3c4043; 
+            width: 100%; 
+            padding: 12px 15px; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0; 
+            font-size: 13px; 
+            font-weight: 700; 
+            font-family: 'Cairo'; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s; 
+        }
+        .btn-google-maps:active { transform: scale(0.97); background: #f8fafc; }
+        .maps-icon-img { width: 24px; height: 24px; object-fit: contain; }
 
         .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); }
@@ -775,7 +779,13 @@
                     </div>
                     <h1 style="color: #10b981;">الموقع مطابق</h1>
                     <p>تم التحقق من تواجدك في الكلية بنجاح.</p>
-                    <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 20px;">
+                    
+                    <button onclick="openMapsToRefreshGPS()" class="btn-google-maps">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" class="maps-icon-img" alt="Maps">
+                        <span>اضغط هنا لفتح الخريطة (تأكيد الموقع)</span>
+                    </button>
+
+                    <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 10px;">
                         سجل الآن <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
@@ -992,9 +1002,9 @@
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwx09rtHtsefAcu-09Bn5boBsLKGpivHgFcpYcnwSQIaSLja-wRzq3PLgAHTCx2te2E/exec",
             adminPassword: "RYADA",
             gps: { 
-                targetLat: 30.438415644117953,  
-                targetLong: 30.836751594591234, 
-                allowedDistanceKm: 3        
+                targetLat: 30.385820708310472,  
+                targetLong: 30.4888877573593, 
+                allowedDistanceKm: 1.65        
             },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
@@ -2155,4 +2165,3 @@
     </script> 
 </body>
 </html>
-
