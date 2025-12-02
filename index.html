@@ -19,27 +19,23 @@
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
     <style>
-        /* === الأساسيات وتوفير البيانات === */
+        /* === الأساسيات === */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 2147483647; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
-        :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
+        :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html { background-color: #0f172a !important; height: 100vh; overflow-y: auto; overflow-x: hidden; }
         
-        /* خلفية تدرج لوني خفيفة بدلاً من الصورة لتقليل النت */
-        html { height: 100vh; overflow-y: auto; overflow-x: hidden; background: #0f172a; }
         body { 
             font-family: 'Cairo', sans-serif; 
             min-height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            color: var(--text-main); 
-            /* التدرج اللوني الجديد */
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; 
-            position: relative; 
+            color: var(--text-main); background-color: transparent !important; position: relative; 
             padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); 
             -webkit-user-select: none; user-select: none; touch-action: manipulation; transition: all 0.3s; 
         }
         
-        /* تم حذف كود الثلج snow-container لتقليل استهلاك المعالج والنت */
-
         .en-font { font-family: 'Outfit', sans-serif !important; direction: ltr !important; unicode-bidi: embed; letter-spacing: 0.5px; }
+        
+        .bg-image { background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; filter: blur(12px) brightness(0.9); transform: scale(1.2); z-index: -1; position: fixed; top: -10vh; left: -10vw; width: 120vw; height: 120vh; pointer-events: none; }
         
         .app-card { 
             background: linear-gradient(180deg, #ffffff 0%, #e0f2fe 100%); 
@@ -48,13 +44,11 @@
             margin: 20px auto; min-height: 650px; display: flex; flex-direction: column;
             border: none; 
         }
-
-        #toastNotification {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 12px 25px; border-radius: 30px; color: white; font-weight: 800;
-            z-index: 9999999; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            font-size: 13px; display: none; min-width: 250px; text-align: center; font-family: 'Cairo', sans-serif;
-        }
+        
+        /* تأثير الثلج */
+        .snow-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; border-radius: 24px; }
+        .snowflake { position: absolute; top: -10px; color: #bae6fd; font-size: 1em; opacity: 0.8; animation: fall linear infinite; text-shadow: 0 0 5px rgba(186, 230, 253, 0.4); }
+        @keyframes fall { to { transform: translateY(700px); } }
 
         @media (max-height: 650px) {
             body { justify-content: flex-start; padding-top: 20px; overflow-y: auto; }
@@ -65,14 +59,31 @@
             .modal-box { margin-top: 10px; margin-bottom: 50px; position: relative; top: 0; transform: none !important; }
         }
 
-        /* تعديل البانر ليكون لون متدرج بدلاً من صورة لتقليل النت */
-        .card-banner { 
-            width: 100%; height: 140px; 
-            background: linear-gradient(135deg, #0ea5e9, #2563eb); 
-            position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; 
+        /* تنسيقات الزر الجديد الخاص بجوجل ماب */
+        .btn-google-maps { 
+            background: #ffffff; 
+            color: #3c4043; 
+            width: 100%; 
+            padding: 12px 15px; 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0; 
+            font-size: 13px; 
+            font-weight: 700; 
+            font-family: 'Cairo'; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 12px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s; 
         }
+        .btn-google-maps:active { transform: scale(0.97); background: #f8fafc; }
+        .maps-icon-img { width: 24px; height: 24px; object-fit: contain; }
+
+        .card-banner { width: 100%; height: 140px; background: url('https://a.top4top.io/p_36115ao3o1.jpg') no-repeat center center; background-size: cover; position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); }
-        
         .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
         .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; }
         
@@ -84,25 +95,35 @@
         .hero-icon-wrapper.show-icon .status-icon-container { opacity: 1; transform: scale(1); }
         @keyframes float-magic { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
         
-        /* زر خرائط جوجل */
-        .btn-google-maps { 
-            background: #ffffff; color: #3c4043; width: 100%; padding: 12px 15px; 
-            border-radius: 16px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 700; 
-            font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; 
-            gap: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; 
+        #topToast { 
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%); 
+            background: linear-gradient(135deg, #0f172a, #334155); 
+            padding: 12px 25px; border-radius: 30px; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3); 
+            z-index: 999999; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); 
+            font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            backdrop-filter: blur(10px);
+            font-size: 13px;
         }
-        .btn-google-maps:active { transform: scale(0.97); background: #f8fafc; }
-        .maps-icon-img { width: 24px; height: 24px; object-fit: contain; }
-
-        #topToast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #0f172a, #334155); padding: 12px 25px; border-radius: 30px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); z-index: 999999; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.26, 1.55); font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); font-size: 13px; }
         #topToast.show { top: 30px; }
         #topToast i { color: #38bdf8; font-size: 16px; }
+
+        .arrow-anim { font-size: 20px; color: var(--warning); animation: moveRight 0.8s infinite alternate; }
+        @keyframes moveRight { from { transform: translateX(0); } to { transform: translateX(8px); } }
 
         .progress-container { width: 80%; background-color: #e2e8f0; border-radius: 10px; margin: 15px auto; height: 8px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #6366f1); width: 0%; animation: fillBar 3s ease-in-out infinite; border-radius: 10px; }
         @keyframes fillBar { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 100%; } }
 
-        #verificationSuccessModal .modal-box { border-top: none; border-radius: 30px; max-width: 260px; padding: 30px 20px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2); }
+        #verificationSuccessModal .modal-box { 
+            border-top: none; 
+            border-radius: 30px;
+            max-width: 260px;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+        }
         .success-icon-large { font-size: 50px; color: #10b981; margin-bottom: 15px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         .notification-btn { position: absolute; top: 20px; left: 20px; z-index: 100; width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.5); }
@@ -116,8 +137,21 @@
         .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
         .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
         .info-pill span { font-family: 'Outfit', sans-serif !important; } 
+        
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
-        .smart-title { background: linear-gradient(to right, #0ea5e9, #0284c7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 34px; font-weight: 700; margin-bottom: 10px; text-shadow: 0px 5px 15px rgba(14, 165, 233, 0.3); font-family: 'Reem Kufi', sans-serif; letter-spacing: -1px; }
+        
+        .smart-title { 
+            background: linear-gradient(to right, #0ea5e9, #0284c7); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-size: 34px; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+            text-shadow: 0px 5px 15px rgba(14, 165, 233, 0.3);
+            font-family: 'Reem Kufi', sans-serif; 
+            letter-spacing: -1px;
+        }
+
         .academic-footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: center; width: 100%; position: relative; z-index: 5; }
         .faculty-title-box { display: inline-block; margin-bottom: 15px; padding: 8px 20px; border-radius: 50px; background: linear-gradient(135deg, rgba(224, 242, 254, 0.6), rgba(240, 249, 255, 0.4)); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 10px rgba(14, 165, 233, 0.05); backdrop-filter: blur(5px); }
         .faculty-title-text { font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
@@ -126,25 +160,50 @@
         .btn-main { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; width: 100%; padding: 15px; border-radius: 20px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.5); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 5; margin-bottom: 20px; }
         .btn-main:active { transform: scale(0.97); }
         .btn-main:disabled { background: #64748b; cursor: not-allowed; opacity: 0.7; box-shadow: none; pointer-events: none; }
+        
         .admin-controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .admin-sub-btn { border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; border: 1px solid rgba(14, 165, 233, 0.3); cursor: pointer; font-family: 'Cairo'; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; position: relative; overflow: hidden; color: var(--primary-dark); background: rgba(14, 165, 233, 0.08); }
+        
+        .admin-sub-btn { 
+            border-radius: 18px; padding: 10px 8px; font-size: 12px; font-weight: 800; 
+            border: 1px solid rgba(14, 165, 233, 0.3); 
+            cursor: pointer; font-family: 'Cairo'; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; 
+            box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.1); height: 75px; 
+            position: relative; overflow: hidden; 
+            color: var(--primary-dark); 
+            background: rgba(14, 165, 233, 0.08); 
+        }
         .admin-sub-btn:active { transform: scale(0.95); background: rgba(14, 165, 233, 0.15); box-shadow: none; }
-        .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry { background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5)); }
-        .btn-admin-logout { background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; border: none; } 
+        
+        .btn-admin-login, .btn-report, .btn-exams, .btn-refresh, .btn-data-entry {
+            background: linear-gradient(135deg, rgba(224, 242, 254, 0.5), rgba(186, 230, 253, 0.5));
+        }
+
+        .btn-admin-logout { 
+            background: linear-gradient(135deg, #38bdf8, #0284c7); 
+            color: white; border: none; 
+        } 
+        
         .btn-report.unlocked { background: rgba(14, 165, 233, 0.1); border: 1px solid #bae6fd; color: var(--primary-dark); }
         .btn-report.locked { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; box-shadow: none; }
+        
         .btn-exams { grid-column: span 2; flex-direction: row; height: 50px; margin-top: 5px; }
         .btn-refresh { grid-column: span 2; border-radius: 50px; width: 50px; height: 50px; justify-self: center; margin-top: 5px; }
         .btn-refresh:active { transform: rotate(180deg) scale(0.9); transition: 0.4s; }
         .btn-data-entry { grid-column: span 2; margin-top: 5px; height: 50px; flex-direction: row; }
+
         .sub-btn-icon { font-size: 20px; margin-bottom: 2px; text-shadow: none; color: var(--primary); }
         .btn-exams .sub-btn-icon, .btn-refresh .sub-btn-icon, .btn-data-entry .sub-btn-icon { margin-bottom: 0; font-size: 18px; }
+        
         .btn-back-modern { background: rgba(255, 255, 255, 0.9); color: var(--text-main); width: 100%; padding: 12px; border-radius: 15px; font-size: 14px; font-weight: 700; border: 1px solid #e2e8f0; cursor: pointer; font-family: 'Cairo'; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 15px; }
         .btn-back-modern:active { transform: scale(0.97); background: #f8fafc; }
+
         .btn-verify-identity { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; width: 100%; padding: 15px; border-radius: 16px; border: none; font-size: 14px; font-weight: 800; font-family: 'Cairo'; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; box-shadow: 0 8px 20px -5px rgba(99, 102, 241, 0.4); transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; z-index: 10; }
         .btn-verify-identity:active { transform: scale(0.97); }
         .btn-verify-identity.disabled { background: #10b981; pointer-events: none; opacity: 0.8; }
         .btn-verify-identity i { font-size: 18px; }
+        
         .cam-container { width: 220px; height: 220px; margin: 10px auto; border-radius: 50%; background: #f8fafc; overflow: hidden; border: 5px solid #e2e8f0; position: relative; transition: border-color 0.3s; }
         #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         .spinner-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255, 255, 255, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
@@ -161,20 +220,24 @@
         .status-error { border-color: #ef4444 !important; box-shadow: 0 0 15px #ef4444; }
         
         #reportModal .modal-box, #manageHallsModal .modal-box, #manageSubjectsModal .modal-box, #dataEntryModal .modal-box { max-width: 400px; height: 85vh; padding: 0; background: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
+        
         .report-modal-header { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 20; }
         .report-modal-footer { padding: 15px 20px; background: white; border-top: 1px solid #e2e8f0; z-index: 10; }
         .btn-icon-danger { width: 40px; height: 40px; border-radius: 50%; border: none; background: #fee2e2; color: #ef4444; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .btn-icon-danger:hover { background: #ef4444; color: white; transform: rotate(15deg); }
         .report-views-container { flex: 1; position: relative; overflow: hidden; width: 100%; }
         .report-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; padding: 15px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); background: #f8fafc; }
+        
         #viewSubjects { transform: translateX(0); z-index: 10; }
         #viewStudents { transform: translateX(100%); z-index: 20; background: #f8fafc; }
+        
         .slide-out { transform: translateX(100%) !important; }
         .slide-in { transform: translateX(0) !important; }
         
         .subject-big-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; cursor: pointer; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); display: flex; align-items: center; justify-content: space-between; transition: 0.2s; position: relative; overflow: hidden; }
         .subject-big-card:active { transform: scale(0.98); background: #f0f9ff; }
         .subject-big-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--primary); border-radius: 4px 0 0 4px; }
+        
         .sub-card-info h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
         .sub-card-info span { font-size: 12px; color: #64748b; font-weight: 600; }
         .sub-arrow { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); }
@@ -384,6 +447,7 @@
         </div>
     </div>
 
+    <div class="bg-image"></div>
     <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
     <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
     <audio id="beepSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
@@ -646,6 +710,8 @@
             </div>
 
             <div class="card-body-content">
+                <div id="snowContainer" class="snow-container"></div>
+
                 <div id="screenWelcome" class="section active">
                     <div class="faculty-title-box">
                         <span class="faculty-title-text">جامعة الريادة - كلية التمريض</span>
@@ -719,7 +785,12 @@
                     <h1 style="color: #10b981;">الموقع مطابق</h1>
                     <p>تم التحقق من تواجدك في الكلية بنجاح.</p>
                     
-                    <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 20px;">
+                    <button onclick="openMapsToRefreshGPS()" class="btn-google-maps">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" class="maps-icon-img" alt="Maps">
+                        <span>فتح الخريطة (تأكيد الموقع)</span>
+                    </button>
+
+                    <button onclick="generateCodeAndShowDataEntry()" class="btn-main" style="margin-top: 10px;">
                         سجل الآن <i class="fa-solid fa-arrow-left"></i>
                     </button>
                 </div>
@@ -1405,11 +1476,25 @@
             if (!isAdmin && (id === 'screenDataEntry' || id === 'screenScanQR' || id === 'screenFaceCheck' || id === 'screenLoading')) { processIsActive = true; requestWakeLock(); } else { processIsActive = false; releaseWakeLock(); }
         }
 
+        function createSnow() {
+            const container = document.getElementById('snowContainer');
+            if(!container) return;
+            const snowflakeCount = 20;
+            for (let i = 0; i < snowflakeCount; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.textContent = '❄';
+                flake.style.left = Math.random() * 100 + '%';
+                flake.style.animationDuration = Math.random() * 3 + 2 + 's'; 
+                flake.style.opacity = Math.random();
+                flake.style.fontSize = Math.random() * 10 + 10 + 'px';
+                container.appendChild(flake);
+            }
+        }
+
         function openMapsToRefreshGPS() {
             const lat = CONFIG.gps.targetLat;
             const lng = CONFIG.gps.targetLong;
-            // استخدام رابط الويب بدلاً من الرابط المباشر لمنع الخروج الكامل من الصفحة
-            // وفتحها في نافذة جديدة
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             window.open(mapsUrl, '_blank');
         }
@@ -1419,6 +1504,7 @@
             checkStoredAlerts(); 
             startGPSWatcher();
             renderHallOptions(); 
+            createSnow(); 
             
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             setInterval(() => {
@@ -1511,7 +1597,7 @@
 
         async function startProcess(skip = false) {
             playClick();
-            if (checkBanStatus()) return;
+            // removed checkBanStatus from here
             resetApplicationState();
             if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { generateCodeAndShowDataEntry(); return; }
             switchScreen('screenLoading');
@@ -1523,6 +1609,8 @@
 
         function generateCodeAndShowDataEntry() {
             playClick();
+            if (checkBanStatus()) return; // Ban check moved here
+            
             attendanceData = {};
             let code = (Math.floor(142 + Math.random() * 1280) * 7); if (code < 1000) code += 7000;
             attendanceData.code = code.toString(); document.getElementById('attendanceCode').value = code; sessionStorage.setItem(TEMP_CODE_KEY, code.toString());
@@ -2075,4 +2163,19 @@
         document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
         document.addEventListener('copy', function(e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
         document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
-        document.
+        document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
+        
+        if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
+    </script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: './' })
+                    .then(registration => { console.log('ServiceWorker registration successful with scope: ', registration.scope); })
+                    .catch(err => { console.error('ServiceWorker registration failed: ', err); });
+            });
+        }
+    </script> 
+</body>
+</html>
