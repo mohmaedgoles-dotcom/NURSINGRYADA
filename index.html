@@ -1006,56 +1006,18 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
         // ==========================================
-        //  إعدادات روابط الشيتات (40 رابط)
+        //  الرابط الموحد الجديد (لجميع الجروبات)
         // ==========================================
-        const GROUP_SHEET_URLS = {
-            // --- الفرقة الأولى (20 رابط) ---
-            "1G1": "LINK_SHEET_1G1_HERE",
-            "1G2": "LINK_SHEET_1G2_HERE",
-            "1G3": "LINK_SHEET_1G3_HERE",
-            "1G4": "LINK_SHEET_1G4_HERE",
-            "1G5": "LINK_SHEET_1G5_HERE",
-            "1G6": "LINK_SHEET_1G6_HERE",
-            "1G7": "LINK_SHEET_1G7_HERE",
-            "1G8": "LINK_SHEET_1G8_HERE",
-            "1G9": "LINK_SHEET_1G9_HERE",
-            "1G10": "LINK_SHEET_1G10_HERE",
-            "1G11": "LINK_SHEET_1G11_HERE",
-            "1G12": "LINK_SHEET_1G12_HERE",
-            "1G13": "LINK_SHEET_1G13_HERE",
-            "1G14": "LINK_SHEET_1G14_HERE",
-            "1G15": "LINK_SHEET_1G15_HERE",
-            "1G16": "LINK_SHEET_1G16_HERE",
-            "1G17": "LINK_SHEET_1G17_HERE",
-            "1G18": "LINK_SHEET_1G18_HERE",
-            "1G19": "LINK_SHEET_1G19_HERE",
-            "1G20": "LINK_SHEET_1G20_HERE",
+        const MASTER_REGISTRATION_LINK = "https://script.google.com/macros/s/AKfycbynFwVBDWWQPScP5WUx2AjePUsTuSoGdyr5WLuCovT0e3h4H6DuKKt6913NaUTxBeU8/exec";
 
-            // --- الفرقة الثانية (20 رابط) ---
-            "2G1": "LINK_SHEET_2G1_HERE",
-            "2G2": "LINK_SHEET_2G2_HERE",
-            "2G3": "LINK_SHEET_2G3_HERE",
-            "2G4": "LINK_SHEET_2G4_HERE",
-            "2G5": "LINK_SHEET_2G5_HERE",
-            "2G6": "LINK_SHEET_2G6_HERE",
-            "2G7": "LINK_SHEET_2G7_HERE",
-            "2G8": "LINK_SHEET_2G8_HERE",
-            "2G9": "LINK_SHEET_2G9_HERE",
-            "2G10": "LINK_SHEET_2G10_HERE",
-            "2G11": "LINK_SHEET_2G11_HERE",
-            "2G12": "LINK_SHEET_2G12_HERE",
-            "2G13": "LINK_SHEET_2G13_HERE",
-            "2G14": "LINK_SHEET_2G14_HERE",
-            "2G15": "LINK_SHEET_2G15_HERE",
-            "2G16": "LINK_SHEET_2G16_HERE",
-            "2G17": "LINK_SHEET_2G17_HERE",
-            "2G18": "LINK_SHEET_2G18_HERE",
-            "2G19": "LINK_SHEET_2G19_HERE",
-            "2G20": "LINK_SHEET_2G20_HERE"
-        };
+        const GROUP_SHEET_URLS = {};
+        // ملء الروابط تلقائياً
+        for(let i=1; i<=20; i++) { GROUP_SHEET_URLS["1G"+i] = MASTER_REGISTRATION_LINK; }
+        for(let i=1; i<=20; i++) { GROUP_SHEET_URLS["2G"+i] = MASTER_REGISTRATION_LINK; }
 
         const CONFIG = {
-            sheetApiUrl: "https://script.google.com/macros/s/AKfycbz1nETxkACP-S870DdzVWA0AhSUTAPNg_x-whWOlybLrL0VPaUkiwKZ4uCIZLo446Q_/exec",
+            // هذا الرابط (نفسه) يستخدم لجلب البيانات في هذا التصميم، أو يمكنك وضع رابط منفصل لجلب الأسماء
+            sheetApiUrl: MASTER_REGISTRATION_LINK, 
             identitySheetUrl: "https://script.google.com/macros/s/AKfycbwx09rtHtsefAcu-09Bn5boBsLKGpivHgFcpYcnwSQIaSLja-wRzq3PLgAHTCx2te2E/exec",
             adminPassword: "RYADA",
             gps: { 
@@ -1104,7 +1066,7 @@
         const TEMP_ID_KEY = "temp_student_id";
         const TEMP_CODE_KEY = "temp_session_code";
         
-        const MAX_ATTEMPTS = 3;
+        const MAX_ATTEMPTS = 9999; // رقم كبير جداً لمنع الحظر
         const TODAY_DATE_KEY = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
         const ATTEMPTS_KEY = "strict_attempts_" + TODAY_DATE_KEY;
         const BAN_KEY = "daily_ban_" + TODAY_DATE_KEY;
@@ -1294,11 +1256,8 @@
         }
 
         function updateNotificationUI(data) {
+            // تم إلغاء تفعيل الحظر من هنا أيضاً
             if (data.risk_level && data.risk_level !== "SAFE") {
-                if (data.risk_level === "DEVICE_SHARING" || data.risk_level === "DUPLICATE_ENTRY" || data.risk_level === "FACE_SPOOF") {
-                    localStorage.setItem(BAN_KEY, "true"); 
-                }
-
                 let reasonText = "نشاط مشبوه";
                 let detailText = "يرجى المراجعة";
                 
@@ -1425,43 +1384,21 @@
         function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
         
         function getAttemptsLeft() { 
-            let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
-            return Math.max(0, MAX_ATTEMPTS - used); 
+            return 999; // دائماً متاح
         }
         function decrementAttempts() { 
-            if (!processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') return getAttemptsLeft();
-
-            let used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0"); 
-            if (used < MAX_ATTEMPTS) {
-                used++; 
-                localStorage.setItem(ATTEMPTS_KEY, used.toString()); 
-                
-                if (used >= MAX_ATTEMPTS) {
-                    localStorage.setItem(BAN_KEY, "true");
-                }
-            }
-            processIsActive = false;
-            return MAX_ATTEMPTS - used; 
+            // تم إلغاء المنطق هنا لعدم الحظر
+            return 999; 
         }
         function updateUIForAttempts() { 
-            const used = parseInt(localStorage.getItem(ATTEMPTS_KEY) || "0");
-            const left = Math.max(0, MAX_ATTEMPTS - used);
+            // تم إخفاء القلوب لأن النظام مفتوح
             const container = document.getElementById('attemptsHeartsContainer');
-            if(container) {
-                container.innerHTML = '';
-                for(let i=0; i<MAX_ATTEMPTS; i++) {
-                    const icon = document.createElement('i'); icon.className = 'fa-solid fa-heart heart-icon';
-                    if(i >= left) icon.classList.add('lost'); 
-                    container.appendChild(icon);
-                }
-            }
+            if(container) container.innerHTML = '';
         }
 
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
             if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
-                decrementAttempts();
-                updateUIForAttempts(); 
                 checkBanStatus();
                 window.history.pushState(null, null, window.location.href); 
             } else if (sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true') { 
@@ -1470,10 +1407,7 @@
         };
         
         function handleStrictPenalty() {
-             if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
-                decrementAttempts();
-                updateUIForAttempts(); 
-            }
+             // تم الإلغاء
         }
 
         window.addEventListener('beforeunload', (event) => {
@@ -1485,31 +1419,21 @@
                 if (isOpeningMaps) {
                     return;
                 }
-
+                // تم إلغاء الحظر عند الخروج
                 if (processIsActive && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') { 
-                    decrementAttempts(); 
-                    updateUIForAttempts();
-                    location.reload(); 
+                    location.reload(); // مجرد إعادة تحميل
                 }
                 releaseWakeLock();
             } else { 
                 if (isOpeningMaps) {
                     isOpeningMaps = false; 
-                    if (processIsActive) {
-                    }
                 }
                 if(processIsActive) requestWakeLock(); 
             }
         });
 
         function checkBanStatus() {
-            const isBanned = localStorage.getItem(BAN_KEY) === "true";
-            const attemptsGone = getAttemptsLeft() === 0;
-            
-            if ((isBanned || attemptsGone) && sessionStorage.getItem(DOCTOR_MODE_KEY) !== 'true') {
-                 document.getElementById('banModal').style.display = 'flex';
-                 return true;
-            }
+            // تم إلغاء فحص الحظر
             return false;
         }
 
@@ -1692,14 +1616,10 @@
                     let left = decrementAttempts(); 
                     updateUIForAttempts(); 
                     
-                    if (left === 0) { 
-                        localStorage.setItem(BAN_KEY, "true");
-                        document.getElementById('banModal').style.display = 'flex'; 
-                    } else { 
-                        document.getElementById('timeoutMessage').innerText = `المتبقي: ${left} محاولات`;
-                        document.getElementById('timeoutModal').style.display = 'flex';
-                        if(navigator.vibrate) navigator.vibrate(300);
-                    }
+                    // لا حظر
+                    document.getElementById('timeoutMessage').innerText = `انتهى الوقت، حاول مرة أخرى`;
+                    document.getElementById('timeoutModal').style.display = 'flex';
+                    if(navigator.vibrate) navigator.vibrate(300);
                 }
             }, 100);
         }
@@ -1843,7 +1763,7 @@
                                 const response = await fetch(CONFIG.identitySheetUrl, { method: 'POST', mode: 'cors', headers: {'Content-Type': 'text/plain'}, body: JSON.stringify(payload) });
                                 const result = await response.json();
                                 updateNotificationUI(result);
-                                if (result.count >= 3) { localStorage.setItem(BAN_KEY, "true"); document.getElementById('banModal').style.display = 'flex'; return; }
+                                // if (result.count >= 3) { ... } // تم إلغاء الحظر
                                 
                                 const successModal = document.getElementById('verificationSuccessModal');
                                 successModal.style.display = 'flex';
@@ -1890,27 +1810,16 @@
             const selectedGroup = document.getElementById('groupSelect').value;
             const sessionPassVal = document.getElementById('sessionPass').value;
             const selectedHall = document.getElementById('hallSelect').value;
-            const selectedYear = document.getElementById('yearSelect').value;
-
+            
             if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedGroup || !attendanceData.isVerified) { 
                 showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); return; 
             }
             
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الفحص...'; btn.disabled = true;
+            // --- التعديل هنا: تغيير النص ---
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري تأكيد الحضور...'; 
+            btn.disabled = true;
             
-            const isOnline = await checkRealConnection(); 
-            if (!isOnline) { btn.innerHTML = originalText; btn.disabled = false; showConnectionLostModal(); return; }
-            
-            // ==========================================
-            //  اختيار الرابط بناءً على الجروب المختار
-            // ==========================================
-            let targetUrl = GROUP_SHEET_URLS[selectedGroup];
-            if (!targetUrl || targetUrl.includes("LINK_SHEET")) {
-                showToast("عذراً، لم يتم تفعيل رابط هذا الجروب بعد.", 3000, '#ef4444');
-                btn.innerHTML = originalText; btn.disabled = false;
-                return;
-            }
-            
+            // تجهيز البيانات
             const now = new Date(); 
             document.getElementById('receiptName').innerText = attendanceData.name; 
             document.getElementById('receiptID').innerText = attendanceData.uniID; 
@@ -1927,7 +1836,7 @@
             formParams.append("action", "register");
             formParams.append("id", attendanceData.uniID);
             formParams.append("name", attendanceData.name);
-            formParams.append("group", selectedGroup); // إضافة الجروب
+            formParams.append("group", selectedGroup);
             formParams.append("code", finalCodeValue);
             formParams.append("ip", userIP);
             formParams.append("subject", selectedSubject);
@@ -1936,15 +1845,44 @@
             formParams.append("gps_lat", userLat);
             formParams.append("gps_lng", userLng);
             formParams.append("deviceId", deviceId);
-            
-            try {
-                await fetch(targetUrl, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-                    body: formParams.toString() 
-                });
-                
+
+            // الحصول على الرابط
+            let targetUrl = GROUP_SHEET_URLS[selectedGroup];
+            if (!targetUrl || targetUrl.includes("LINK_SHEET")) {
+                showToast("عذراً، لم يتم تفعيل رابط هذا الجروب بعد.", 3000, '#ef4444');
+                btn.innerHTML = originalText; btn.disabled = false;
+                return;
+            }
+
+            // === بدء المحاولة مع التكرار الذكي ===
+            const maxRetries = 5; // عدد المحاولات
+            let attempt = 0;
+            let success = false;
+
+            while (attempt < maxRetries && !success) {
+                try {
+                    attempt++;
+                    // لو دي مش أول محاولة، نغير رسالة الزر
+                    if (attempt > 1) {
+                        btn.innerHTML = `<i class="fa-solid fa-rotate fa-spin"></i> محاولة ${attempt} من ${maxRetries}...`;
+                        await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000));
+                    }
+
+                    await fetch(targetUrl, { 
+                        method: 'POST', 
+                        mode: 'no-cors', 
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                        body: formParams.toString() 
+                    });
+                    
+                    success = true;
+
+                } catch (err) {
+                    console.log("فشل الاتصال، المحاولة القادمة...");
+                }
+            }
+
+            if (success) {
                 processIsActive = false; releaseWakeLock();
                 let left = decrementAttempts(); 
                 updateUIForAttempts();
@@ -1953,8 +1891,9 @@
                 resetApplicationState();
                 switchScreen('screenSuccess'); playSuccess(); 
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#0ea5e9', '#10b981'] });
-            } catch (error) { 
-                btn.innerHTML = originalText; btn.disabled = false; showConnectionLostModal(); 
+            } else {
+                btn.innerHTML = originalText; btn.disabled = false; 
+                showToast("السيرفر مشغول جداً، حاول مرة أخرى الآن.", 4000, '#ef4444');
             }
         }
 
@@ -2270,4 +2209,3 @@
     </script> 
 </body>
 </html>
-
