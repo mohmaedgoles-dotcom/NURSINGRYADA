@@ -2038,7 +2038,7 @@
             if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
         }
         
-        async function openReportModal() {
+async function openReportModal() {
             playClick();
             document.getElementById('reportModal').style.display = 'flex';
             showSubjectsView();
@@ -2051,42 +2051,36 @@
             const container = document.getElementById('subjectsContainer');
             container.innerHTML = `<div style="text-align:center; padding:50px 20px;">
                 <i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i>
-                <div style="font-weight:bold; color:#64748b;">جاري جمع البيانات من السيرفرات...</div>
+                <div style="font-weight:bold; color:#64748b;">جاري جلب سجلات اليوم...</div>
             </div>`;
 
             try {
-                // تجميع البيانات من جميع الروابط (يمكنك تعديل هذا الجزء لاحقاً إذا أردت جلب التقارير من 40 شيت)
-                // حالياً سيعمل على الروابط الافتراضية إذا كانت موجودة، أو ستحتاج لتحديث منطق التقارير ليمر على الـ 40 رابط
-                // للتبسيط، سأبقيه يعرض فارغاً إذا لم تكن الروابط القديمة تعمل، لأنك طلبت التغيير في "الإرسال" بشكل أساسي
+                // === التعديل هنا: وضعنا الرابط الموحد داخل القائمة ===
+                // بما أننا نستخدم شيت ماستر واحد، نضع رابطه فقط
+                const urls = [MASTER_REGISTRATION_LINK]; 
                 
-                const urls = []; // يمكنك هنا وضع قائمة بالروابط التي تريد جلب التقارير منها
+                // جلب البيانات
+                const responses = await Promise.all(urls.map(url => fetch(`${url}?action=getReport&date=${d}`).then(res => res.json()).catch(e => [])));
                 
-                if (urls.length === 0) {
-                     container.innerHTML = `<div class="empty-state" style="margin-top:50px;">
-                        <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i>
-                        <br>لا توجد سجلات متاحة للعرض حالياً (وضع التوزيع الجديد).
-                    </div>`;
-                    return;
-                }
-
-                const responses = await Promise.all(urls.map(url => fetch(url).then(res => res.json()).catch(e => [])));
+                // دمج النتائج (لو كان أكثر من رابط)
                 let allData = [].concat(...responses);
 
                 if (!allData || allData.length === 0) {
                     container.innerHTML = `<div class="empty-state" style="margin-top:50px;">
                         <i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i>
-                        <br>لا توجد سجلات اليوم.
+                        <br>لا توجد سجلات مسجلة بتاريخ اليوم (${d}).
                     </div>`;
                     return;
                 }
 
+                // ترتيب من الأحدث للأقدم
                 allData.reverse(); 
                 cachedReportData = allData; 
                 renderSubjectsList(allData); 
 
             } catch (e) {
                 console.error(e);
-                container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">حدث خطأ أثناء تجميع البيانات.</div>';
+                container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">حدث خطأ في الاتصال بالسيرفر.</div>';
             }
         }
 
@@ -2209,3 +2203,4 @@
     </script> 
 </body>
 </html>
+
