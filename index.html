@@ -2102,18 +2102,27 @@ async function openReportModal() {
             document.getElementById('subjectsContainer').innerHTML = html;
         }
 
-        function openSubjectDetails(subjectName) {
+function openSubjectDetails(subjectName) {
             playClick();
             document.getElementById('currentSubjectTitle').innerText = subjectName;
-            const students = cachedReportData.filter(s => s.subject === subjectName);
+            
+            // 1. تصفية الطلاب حسب المادة المختارة
+            let students = cachedReportData.filter(s => s.subject === subjectName);
+
+            // 2. (الخطوة الجديدة) ترتيب الطلاب حسب الجروب تصاعدياً (1G1, 1G2, ...)
+            students.sort((a, b) => {
+                // ترتيب نصي ذكي (عشان 1G10 يجي بعد 1G9 مش بعد 1G1)
+                return a.group.localeCompare(b.group, undefined, {numeric: true, sensitivity: 'base'});
+            });
+
             let html = '';
             students.forEach(item => {
                 const sessionCode = item.code || "N/A";
                 const hallName = item.hall || "N/A";
+                const groupName = item.group || "Unknown"; // قراءة الجروب
                 const studentName = item.name || "غير معروف";
                 const studentID = item.uniID || "---";
                 const timeStr = item.time || "--:--";
-                const dateStr = item.date || new Date().toLocaleDateString('en-GB'); 
                 
                 html += `
                     <div class="student-detailed-card">
@@ -2122,27 +2131,33 @@ async function openReportModal() {
                                 <div class="st-name" style="font-size:14px;">${studentName}</div>
                                 <button class="btn-delete-item" onclick="deleteEntry('${studentID}', this)" style="margin-right:0;"><i class="fa-solid fa-trash"></i></button>
                             </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <div style="background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:800; border:1px solid #bae6fd;">
+                                    <i class="fa-solid fa-users-rectangle"></i> ${groupName}
+                                </div>
                                 <div class="en-font" style="font-size:12px; color:#64748b; font-weight:600;">
                                     ID: ${studentID}
                                 </div>
-                                <div class="std-hall-badge">
-                                    <i class="fa-solid fa-building-columns"></i> <span style="font-family:'Cairo', sans-serif;">${hallName}</span>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px;">
+                                    <i class="fa-solid fa-fingerprint"></i> <span class="en-font">${sessionCode}</span>
+                                </div>
+                                <div class="std-time-badge" style="margin:0;">
+                                    <i class="fa-regular fa-clock"></i> <span class="en-font">${timeStr}</span>
                                 </div>
                             </div>
-                            <div style="font-size:11px; color:#0ea5e9; font-weight:bold; background:#f0f9ff; padding:4px 8px; border-radius:6px; display:inline-block; margin-bottom:5px;">
-                                <i class="fa-solid fa-fingerprint"></i> كود: <span class="en-font">${sessionCode}</span>
-                            </div>
-                            <div style="display:flex; align-items:center;">
-                                <div class="std-time-badge">
-                                    <i class="fa-regular fa-clock"></i> 
-                                    <span class="en-font">${timeStr}</span>
-                                </div>
+                            
+                            <div style="margin-top:5px; text-align:left; font-size:11px; color:#64748b;">
+                                <i class="fa-solid fa-building-columns"></i> ${hallName}
                             </div>
                         </div>
                     </div>
                 `;
             });
+            
             document.getElementById('studentsContainer').innerHTML = html;
             document.getElementById('viewSubjects').style.transform = 'translateX(100%)';
             document.getElementById('viewStudents').style.transform = 'translateX(0)';
@@ -2203,5 +2218,6 @@ async function openReportModal() {
     </script> 
 </body>
 </html>
+
 
 
