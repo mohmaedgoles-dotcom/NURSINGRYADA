@@ -502,7 +502,7 @@
         <div class="modal-box">
             <i class="fa-solid fa-hourglass-end" style="font-size: 50px; color: #ef4444; margin-bottom: 15px; animation: pulse-red 2s infinite;"></i>
             <div class="modal-title" style="color: #ef4444;">انتهى الوقت</div>
-            <div class="modal-text" style="font-weight: bold; font-size: 15px; color: #1e293b;">
+            <div class="modal-text" style="font-weight: bold; font-size: 15px; color: #1e293b;" id="timeoutMessage">
                 في المرة القادمة سيتم حظرك
             </div>
             <button onclick="closeTimeoutModal()" class="modal-btn btn-confirm" style="background: #334155; margin-top:10px;">حسناً</button>
@@ -1048,18 +1048,17 @@
         const MASTER_REGISTRATION_LINK = "https://script.google.com/macros/s/AKfycbznfekFNnNWdJ6htdllsbPHztbL0tolOFH7V9f3KeC8L4fwCEyVYE1yM6JmyXFEv4hr/exec";
 
         const GROUP_SHEET_URLS = {};
-        // ملء الروابط تلقائياً
         for(let i=1; i<=20; i++) { GROUP_SHEET_URLS["1G"+i] = MASTER_REGISTRATION_LINK; }
         for(let i=1; i<=20; i++) { GROUP_SHEET_URLS["2G"+i] = MASTER_REGISTRATION_LINK; }
 
         const CONFIG = {
             sheetApiUrl: MASTER_REGISTRATION_LINK, 
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbz4pXwNKmy_qh5XHDWipk6h-HRouUMV7NQH2pjyfv9kTdhKnV5oIaqa7PvAJmeOXcVX/exec",
+            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwx09rtHtsefAcu-09Bn5boBsLKGpivHgFcpYcnwSQIaSLja-wRzq3PLgAHTCx2te2E/exec",
             adminPassword: "RYADANUR1",
             gps: { 
                 targetLat: 30.385839819568105,  
                 targetLong: 30.488877976075997, 
-                allowedDistanceKm: 5      
+                allowedDistanceKm: 5       
             },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
@@ -1084,7 +1083,6 @@
             try { studentsDB = JSON.parse(savedDB); } catch(e) {}
         }
         
-        // جلب أسماء الطلاب في الخلفية
         fetch(CONFIG.sheetApiUrl).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => console.log("DB Fetch Error"));
 
         let defaultSubjects = {
@@ -1118,7 +1116,7 @@
         let userLat = "", userLng = ""; 
         let lastNoseX = 0, lastNoseY = 0;
         let faceCheckInterval = null; 
-        let videoStream = null;       
+        let videoStream = null;        
         const FACE_MODELS_URL = CONFIG.modelsUrl;
         const TIMER_DURATION_FACE = 3; 
         const TIMER_CIRCUMFERENCE_FACE = 282.7;
@@ -1545,9 +1543,10 @@
 
         function startGPSWatcher() {
             if (navigator.geolocation) {
+                // استخدام enableHighAccuracy هنا أيضاً
                 geo_watch_id = navigator.geolocation.watchPosition(
                     (position) => { userLat = position.coords.latitude; userLng = position.coords.longitude; },
-                    (error) => { }, { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 }
+                    (error) => { }, { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 }
                 );
             }
         }
@@ -1579,16 +1578,36 @@
             updateUIForAttempts(); checkStoredAlerts(); 
         }
 
+        // --- Fake GPS Detection Logic ---
+        function detectFakeGPS(pos) {
+            // Fake GPS often returns implausibly high accuracy (e.g. 0, 1, or 2 meters exactly)
+            // Real GPS typically has accuracy > 3m even in best conditions.
+            if (pos.coords.accuracy < 2) return true;
+
+            // Fake GPS often has null or 0 altitude while claiming high accuracy
+            if (pos.coords.altitude === null && pos.coords.accuracy < 10) return true;
+            
+            return false;
+        }
+
         function checkLocationStrict(onSuccess) {
-            if (!userLat || !userLng) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => { userLat = pos.coords.latitude; userLng = pos.coords.longitude; checkDistance(onSuccess); },
-                        (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
-                        { enableHighAccuracy: false, maximumAge: 60000, timeout: 10000 }
-                    );
-                } else { document.getElementById('locationForceModal').style.display = 'flex'; }
-            } else { checkDistance(onSuccess); }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => { 
+                        // First check for Fake GPS
+                        if (detectFakeGPS(pos)) {
+                            showError("🚫 تم اكتشاف موقع وهمي (Fake GPS). يرجى إغلاق أي برامج تلاعب بالموقع.", false);
+                            return;
+                        }
+
+                        userLat = pos.coords.latitude; 
+                        userLng = pos.coords.longitude; 
+                        checkDistance(onSuccess); 
+                    },
+                    (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
+                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 } // Force Hardware GPS
+                );
+            } else { document.getElementById('locationForceModal').style.display = 'flex'; }
         }
 
         function checkDistance(onSuccess) {
@@ -1816,14 +1835,9 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             
+            // Re-check for Fake GPS before final submission
             if(!userLat || !userLng) {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => { userLat = pos.coords.latitude; userLng = pos.coords.longitude; submitToGoogle(); },
-                        (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
-                        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
-                    );
-                } else { document.getElementById('locationForceModal').style.display = 'flex'; }
+                checkLocationStrict(() => submitToGoogle());
                 return;
             }
 
@@ -1884,7 +1898,6 @@
                 return;
             }
 
-            // === بدء المحاولة مع التكرار الذكي & التحقق من الرد ===
             const maxRetries = 5; 
             let attempt = 0;
             let success = false;
@@ -1897,7 +1910,6 @@
                         await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000));
                     }
 
-                    // *** التعديل الجوهري: استخدام CORS والتحقق من JSON ***
                     let response = await fetch(targetUrl, { 
                         method: 'POST', 
                         mode: 'cors',  
@@ -2309,6 +2321,3 @@
     </script>
 </body>
 </html>
-
-
-
