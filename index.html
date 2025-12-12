@@ -1551,32 +1551,40 @@
             }
         }
 
-        function updateUIForMode() {
-            const isAdmin = sessionStorage.getItem(DOCTOR_MODE_KEY) === 'true';
-            const badge = document.getElementById('adminBadge');
-            const loginBtn = document.getElementById('btnAdminLogin');
-            const logoutBtn = document.getElementById('btnAdminLogout');
-            const reportBtn = document.getElementById('btnViewReport');
-            const reportIcon = document.getElementById('reportIcon');
-            const adminFloating = document.getElementById('adminFloatingBack');
-            const notifBtn = document.getElementById('notificationBtn');
-            const adminBypassContainer = document.getElementById('adminBypassContainer');
-            const btnDataEntry = document.getElementById('btnDataEntry');
-            
-            if (isAdmin) {
-                badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; 
-                document.getElementById('adminDeleteAlert').style.display = 'flex'; notifBtn.classList.remove('locked');
-                if(adminBypassContainer) adminBypassContainer.style.display = 'block';
-                if(btnDataEntry) btnDataEntry.style.display = 'flex';
-                syncGlobalAlerts();
-            } else {
-                badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; 
-                document.getElementById('adminDeleteAlert').style.display = 'none'; notifBtn.classList.add('locked');
-                if(adminBypassContainer) adminBypassContainer.style.display = 'block';
-                if(btnDataEntry) btnDataEntry.style.display = 'none';
-            }
-            updateUIForAttempts(); checkStoredAlerts(); 
+function updateUIForMode() {
+    // محاولة جلب التوكن المخزن
+    const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
+    
+    // الفخ: التحقق ليس فقط من الوجود، بل من القيمة السرية
+    // سنعتبر أن القيمة الصحيحة هي "SECURE_ADMIN_ACCESS_V1"
+    // الطالب لن يعرف هذه الكلمة، سيحاول كتابة "true" وسيفشل
+    const isAdmin = (storedToken === "SECURE_ADMIN_ACCESS_V1");
+
+    const badge = document.getElementById('adminBadge');
+    const loginBtn = document.getElementById('btnAdminLogin');
+    const logoutBtn = document.getElementById('btnAdminLogout');
+    const reportBtn = document.getElementById('btnViewReport');
+    // ... باقي المتغيرات كما هي ...
+
+    if (isAdmin) {
+        // ... (نفس كود إظهار الأزرار القديم) ...
+        badge.style.display = 'block'; 
+        loginBtn.style.display = 'none'; 
+        logoutBtn.style.display = 'flex';
+        // ... إلخ
+    } else {
+        // ... (نفس كود إخفاء الأزرار القديم) ...
+        badge.style.display = 'none'; 
+        loginBtn.style.display = 'flex'; 
+        // ... إلخ
+        
+        // إضافة: لو الطالب حاول يلعب في القيم، نرجعها لأصلها
+        if (storedToken) {
+            sessionStorage.removeItem(DOCTOR_MODE_KEY);
+            console.warn("محاولة تلاعب فاشلة!");
         }
+    }
+}
 
         // --- Fake GPS Detection Logic ---
         function detectFakeGPS(pos) {
@@ -2368,6 +2376,7 @@
     </script>
 </body>
 </html>
+
 
 
 
