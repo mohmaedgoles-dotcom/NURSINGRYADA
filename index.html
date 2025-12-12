@@ -22,7 +22,7 @@
         /* === الأساسيات === */
         #desktop-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #ef4444; z-index: 2147483647; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: 'Cairo'; }
         :root { --primary: #0ea5e9; --primary-dark: #0284c7; --text-main: #1e293b; --text-sub: #64748b; --glass-bg: rgba(255, 255, 255, 0.95); --danger: #ef4444; --success: #10b981; --warning: #f59e0b; }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         html { background-color: #e0f2fe !important; height: 100vh; overflow-y: auto; overflow-x: hidden; } 
         
         body { 
@@ -69,7 +69,7 @@
         .card-banner { width: 100%; height: 140px; background: linear-gradient(135deg, #0ea5e9, #0284c7); position: relative; border-radius: 24px 24px 0 0; overflow: hidden; z-index: 2; flex-shrink: 0; }
         .card-banner::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to top, #ffffff, transparent); }
         
-        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; overflow-y: auto; max-height: 80vh; }
+        .card-body { padding: 0 25px 30px 25px; position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; }
         .card-body-content { position: relative; flex: 1; display: flex; flex-direction: column; z-index: 5; }
         
         .hero-icon-wrapper { width: 110px; height: 110px; margin: -65px auto 20px auto; position: relative; z-index: 10; border-radius: 50%; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(255, 255, 255, 0.3), 0 0 25px rgba(14, 165, 233, 0.4); overflow: hidden; animation: float-magic 4s ease-in-out infinite alternate; }
@@ -119,8 +119,8 @@
         .notification-btn.locked::after { content: '\f023'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; bottom: -5px; right: -5px; font-size: 12px; background: #334155; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
         @keyframes shake-bell { 0% { transform: rotate(0); } 10% { transform: rotate(15deg); } 20% { transform: rotate(-15deg); } 30% { transform: rotate(10deg); } 40% { transform: rotate(-10deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
 
-        .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; position: relative; z-index: 10; }
-        .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; direction: ltr; }
+        .info-pill { background: #f1f5f9; color: var(--text-sub); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
         .info-pill span { font-family: 'Outfit', sans-serif !important; } 
         
         h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: #0f172a; }
@@ -279,9 +279,7 @@
             outline: none;
         }
 
-        /* === إصلاح القوائم المنسدلة والتفاعل === */
-        .custom-select-wrapper { position: relative; user-select: none; width: 100%; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; z-index: 15; }
-        .custom-select-wrapper.open { z-index: 20; }
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; margin-bottom: 20px; -webkit-tap-highlight-color: transparent; }
         .custom-select-label { display: block; text-align: right; margin-bottom: 8px; font-size: 13px; color: #475569; font-weight: 800; margin-right: 5px; }
         .custom-select-trigger { position: relative; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 18px 20px; font-size: 15px; font-weight: 700; color: #334155; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
         .custom-select-trigger:active { transform: scale(0.98); }
@@ -332,12 +330,12 @@
         .student-info-label { font-size: 12px; color: var(--text-sub); font-weight: 700; display: block; margin-bottom: 4px; }
         .student-info-value { font-size: 18px; font-weight: 900; color: var(--text-main); display: block; }
         #scanIDDisplay { color: var(--primary-dark); letter-spacing: 1px; font-family: 'Outfit', sans-serif !important; }
-        .qr-card-trigger { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.3s; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; z-index: 5; }
+        .qr-card-trigger { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.3s; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .qr-card-trigger:hover { background: #f1f5f9; border-color: var(--primary); }
         .qr-card-icon { width: 60px; height: 60px; background: #e0f2fe; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; animation: pulse-blue 2s infinite; }
         .qr-card-text { font-weight: 700; color: var(--text-main); font-size: 14px; }
         .qr-card-sub { font-size: 11px; color: #94a3b8; }
-        #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; margin-bottom: 15px; display: none; position: relative; background: black; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); border: 0; z-index: 10; }
+        #qr-reader { width: 100%; border-radius: 24px; overflow: hidden; margin-bottom: 15px; display: none; position: relative; background: black; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); border: 0; }
         #qr-reader video { object-fit: cover; border-radius: 24px; }
         .scan-btn { background: #3b82f6; color: white; width: 100%; padding: 12px; border-radius: 12px; border: none; font-family: 'Cairo'; font-weight: 700; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .scan-btn.scanned { background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); pointer-events: none; }
@@ -1148,6 +1146,7 @@
                 if(element) { element.style.pointerEvents = 'auto'; element.style.opacity = '1'; }
             }, 600);
         }
+
         // إنشاء معرف فريد للجهاز
         function getUniqueDeviceId() {
             let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -1222,7 +1221,11 @@
         //  نظام الحماية من التلاعب (Anti-Tamper UI) 🛡️
         // ==========================================
         function updateUIForMode() {
+            // محاولة جلب التوكن المخزن
             const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
+            
+            // 🔥 المصيدة: التحقق من "الشفرة السرية" وليس مجرد "true"
+            // إذا حاول الطالب كتابة "true" يدوياً، سيفشل الشرط
             const isAdmin = (storedToken === "SECURE_ADMIN_ACCESS_V1");
 
             const badge = document.getElementById('adminBadge');
@@ -1236,6 +1239,7 @@
             const btnDataEntry = document.getElementById('btnDataEntry');
             
             if (isAdmin) {
+                // تفعيل وضع المسؤول (للمستخدم الشرعي فقط)
                 badge.style.display = 'block'; 
                 loginBtn.style.display = 'none'; 
                 logoutBtn.style.display = 'flex'; 
@@ -1248,6 +1252,7 @@
                 if(btnDataEntry) btnDataEntry.style.display = 'flex';
                 syncGlobalAlerts();
             } else {
+                // إغلاق وضع المسؤول
                 badge.style.display = 'none'; 
                 loginBtn.style.display = 'flex'; 
                 logoutBtn.style.display = 'none'; 
@@ -1257,14 +1262,19 @@
                 adminFloating.style.display = 'none'; 
                 document.getElementById('adminDeleteAlert').style.display = 'none'; 
                 notifBtn.classList.add('locked');
-                if(adminBypassContainer) adminBypassContainer.style.display = 'none'; // إخفاء زر التجاوز للطلاب
+                if(adminBypassContainer) adminBypassContainer.style.display = 'block';
                 if(btnDataEntry) btnDataEntry.style.display = 'none';
                 
-                if (storedToken) { sessionStorage.removeItem(DOCTOR_MODE_KEY); }
+                // تنظيف أي محاولات عبث (إذا كانت القيمة موجودة ولكن خاطئة)
+                if (storedToken) {
+                    sessionStorage.removeItem(DOCTOR_MODE_KEY);
+                }
             }
             updateUIForAttempts(); checkStoredAlerts(); 
         }
-
+        // ==========================================
+        //  دالة التحقق من كلمة المرور (Server-Side) ✅
+        // ==========================================
         async function checkAdminPassword() {
             playClick();
             const inputPass = document.getElementById('adminPassword').value;
@@ -1273,10 +1283,12 @@
 
             if (!inputPass) return;
 
+            // 1. تغيير شكل الزر
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق...';
             btn.disabled = true;
 
             try {
+                // 2. إرسال الباسورد للسيرفر للتحقق
                 const response = await fetch(CONFIG.identitySheetUrl, {
                     method: 'POST',
                     mode: 'cors', 
@@ -1289,6 +1301,7 @@
 
                 const result = await response.json();
 
+                // 3. التحقق من الرد
                 if (result.status === "success") {
                     playSuccess();
                     const modal = document.getElementById('adminSuccessModal');
@@ -1296,6 +1309,7 @@
                     
                     setTimeout(() => {
                         modal.style.display = 'none';
+                        // 🔥 تخزين الشفرة السرية بدلاً من 'true'
                         sessionStorage.setItem(DOCTOR_MODE_KEY, 'SECURE_ADMIN_ACCESS_V1');
                         updateUIForMode();
                         switchScreen('screenWelcome');
@@ -1346,7 +1360,9 @@
                         showTopToast("تم تحديث التنبيهات الأمنية");
                     }
                 }
-            } catch (e) { console.error("Sync Error:", e); }
+            } catch (e) {
+                console.error("Sync Error:", e);
+            }
         }
 
         function showTopToast(msg) {
@@ -1359,6 +1375,7 @@
         function checkStoredAlerts() {
             const btn = document.getElementById('notificationBtn');
             const container = document.getElementById('alertsListContainer');
+            // استخدام الطريقة الآمنة للتحقق
             const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
             const isAdmin = (storedToken === "SECURE_ADMIN_ACCESS_V1");
             
@@ -1504,7 +1521,6 @@
             sessionStorage.removeItem(TEMP_NAME_KEY); sessionStorage.removeItem(TEMP_ID_KEY); sessionStorage.removeItem(TEMP_CODE_KEY); sessionStorage.removeItem(SESSION_END_TIME_KEY);
             document.getElementById('uniID').value = ''; document.getElementById('attendanceCode').value = ''; document.getElementById('sessionPass').value = '';
             
-            // إعادة تعيين القوائم
             const yearWrapper = document.getElementById('yearSelectWrapper');
             yearWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة --'; yearWrapper.classList.remove('open');
             yearWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected')); document.getElementById('yearSelect').value = '';
@@ -1529,20 +1545,116 @@
             checkStoredAlerts(); 
         }
 
-        // ==========================================
-        //  إصلاح مشكلة الوقت والتاريخ والقوائم  ✅
-        // ==========================================
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
+        function playClick() { document.getElementById('clickSound').play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate(10); }
+        function playSuccess() { document.getElementById('successSound').play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([50, 50, 50]); }
+        function playBeep() { document.getElementById('beepSound').play().catch(e=>{}); }
+        function convertArabicToEnglish(s) { return s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+        async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+        function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
+        
+        function getAttemptsLeft() { 
+            return 999; 
+        }
+        function decrementAttempts() { 
+            return 999; 
+        }
+        function updateUIForAttempts() { 
+            const container = document.getElementById('attemptsHeartsContainer');
+            if(container) container.innerHTML = '';
+        }
+
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
+            if (processIsActive && storedToken !== 'SECURE_ADMIN_ACCESS_V1') { 
+                checkBanStatus();
+                window.history.pushState(null, null, window.location.href); 
+            } else if (storedToken === 'SECURE_ADMIN_ACCESS_V1') { 
+                goBackToWelcome(); 
+            }
+        };
+        
+        function handleStrictPenalty() {}
+
+        window.addEventListener('beforeunload', (event) => {
+             handleStrictPenalty();
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                if (isOpeningMaps) { return; }
+                const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
+                if (processIsActive && storedToken !== 'SECURE_ADMIN_ACCESS_V1') { 
+                    location.reload(); 
+                }
+                releaseWakeLock();
+            } else { 
+                if (isOpeningMaps) { isOpeningMaps = false; }
+                if(processIsActive) requestWakeLock(); 
+            }
+        });
+
+        function checkBanStatus() { return false; }
+
+        function updateHeaderState(screenId) {
+            const wrapper = document.getElementById('heroIconWrapper');
+            const icon = document.getElementById('statusIcon');
+            wrapper.classList.remove('show-icon');
+            if (screenId !== 'screenWelcome') {
+                wrapper.classList.add('show-icon');
+                if (screenId === 'screenLoading') { icon.className = "fa-solid fa-satellite-dish hero-icon fa-spin"; icon.style.color = "var(--primary)"; }
+                else if (screenId === 'screenReadyToStart') { icon.className = "fa-solid fa-map-location-dot hero-icon"; icon.style.color = "#10b981"; icon.style.animation = "none"; }
+                else if (screenId === 'screenDataEntry') { icon.className = "fa-solid fa-user-pen hero-icon"; icon.style.color = "var(--primary)"; icon.style.animation = "none"; }
+                else if (screenId === 'screenScanQR') { icon.className = "fa-solid fa-qrcode hero-icon"; icon.style.color = "var(--primary)"; icon.style.animation = "none"; }
+                else if (screenId === 'screenFaceCheck') { 
+                    icon.className = "fa-solid fa-id-card-clip hero-icon"; 
+                    icon.style.color = "var(--primary)"; icon.style.animation = "none"; 
+                }
+                else if (screenId === 'screenSuccess') { icon.className = "fa-solid fa-check hero-icon"; icon.style.color = "#10b981"; icon.style.animation = "none"; }
+                else if (screenId === 'screenError') { icon.className = "fa-solid fa-triangle-exclamation hero-icon"; icon.style.color = "#ef4444"; icon.style.animation = "none"; }
+                else if (screenId === 'screenAdminLogin') { icon.className = "fa-solid fa-lock hero-icon"; icon.style.color = "var(--primary-dark)"; icon.style.animation = "none"; }
+            }
+        }
+
+        function switchScreen(id) {
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            const allSections = document.querySelectorAll('.section');
+            const nextScreen = document.getElementById(id);
+            allSections.forEach(el => { if (el.classList.contains('active')) el.classList.remove('active'); });
+            nextScreen.classList.add('active');
+            updateHeaderState(id);
+            updateUIForAttempts(); 
+            
+            const adminBack = document.getElementById('adminFloatingBack');
+            const storedToken = sessionStorage.getItem(DOCTOR_MODE_KEY);
+            const isAdmin = (storedToken === "SECURE_ADMIN_ACCESS_V1");
+            
+            if (isAdmin && id !== 'screenWelcome' && id !== 'screenAdminLogin') { adminBack.style.display = 'flex'; } else { adminBack.style.display = 'none'; }
+            if (!isAdmin && (id === 'screenDataEntry' || id === 'screenScanQR' || id === 'screenFaceCheck' || id === 'screenLoading')) { processIsActive = true; requestWakeLock(); } else { processIsActive = false; releaseWakeLock(); }
+        }
+
+        function openMapsToRefreshGPS() {
+            isOpeningMaps = true; 
+            const lat = CONFIG.gps.targetLat;
+            const lng = CONFIG.gps.targetLong;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            window.open(mapsUrl, '_blank');
+        }
+
         window.onload = function() {
+            // initGlobalGuard(); <-- تم حذف هذا السطر لأنه كان سبب المشكلة
+            
             updateUIForMode(); 
-            setupCustomSelects(); // تفعيل القوائم
+            setupCustomSelects();
             checkStoredAlerts(); 
             startGPSWatcher();
             renderHallOptions(); 
             
             document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
             
-            // دالة تحديث الوقت - تعمل فوراً
-            function updateDateTime() {
+            // تشغيل الوقت والتاريخ
+            setInterval(() => {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit'});
                 const dateStr = now.toLocaleDateString('en-GB'); 
@@ -1550,10 +1662,8 @@
                 const dateEl = document.getElementById('currentDate');
                 if(timeEl) timeEl.innerText = timeStr; 
                 if(dateEl) dateEl.innerText = dateStr;
-            }
-            updateDateTime(); // استدعاء فوري
-            setInterval(updateDateTime, 1000); // تحديث كل ثانية
-
+            }, 1000);
+            
             document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
         };
         
@@ -1583,6 +1693,7 @@
 
         function startGPSWatcher() {
             if (navigator.geolocation) {
+                // استخدام enableHighAccuracy هنا أيضاً
                 geo_watch_id = navigator.geolocation.watchPosition(
                     (position) => { userLat = position.coords.latitude; userLng = position.coords.longitude; },
                     (error) => { }, { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 }
@@ -1591,8 +1702,13 @@
         }
 
         function detectFakeGPS(pos) {
+            // Fake GPS often returns implausibly high accuracy (e.g. 0, 1, or 2 meters exactly)
+            // Real GPS typically has accuracy > 3m even in best conditions.
             if (pos.coords.accuracy < 2) return true;
+
+            // Fake GPS often has null or 0 altitude while claiming high accuracy
             if (pos.coords.altitude === null && pos.coords.accuracy < 10) return true;
+            
             return false;
         }
 
@@ -1600,23 +1716,25 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => { 
+                        // First check for Fake GPS
                         if (detectFakeGPS(pos)) {
-                            showToast("🚫 تم اكتشاف موقع وهمي (Fake GPS).", 3000, "#ef4444");
+                            showError("🚫 تم اكتشاف موقع وهمي (Fake GPS). يرجى إغلاق أي برامج تلاعب بالموقع.", false);
                             return;
                         }
+
                         userLat = pos.coords.latitude; 
                         userLng = pos.coords.longitude; 
                         checkDistance(onSuccess); 
                     },
                     (err) => { document.getElementById('locationForceModal').style.display = 'flex'; },
-                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 } // Force Hardware GPS
                 );
             } else { document.getElementById('locationForceModal').style.display = 'flex'; }
         }
 
         function checkDistance(onSuccess) {
             let dist = getDistanceFromLatLonInKm(userLat, userLng, CONFIG.gps.targetLat, CONFIG.gps.targetLong);
-            if (dist > CONFIG.gps.allowedDistanceKm) { showToast("🚫 أنت خارج نطاق الكلية.", 3000, "#ef4444"); return; }
+            if (dist > CONFIG.gps.allowedDistanceKm) { showError("🚫 أنت خارج نطاق الكلية. يرجى التواجد في المكان الصحيح.", false); return; }
             onSuccess();
         }
 
@@ -1839,6 +1957,7 @@
             const btn = document.getElementById('submitBtn');
             if(btn.disabled && btn.innerText.includes('جاري')) return;
             
+            // Re-check for Fake GPS before final submission
             if(!userLat || !userLng) {
                 checkLocationStrict(() => submitToGoogle());
                 return;
@@ -2078,6 +2197,95 @@
         function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; proceedToCamera(); } 
         async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
         
+        // ==========================================
+        // تعديل هام: دالة الحذف الآمنة (تطلب الباسورد) 🔒
+        // ==========================================
+        async function deleteEntry(id, subject, btn) {
+            // 1. طلب كلمة المرور من المستخدم
+            const adminPass = prompt("⛔️ تحذير أمني\nأنت تحاول حذف سجل طالب.\nمن فضلك أدخل كلمة مرور المسؤول لتأكيد العملية:");
+            
+            if (!adminPass) return; // لو ضغط Cancel
+
+            const card = btn.closest('.student-detailed-card'); 
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
+            btn.disabled = true;
+
+            try {
+                const params = new URLSearchParams();
+                params.append("action", "deleteEntry");
+                params.append("id", id);
+                params.append("subject", subject);
+                
+                // 2. إرسال الباسورد الذي كتبه المستخدم إلى السيرفر
+                params.append("password", adminPass); 
+
+                // نستخدم رابط الهوية لأنه هو السيرفر الذي يحتوي على الباسورد
+                const response = await fetch(CONFIG.identitySheetUrl, { 
+                    method: 'POST', 
+                    mode: 'cors', 
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                    body: params.toString() 
+                });
+
+                const result = await response.json();
+
+                // 3. التحقق من رد السيرفر
+                if (result.status === "deleted") {
+                    card.style.opacity = '0';
+                    setTimeout(() => { card.remove(); }, 300);
+                    showToast("✅ تم الحذف بنجاح.", 2000, '#10b981');
+                } else if (result.message === "Wrong Password") {
+                    alert("❌ خطأ: كلمة المرور غير صحيحة! تم إلغاء الحذف.");
+                } else {
+                    alert("⚠️ لم يتم العثور على الطالب.");
+                }
+
+            } catch(e) { 
+                console.error(e);
+                alert("فشل الاتصال بالسيرفر."); 
+            } finally {
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+            }
+        }
+
+        async function highlightEntry(id, subject, btn) {
+            playClick();
+            const card = btn.closest('.student-detailed-card');
+            
+            if (card.classList.contains('highlighted-red')) {
+                card.classList.remove('highlighted-red');
+            } else {
+                card.classList.add('highlighted-red');
+            }
+
+            try {
+                const params = new URLSearchParams();
+                params.append("action", "highlightUser");
+                params.append("id", id);
+                params.append("subject", subject);
+
+                fetch(MASTER_REGISTRATION_LINK, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+                    body: params.toString() 
+                });
+            } catch(e) { console.log("Highlight Error: " + e); }
+        }
+
+        async function clearAllReport() {
+            showModernConfirm("تصفيه السجل", "سيتم مسح البيانات. هل أنت متأكد؟", async function() {
+                 document.getElementById('subjectsContainer').innerHTML = '<div style="padding:20px; text-align:center;">جاري الحذف...</div>';
+                 const params = new URLSearchParams();
+                 params.append("action", "clearAll");
+                 fetch(MASTER_REGISTRATION_LINK, { method: 'POST', mode: 'no-cors', body: params });
+
+                 document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم التنظيف.</div>'; playSuccess();
+            });
+        }
+        
         function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
         function showToast(message, duration = 3000, bgColor = '#334155') { const toast = document.getElementById('toastNotification'); toast.style.backgroundColor = bgColor; toast.innerText = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, duration); }
 
@@ -2086,7 +2294,7 @@
         document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
         document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
         
-        if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
+        // if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
     </script>
     
     <script>
