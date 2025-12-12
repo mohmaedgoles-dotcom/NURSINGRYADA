@@ -2075,8 +2075,8 @@
         function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; proceedToCamera(); } 
         async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
         
-        // ==========================================
-        // تعديل: دالة التحقق من كلمة المرور (جديدة)
+// ==========================================
+        // دالة التحقق الآمنة (تتصل بالسيرفر)
         // ==========================================
         async function checkAdminPassword() {
             playClick();
@@ -2086,12 +2086,12 @@
 
             if (!inputPass) return;
 
-            // تغيير شكل الزر لإظهار التحميل
+            // 1. تغيير شكل الزر لإظهار التحميل
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق...';
             btn.disabled = true;
 
             try {
-                // إرسال الباسورد للسيرفر (identitySheetUrl)
+                // 2. إرسال الباسورد للسيرفر (شيت الهوية) للتحقق منه هناك
                 const response = await fetch(CONFIG.identitySheetUrl, {
                     method: 'POST',
                     mode: 'cors', 
@@ -2104,6 +2104,7 @@
 
                 const result = await response.json();
 
+                // 3. استقبال الرد من السيرفر
                 if (result.status === "success") {
                     playSuccess();
                     const modal = document.getElementById('adminSuccessModal');
@@ -2127,6 +2128,7 @@
                 document.getElementById('adminPassword').value = '';
                 if(navigator.vibrate) navigator.vibrate(300);
             } finally {
+                // 4. إعادة الزر لحالته الطبيعية
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
@@ -2366,5 +2368,6 @@
     </script>
 </body>
 </html>
+
 
 
