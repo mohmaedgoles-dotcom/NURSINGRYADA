@@ -1043,9 +1043,9 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
         // ==========================================
-        //  الرابط الموحد (Master Link)
+        //  الرابط الموحد (Master Link) - تم التعديل للباك اند
         // ==========================================
-        const MASTER_REGISTRATION_LINK = "https://script.google.com/macros/s/AKfycbzeMFWza-3QPqCblZ62pURByBZ3e2LwvD0PswsrRJaXpskXIsnyZ3bJp5vXzza-QtWU/exec";
+        const MASTER_REGISTRATION_LINK = "/api/sheet";
 
         const GROUP_SHEET_URLS = {};
         for(let i=1; i<=20; i++) { GROUP_SHEET_URLS["1G"+i] = MASTER_REGISTRATION_LINK; }
@@ -1053,12 +1053,12 @@
 
         const CONFIG = {
             sheetApiUrl: MASTER_REGISTRATION_LINK, 
-            identitySheetUrl: "https://script.google.com/macros/s/AKfycbwx09rtHtsefAcu-09Bn5boBsLKGpivHgFcpYcnwSQIaSLja-wRzq3PLgAHTCx2te2E/exec",
-            adminPassword: "RYADANUR1",
+            identitySheetUrl: "/api/sheet",
+            // تم حذف كلمة السر من هنا للأمان
             gps: { 
                 targetLat: 30.385839819568105,  
                 targetLong: 30.488877976075997, 
-                allowedDistanceKm: 5       
+                allowedDistanceKm: 5        
             },
             modelsUrl: 'https://justadudewhohacks.github.io/face-api.js/models'
         };
@@ -2074,13 +2074,38 @@
         async function stopCameraSafely() { if(html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch(e) {} } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
         function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; proceedToCamera(); } 
         async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
-        function checkAdminPassword() { 
+        
+        // --- دالة التحقق من المسؤول (معدلة) ---
+        async function checkAdminPassword() { 
             playClick(); 
-            if (document.getElementById('adminPassword').value === CONFIG.adminPassword) { 
-                playSuccess(); const modal = document.getElementById('adminSuccessModal'); modal.style.display = 'flex';
-                setTimeout(() => { modal.style.display = 'none'; sessionStorage.setItem(DOCTOR_MODE_KEY, 'true'); updateUIForMode(); switchScreen('screenWelcome'); }, 2000);
-            } else { document.getElementById('adminAlert').innerText = "❌ خطأ"; document.getElementById('adminAlert').style.display = 'block'; document.getElementById('adminPassword').value = ''; } 
+            const inputPass = document.getElementById('adminPassword').value;
+
+            try {
+                // نرسل كلمة السر للسيرفر ليفحصها
+                const response = await fetch(`/api/login?password=${inputPass}`);
+                const data = await response.json();
+
+                if (data.success) { 
+                    playSuccess(); 
+                    const modal = document.getElementById('adminSuccessModal'); 
+                    modal.style.display = 'flex';
+                    setTimeout(() => { 
+                        modal.style.display = 'none'; 
+                        sessionStorage.setItem(DOCTOR_MODE_KEY, 'true'); 
+                        updateUIForMode(); 
+                        switchScreen('screenWelcome'); 
+                    }, 2000);
+                } else { 
+                    document.getElementById('adminAlert').innerText = "❌ خطأ"; 
+                    document.getElementById('adminAlert').style.display = 'block'; 
+                    document.getElementById('adminPassword').value = ''; 
+                } 
+            } catch (e) {
+                console.error(e);
+                alert("حدث خطأ في الاتصال");
+            }
         }
+
         function showError(msg, isPermanent = false) { if(countdownInterval) clearInterval(countdownInterval); document.getElementById('errorMsg').innerHTML = msg; const retryBtn = document.getElementById('retryBtn'); if(isPermanent) retryBtn.style.display = 'none'; else { retryBtn.style.display = 'inline-block'; retryBtn.onclick = function() { location.reload(); }; } switchScreen('screenError'); if(navigator.vibrate) navigator.vibrate(300); }
         function performLogout() { playClick(); sessionStorage.removeItem(DOCTOR_MODE_KEY); location.reload(); }
         function openLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'flex'; }
@@ -2243,7 +2268,7 @@
 
                     await fetch(MASTER_REGISTRATION_LINK, { 
                         method: 'POST', 
-                        mode: 'no-cors', // هنا نستخدم no-cors للسرعة لأننا لا نحتاج رد معقد، الحذف سيتم
+                        mode: 'cors', 
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                         body: params.toString() 
                     });
@@ -2280,7 +2305,7 @@
 
                 fetch(MASTER_REGISTRATION_LINK, { 
                     method: 'POST', 
-                    mode: 'no-cors', 
+                    mode: 'cors', 
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
                     body: params.toString() 
                 });
@@ -2293,7 +2318,7 @@
                  // منطق الحذف الشامل
                  const params = new URLSearchParams();
                  params.append("action", "clearAll");
-                 fetch(MASTER_REGISTRATION_LINK, { method: 'POST', mode: 'no-cors', body: params });
+                 fetch(MASTER_REGISTRATION_LINK, { method: 'POST', mode: 'cors', body: params });
 
                  document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم التنظيف.</div>'; playSuccess();
             });
@@ -2321,4 +2346,3 @@
     </script>
 </body>
 </html>
-
