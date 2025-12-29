@@ -852,18 +852,19 @@ const db = getFirestore(app);
         document.getElementById('reportDateDisplay').innerText = dateStr;
         
         const container = document.getElementById('subjectsContainer');
-        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري تحديث السجل لحظياً...</div></div>`;
+        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري الاتصال بالسيرفر...</div></div>`;
 
         if (unsubscribeReport) unsubscribeReport();
 
         try {
+            // الاستعلام
             const q = query(
                 collection(db, "attendance"), 
                 where("date", "==", dateStr), 
                 orderBy("timestamp", "desc")
             );
 
-            // خلاص شلنا الـ import من هنا لأنه بقى فوق خالص
+            // بدء الاستماع اللحظي
             unsubscribeReport = onSnapshot(q, (querySnapshot) => {
                 let allData = [];
                 querySnapshot.forEach((doc) => {
@@ -887,12 +888,13 @@ const db = getFirestore(app);
                     renderSubjectsList(allData);
                 }
             }, (error) => {
-                console.error("Sync Error:", error);
-                container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">حدث خطأ في جلب البيانات اللحظية.</div>';
+                console.error("Firebase Sync Error:", error);
+                container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">❌ خطأ في الصلاحيات أو الاتصال.<br><small>${error.message}</small></div>`;
             });
 
         } catch (e) {
-            console.error("Report Error:", e);
+            console.error("General Report Error:", e);
+            container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">⚠️ فشل فتح السجل.</div>`;
         }
     }
 
