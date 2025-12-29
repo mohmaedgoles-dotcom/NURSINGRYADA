@@ -2,8 +2,7 @@
 //  1. استيراد مكتبات Firebase (العقل المدبر)
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // إعدادات Firebase الخاصة بك
 const firebaseConfig = {
   apiKey: "AIzaSyAn4rmd8AfTf6oBvrDewqpeK9x1-mgksyI",
@@ -849,41 +848,51 @@ const db = getFirestore(app);
         showSubjectsView();
 
         const now = new Date();
-        const d = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
-        document.getElementById('reportDateDisplay').innerText = d;
+        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
+        document.getElementById('reportDateDisplay').innerText = dateStr;
         
         const container = document.getElementById('subjectsContainer');
-        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري جلب سجلات اليوم...</div></div>`;
+        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري تحديث السجل لحظياً...</div></div>`;
+
+        if (unsubscribeReport) unsubscribeReport();
 
         try {
-            // READ FROM FIRESTORE
-            const q = query(collection(db, "attendance"), where("date", "==", d), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            
-            let allData = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                allData.push({
-                    uniID: data.id,
-                    subject: data.subject,
-                    time: data.timestamp.toDate().toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute:'2-digit'}),
-                    group: data.group,
-                    name: data.name,
-                    hall: data.hall,
-                    code: data.session_code
+            const q = query(
+                collection(db, "attendance"), 
+                where("date", "==", dateStr), 
+                orderBy("timestamp", "desc")
+            );
+
+            // خلاص شلنا الـ import من هنا لأنه بقى فوق خالص
+            unsubscribeReport = onSnapshot(q, (querySnapshot) => {
+                let allData = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allData.push({
+                        uniID: data.id,
+                        subject: data.subject,
+                        time: data.time_str || (data.timestamp ? data.timestamp.toDate().toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'}) : '--:--'),
+                        group: data.group,
+                        name: data.name,
+                        hall: data.hall,
+                        code: data.session_code
+                    });
                 });
+
+                cachedReportData = allData;
+
+                if (allData.length === 0) {
+                    container.innerHTML = `<div class="empty-state" style="margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>لا توجد سجلات اليوم (${dateStr}).</div>`;
+                } else {
+                    renderSubjectsList(allData);
+                }
+            }, (error) => {
+                console.error("Sync Error:", error);
+                container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">حدث خطأ في جلب البيانات اللحظية.</div>';
             });
 
-            if (allData.length === 0) {
-                container.innerHTML = `<div class="empty-state" style="margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>لا توجد سجلات مسجلة بتاريخ اليوم (${d}).</div>`;
-                return;
-            }
-
-            cachedReportData = allData; renderSubjectsList(allData); 
-
         } catch (e) {
-            console.error("Firebase Read Error:", e);
-            container.innerHTML = '<div style="color:#ef4444; text-align:center; padding:30px;">حدث خطأ في الاتصال بالسيرفر. تأكد من الإنترنت.</div>';
+            console.error("Report Error:", e);
         }
     }
 
