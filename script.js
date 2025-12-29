@@ -842,6 +842,7 @@ const db = getFirestore(app);
     // ==========================================
     //  FIREBASE: READ REPORTS (REAL-TIME)
     // ==========================================
+    let unsubscribeReport = null; // أضف هذا السطر هنا بالضبط قبل الدالة
     async function openReportModal() {
         playClick();
         document.getElementById('reportModal').style.display = 'flex';
