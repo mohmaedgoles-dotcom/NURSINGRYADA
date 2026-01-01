@@ -842,65 +842,67 @@ const db = getFirestore(app);
     //  FIREBASE: READ REPORTS (REAL-TIME)
     // ==========================================
     let unsubscribeReport = null; // أضف هذا السطر هنا بالضبط قبل الدالة
-    async function openReportModal() {
-        playClick();
-        document.getElementById('reportModal').style.display = 'flex';
-        showSubjectsView();
+ // ==========================================
+// 1. دالة فتح السجل وجلب البيانات
+// ==========================================
+async function openReportModal() {
+    playClick();
+    document.getElementById('reportModal').style.display = 'flex';
+    showSubjectsView();
 
-        const now = new Date();
-        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
-        document.getElementById('reportDateDisplay').innerText = dateStr;
-        
-        const container = document.getElementById('subjectsContainer');
-        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري الاتصال بالسيرفر...</div></div>`;
+    const now = new Date();
+    const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
+    document.getElementById('reportDateDisplay').innerText = dateStr;
+    
+    const container = document.getElementById('subjectsContainer');
+    container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري الاتصال بالسيرفر...</div></div>`;
 
-        if (unsubscribeReport) unsubscribeReport();
+    if (window.unsubscribeReport) window.unsubscribeReport();
 
-        try {
-            // الاستعلام
-            const q = query(
-                collection(db, "attendance"), 
-                where("date", "==", dateStr), 
-                orderBy("timestamp", "desc")
-            );
+    try {
+        const q = query(
+            collection(db, "attendance"), 
+            where("date", "==", dateStr), 
+            orderBy("timestamp", "desc")
+        );
 
-            // بدء الاستماع اللحظي
-            unsubscribeReport = onSnapshot(q, (querySnapshot) => {
-                let allData = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    allData.push({
-                        docId: doc.id,
-                        uniID: data.id,
-                        subject: data.subject,
-                        time: data.time_str || (data.timestamp ? data.timestamp.toDate().toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'}) : '--:--'),
-                        group: data.group,
-                        name: data.name,
-                        hall: data.hall,
-                        code: data.session_code
-                    });
+        window.unsubscribeReport = onSnapshot(q, (querySnapshot) => {
+            let allData = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                allData.push({
+                    docId: doc.id,
+                    uniID: data.id,
+                    subject: data.subject,
+                    time: data.time_str || '--:--',
+                    group: data.group,
+                    name: data.name,
+                    hall: data.hall,
+                    code: data.session_code
                 });
-
-                // التعديل السحري هنا: ربط البيانات بالنافذة العالمية
-                window.cachedReportData = allData; 
-
-                if (allData.length === 0) {
-                    container.innerHTML = `<div class="empty-state">لا توجد سجلات اليوم.</div>`;
-                } else {
-                    renderSubjectsList(allData);
-                }
             });
 
-        } catch (e) {
-            console.error("General Report Error:", e);
-            container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">⚠️ فشل فتح السجل.</div>`;
-        }
-    }
+            // تحديث المتغيرات عشان الأسماء تظهر
+            window.cachedReportData = allData; 
+            cachedReportData = allData; 
 
-    function renderSubjectsList(data) {
+            if (allData.length === 0) {
+                container.innerHTML = `<div class="empty-state">لا توجد سجلات اليوم.</div>`;
+            } else {
+                renderSubjectsList(allData);
+            }
+        });
+
+    } catch (e) {
+        console.error("General Report Error:", e);
+        container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">⚠️ فشل فتح السجل.</div>`;
+    }
+}
+
+function renderSubjectsList(data) {
     const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
     let html = '';
-    
+
     if (subjects.length === 0) {
         document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">لا توجد سجلات.</div>';
         return;
@@ -909,28 +911,39 @@ const db = getFirestore(app);
     subjects.forEach(subject => {
         const count = data.filter(i => i.subject === subject).length;
         
-        // الكود الجديد:
-        // 1. الزرار بيستدعي exportAttendanceSheet (الدالة الجديدة)
-        // 2. التصميم متناسق مع باقي الكروت
         html += `
-        <div class="subject-big-card" onclick="openSubjectDetails('${subject}')">
-            <div style="display:flex; align-items:center;">
-                <div class="sub-card-info">
-                    <h3>${subject}</h3>
-                    <span><i class="fa-solid fa-users"></i> إجمالي الحضور: ${count}</span>
-                </div>
+        <div class="subject-big-card" onclick="openSubjectDetails('${subject}')" 
+             style="display: flex; flex-direction: column; padding: 15px 20px; gap: 12px; margin-bottom: 12px;">
+
+            <div style="width: 100%; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 17px; color: #1e293b; font-weight: 800; text-align: right; line-height: 1.5;">
+                    ${subject}
+                </h3>
             </div>
-            
-            <div style="display:flex; align-items:center; gap:10px;">
-                <button onclick="event.stopPropagation(); exportAttendanceSheet('${subject}')" class="btn-download-excel" title="تصدير كشف كامل">
-                    <i class="fa-solid fa-file-excel"></i>
-                </button>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 
-                <div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: #e0f2fe; color: #0284c7; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span style="font-size: 14px; color: #64748b; font-weight: 700;">${count} طالب</span>
+                </div>
+
+                <button onclick="event.stopPropagation(); exportAttendanceSheet('${subject}')" 
+                        title="تصدير شيت إكسيل"
+                        style="background: #ecfdf5; color: #047857; border: 1px solid #10b981; 
+                               width: 42px; height: 42px; border-radius: 12px; 
+                               display: flex; align-items: center; justify-content: center; 
+                               cursor: pointer; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15);">
+                    <i class="fa-solid fa-file-excel" style="font-size: 20px;"></i>
+                </button>
+
             </div>
+
         </div>`;
     });
-    
+
     document.getElementById('subjectsContainer').innerHTML = html;
 }
 
@@ -1300,12 +1313,6 @@ window.exportSubjectToExcel = function(subjectName) {
 // جعل الدالة متاحة للضغط
 window.exportSubjectToExcel = exportSubjectToExcel;
 function playClick() {
-    try {
-        const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-        audio.play().catch(e => console.log("Audio play blocked"));
-    } catch (e) {
-        console.log("Audio not supported");
-    }
 }
 // ==========================================
 //  تصدير الحضور لملف Excel باسم المادة
@@ -1537,109 +1544,518 @@ if (confirmBtn) {
         closeModernConfirm(); // إغلاق النافذة
     };
 }
-// ==========================================
-//  تصدير شيت الحضور والغياب الذكي
-// ==========================================
 window.exportAttendanceSheet = async function(subjectName) {
     playClick();
+
+    // ==========================================
+    // 1. إصلاح مشكلة subjectsData (تعريف المواد داخلياً)
+    // ==========================================
     
-    // 1. تصفية الحاضرين في هذه المادة من البيانات المحملة حالياً
-    const attendees = cachedReportData.filter(s => s.subject === subjectName);
-    
-    if (attendees.length === 0) {
-        showToast("لا يوجد حضور لتصديره", 3000, "#f59e0b");
-        return;
+    // نحاول نجيب المواد من التخزين عشان لو أنت ضفت مواد جديدة
+    let subjectsConfig = JSON.parse(localStorage.getItem('subjectsData_v4'));
+
+    // لو مش موجودة، نستخدم القائمة الافتراضية (عشان الكود ميعطلش)
+    if (!subjectsConfig) {
+        subjectsConfig = {
+            "first_year": ["اساسيات تمريض 1 نظري", "اساسيات تمريض 1 عملي", "تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
+            "second_year": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"],
+            "third_year": [],
+            "fourth_year": []
+        };
     }
 
-    const toastID = showToast("⏳ جاري تحضير ملف الإكسيل (حضور + غياب)...", 10000, "#3b82f6");
+    // ==========================================
+    // 2. التحديد التلقائي للفرقة
+    // ==========================================
+    let TARGET_LEVEL = "1"; // قيمة افتراضية
+
+    // بنسأل القائمة اللي جهزناها فوق: المادة دي تبع سنة كام؟
+    if (subjectsConfig["first_year"] && subjectsConfig["first_year"].includes(subjectName)) {
+        TARGET_LEVEL = "1";
+    } else if (subjectsConfig["second_year"] && subjectsConfig["second_year"].includes(subjectName)) {
+        TARGET_LEVEL = "2";
+    } else if (subjectsConfig["third_year"] && subjectsConfig["third_year"].includes(subjectName)) {
+        TARGET_LEVEL = "3";
+    } else if (subjectsConfig["fourth_year"] && subjectsConfig["fourth_year"].includes(subjectName)) {
+        TARGET_LEVEL = "4";
+    }
+
+    const toastID = showToast(`⏳ جاري استخراج شيت (حضور + غياب) للفرقة ${TARGET_LEVEL}...`, 15000, "#3b82f6");
 
     try {
-        // 2. معرفة الفرقة الدراسية (بناءً على أول طالب حاضر)
-        // نفترض أن الطالب المسجل يحتوي على حقل academic_level في قاعدة البيانات
-        // سنقوم بجلب بيانات طالب واحد للتأكد من الفرقة
-        const sampleID = attendees[0].uniID;
-        const studentDoc = await getDoc(doc(db, "students", sampleID));
+        // 3. جلب الحاضرين
+        const attendees = cachedReportData.filter(s => s.subject === subjectName);
+        const attendeesMap = {};
+        attendees.forEach(a => attendeesMap[a.uniID] = a);
+
+        // 4. جلب دفعة الغياب بالكامل (بناءً على الفرقة اللي حددناها)
+        const q = query(collection(db, "students"), where("academic_level", "==", TARGET_LEVEL));
+        const querySnapshot = await getDocs(q);
         
-        let targetLevel = null;
-        if (studentDoc.exists()) {
-            targetLevel = studentDoc.data().academic_level;
-        }
-
-        if (!targetLevel) {
-            // لو معرفناش نحدد الفرقة، نستخدم الحضور فقط
-            alert("⚠️ تنبيه: لم يتم تحديد الفرقة الدراسية لهذا الشيت. سيتم تصدير الحاضرين فقط.");
-            // (يمكنك هنا استدعاء دالة تصدير بسيطة للحاضرين فقط لو أردت)
-            targetLevel = "UNKNOWN"; 
-        }
-
-        // 3. جلب "جميع" طلاب هذه الفرقة من قاعدة البيانات
-        let allStudents = [];
-        if (targetLevel !== "UNKNOWN") {
-            const q = query(collection(db, "students"), where("academic_level", "==", targetLevel));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                allStudents.push(doc.data());
+        let allStudentsInLevel = [];
+        querySnapshot.forEach((doc) => {
+            const s = doc.data();
+            allStudentsInLevel.push({
+                id: s.id,
+                name: s.name,
+                level: s.academic_level,
+                isMainList: true 
             });
-        } else {
-            // في حالة عدم معرفة الفرقة، نعتبر الحاضرين هم الكل
-            allStudents = attendees.map(a => ({ id: a.uniID, name: a.name }));
+        });
+
+        let finalReport = [];
+
+        // أ) معالجة أبناء الدفعة الأصليين
+        allStudentsInLevel.forEach(student => {
+            const attendanceRecord = attendeesMap[student.id];
+            
+            if (attendanceRecord) {
+                // حاضر
+                finalReport.push({
+                    ...student,
+                    status: "✅ حاضر",
+                    time: attendanceRecord.time,
+                    group: attendanceRecord.group,
+                    rowColor: "" 
+                });
+                delete attendeesMap[student.id];
+            } else {
+                // غائب
+                finalReport.push({
+                    ...student,
+                    status: "❌ غائب",
+                    time: "--:--",
+                    group: "--",
+                    rowColor: "style='color: #ef4444; background-color: #fef2f2;'" 
+                });
+            }
+        });
+
+        // ب) معالجة التخلفات (المتبقيين)
+        for (let intruderID in attendeesMap) {
+            const intruder = attendeesMap[intruderID];
+            let realLevel = "تخلفات"; 
+            try {
+                 const docRef = doc(db, "students", intruderID);
+                 const docSnap = await getDoc(docRef);
+                 if(docSnap.exists()) realLevel = docSnap.data().academic_level;
+            } catch(e){}
+
+            finalReport.push({
+                id: intruder.uniID,
+                name: intruder.name,
+                level: realLevel,
+                status: "✅ حاضر",
+                time: intruder.time,
+                group: intruder.group,
+                rowColor: "style='background-color: #fef08a; color: #854d0e; font-weight:bold;'" 
+            });
         }
 
-        // 4. دمج القائمتين (تحديد من حضر ومن غاب)
-        let finalReport = allStudents.map(student => {
-            // هل هذا الطالب موجود في قائمة الحاضرين؟
-            const attendanceRecord = attendees.find(a => a.uniID == student.id); // مقارنة مرنة
-            
-            return {
-                name: student.name,
-                id: student.id,
-                status: attendanceRecord ? "✅ حاضر" : "❌ غائب",
-                time: attendanceRecord ? attendanceRecord.time : "--:--",
-                group: student.group || attendanceRecord?.group || "--"
-            };
+        // 5. الترتيب الأبجدي
+        finalReport.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+        // 6. بناء ملف الإكسيل
+        let tableContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    table { border-collapse: collapse; width: 100%; direction: rtl; }
+                    th { background-color: #1e293b; color: white; border: 1px solid #000; padding: 10px; }
+                    td { border: 1px solid #000; padding: 5px; text-align: center; }
+                </style>
+            </head>
+            <body>
+            <h3>كشف حضور وغياب مادة: ${subjectName} (الفرقة ${TARGET_LEVEL})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>الاسم</th>
+                        <th>الكود الجامعي</th>
+                        <th>الفرقة</th>
+                        <th>الحالة</th>
+                        <th>وقت الحضور</th>
+                        <th>المجموعة</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        finalReport.forEach((row, index) => {
+            tableContent += `
+                <tr ${row.rowColor}>
+                    <td>${index + 1}</td>
+                    <td>${row.name}</td>
+                    <td style='mso-number-format:"\\@"'>${row.id}</td>
+                    <td>${row.level}</td>
+                    <td>${row.status}</td>
+                    <td>${row.time}</td>
+                    <td>${row.group}</td>
+                </tr>
+            `;
         });
 
-        // 5. الترتيب: الحاضرون أولاً، ثم الغائبون
-        finalReport.sort((a, b) => {
-            if (a.status === b.status) {
-                return a.name.localeCompare(b.name, 'ar'); // ترتيب أبجدي داخل كل مجموعة
-            }
-            return a.status === "✅ حاضر" ? -1 : 1; // الحاضر يظهر قبل الغائب
-        });
+        tableContent += `</tbody></table></body></html>`;
 
-        // 6. إنشاء ملف CSV (يدعم العربية)
-        let csvContent = "\uFEFF"; // BOM لجعل الإكسيل يقرأ العربي صح
-        csvContent += "الاسم,الكود الجامعي,الحالة,وقت التسجيل,المجموعة\n"; // العناوين
-
-        finalReport.forEach(row => {
-            // تنظيف البيانات من الفواصل عشان ملف CSV ميبوظش
-            const cleanName = row.name.replace(/,/g, " ");
-            const cleanID = `"${row.id}"`; // وضع الكود بين علامات تنصيص لمنع تحويله لرقم علمي
-            csvContent += `${cleanName},${cleanID},${row.status},${row.time},${row.group}\n`;
-        });
-
-        // 7. تنزيل الملف
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        // 7. التنزيل
+        const blob = new Blob([tableContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
-        
-        // تسمية الملف: المادة - التاريخ
         const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        
         link.setAttribute("href", url);
-        link.setAttribute("download", `${subjectName}_${dateStr}_كشف_كامل.csv`);
+        link.setAttribute("download", `${subjectName}_الفرقة_${TARGET_LEVEL}_${dateStr}.xls`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        // إخفاء التنبيه
-        const toast = document.getElementById('toastNotification');
-        if(toast) toast.style.display = 'none';
-        
         playSuccess();
+        if(document.getElementById('toastNotification')) document.getElementById('toastNotification').style.display = 'none';
 
     } catch (error) {
-        console.error("Export Error:", error);
-        alert("حدث خطأ أثناء التصدير: " + error.message);
+        console.error(error);
+        alert("حدث خطأ: " + error.message);
+    }
+};
+
+// ==========================================
+// حل مشكلة showToast ورسائل التنبيه
+// ==========================================
+if (typeof showToast === 'undefined') {
+    window.showToast = function(message, duration = 3000, bgColor = '#334155') { 
+        const toast = document.getElementById('toastNotification'); 
+        if(toast) {
+            toast.style.backgroundColor = bgColor; 
+            toast.innerText = message; 
+            toast.style.display = 'block'; 
+            setTimeout(() => { toast.style.display = 'none'; }, duration); 
+        } else {
+            // بديل لو العنصر مش موجود يظهر رسالة عادية
+            console.log("تنبيه: " + message);
+        }
+    };
+}
+// ==========================================
+// تعريف دوال الصوت عشان تمنع الأخطاء
+// ==========================================
+window.playSuccess = function() {
+    // دالة فارغة: عشان الكود ميعطلش لما يحاول يشغل صوت
+    console.log("تمت العملية بنجاح ✅");
+};
+
+window.playClick = function() {
+    // دالة فارغة: عشان الكود ميعطلش عند النقر
+};
+
+window.playBeep = function() {
+    // دالة فارغة
+};
+// ============================================================
+//  منطقة الأرشيف الذكي (Auto-Complete)
+// ============================================================
+
+// 1. قائمة المواد (المرجع)
+const ARCHIVE_SUBJECTS = {
+    "1": ["اساسيات تمريض 1 نظري", "اساسيات تمريض 1 عملي", "تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
+    "2": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"],
+    "3": [],
+    "4": []
+};
+
+// 2. دالة تحديث الاقتراحات (بتشتغل لما تختار الفرقة)
+window.updateArchiveSubjects = function() {
+    const level = document.getElementById('archiveLevelSelect').value;
+    const dataList = document.getElementById('subjectsList'); // القائمة الخفية
+    const inputField = document.getElementById('archiveSubjectInput'); // مربع الكتابة
+    
+    // تفريغ الاقتراحات القديمة وتفريغ خانة الكتابة
+    dataList.innerHTML = '';
+    inputField.value = ''; 
+    
+    if (!level || !ARCHIVE_SUBJECTS[level]) return;
+
+    // إضافة المواد كـ اقتراحات
+    ARCHIVE_SUBJECTS[level].forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub; // القيمة اللي هتتكتب
+        dataList.appendChild(option);
+    });
+};
+
+// 3. دالة التحميل (تم إصلاح سبب رسالة الخطأ)
+window.downloadHistoricalSheet = async function() {
+    playClick();
+
+    // جلب البيانات من المدخلات الجديدة
+    const level = document.getElementById('archiveLevelSelect').value;
+    // هنا التغيير: بنجيب القيمة من مربع الكتابة مش القائمة
+    const subjectName = document.getElementById('archiveSubjectInput').value.trim(); 
+    const rawDate = document.getElementById('historyDateInput').value;
+
+    // التحقق من البيانات
+    if (!level) {
+        showToast("⚠️ يرجى اختيار الفرقة أولاً", 3000, "#f59e0b");
+        return;
+    }
+    if (!subjectName) {
+        showToast("⚠️ يرجى كتابة أو اختيار اسم المادة", 3000, "#f59e0b");
+        return;
+    }
+    if (!rawDate) {
+        showToast("⚠️ يرجى اختيار التاريخ", 3000, "#f59e0b");
+        return;
+    }
+
+    // باقي الكود زي ما هو (تحويل التاريخ والبحث)
+    const formattedDate = rawDate.split("-").reverse().join("/");
+    const btn = document.querySelector('#attendanceRecordsModal .btn-main');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري البحث...';
+
+    try {
+        // البحث في الداتابيز
+        const attQuery = query(collection(db, "attendance"), where("date", "==", formattedDate), where("subject", "==", subjectName));
+        const attSnap = await getDocs(attQuery);
+        
+        if (attSnap.empty) {
+            showToast(`❌ مفيش بيانات لمادة (${subjectName}) يوم ${formattedDate}`, 4000, "#ef4444");
+            btn.innerHTML = oldText;
+            return;
+        }
+
+        const attendeesMap = {};
+        attSnap.forEach(d => { const data = d.data(); attendeesMap[data.id] = data; });
+
+        const stQuery = query(collection(db, "students"), where("academic_level", "==", level));
+        const stSnap = await getDocs(stQuery);
+
+        // بناء ملف الإكسيل (CSV)
+        let csvContent = "\uFEFFالاسم,الكود,الحالة,الوقت,المجموعة\n";
+
+        stSnap.forEach(doc => {
+            const s = doc.data();
+            if (attendeesMap[s.id]) {
+                csvContent += `${s.name},"${s.id}",✅ حاضر,${attendeesMap[s.id].time_str || '-'},${attendeesMap[s.id].group || '-'}\n`;
+                delete attendeesMap[s.id];
+            } else {
+                csvContent += `${s.name},"${s.id}",❌ غائب,-,-\n`;
+            }
+        });
+
+        for (let id in attendeesMap) {
+            const intruder = attendeesMap[id];
+            csvContent += `${intruder.name},"${intruder.id}",⚠️ حاضر (تخلفات),${intruder.time_str || '-'},${intruder.group || '-'}\n`;
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Archive_${subjectName}_${formattedDate.replace(/\//g,'-')}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        playSuccess();
+        document.getElementById('attendanceRecordsModal').style.display = 'none';
+
+    } catch (e) {
+        console.error(e);
+        alert("حدث خطأ: " + e.message);
+    } finally {
+        btn.innerHTML = oldText;
+    }
+};
+// ============================================================
+//  نظام البحث الذكي المتطور (Google Style) 🧠
+// ============================================================
+
+const SEARCH_DB = {
+    "1": ["اساسيات تمريض 1 نظري", "اساسيات تمريض 1 عملي", "تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
+    "2": ["تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "تمريض حالات حرجة 1 نظرى", "تمريض حالات حرجة 1 عملى", "امراض باطنة", "باثولوجى", "علم الأدوية", "الكتابة التقنية"],
+    "3": [],
+    "4": []
+};
+
+// دالة توحيد الحروف (السر كله هنا)
+function normalizeText(text) {
+    if (!text) return "";
+    return text.toString()
+        .replace(/[أإآ]/g, 'ا')  // الألفات
+        .replace(/ة/g, 'ه')      // التاء المربوطة
+        .replace(/ى/g, 'ي');     // الياء
+}
+
+// تعديل دالة البحث الذكي (عشان ما تمسحش الكلام)
+window.smartSubjectSearch = function() {
+    const input = document.getElementById('archiveSubjectInput');
+    const box = document.getElementById('suggestionBox');
+    const level = document.getElementById('archiveLevelSelect').value;
+
+    // لو مفيش فرقة، نخفي القائمة بس وما نمسحش الكلام
+    if (!level) {
+        if(box) box.style.display = 'none';
+        return; 
+    }
+
+    const query = normalizeText(input.value); 
+    const list = SEARCH_DB[level] || [];
+    
+    box.innerHTML = ''; 
+    let hasResults = false;
+
+    list.forEach(subject => {
+        if (normalizeText(subject).includes(query)) {
+            hasResults = true;
+            const item = document.createElement('div');
+            item.innerText = subject;
+            item.style.cssText = "padding:10px; cursor:pointer; border-bottom:1px solid #f1f5f9; color:#334155; transition:0.2s;";
+            
+            item.onmouseover = function() { this.style.backgroundColor = "#f0f9ff"; };
+            item.onmouseout = function() { this.style.backgroundColor = "white"; };
+            
+            item.onclick = function() {
+                input.value = subject;
+                box.style.display = 'none';
+            };
+
+            box.appendChild(item);
+        }
+    });
+
+    // إظهار الصندوق فقط لو فيه نتايج وفيه كلام مكتوب
+    if (hasResults && query.length > 0) {
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+};
+
+// 2. دالة مسح الخانة عند تغيير الفرقة
+window.clearSearchBox = function() {
+    document.getElementById('archiveSubjectInput').value = '';
+    document.getElementById('suggestionBox').style.display = 'none';
+};
+
+// 3. إغلاق القائمة لو ضغطت في أي مكان بره
+document.addEventListener('click', function(e) {
+    const box = document.getElementById('suggestionBox');
+    const input = document.getElementById('archiveSubjectInput');
+    if (e.target !== box && e.target !== input) {
+        if(box) box.style.display = 'none';
+    }
+});
+
+// ==========================================
+// دالة التحميل (زي ما هي بدون تعديل)
+// ==========================================
+window.downloadHistoricalSheet = async function() {
+    playClick();
+    const level = document.getElementById('archiveLevelSelect').value;
+    const subjectName = document.getElementById('archiveSubjectInput').value; // هنا بناخد من الـ input
+    const rawDate = document.getElementById('historyDateInput').value;
+
+    if (!level || !subjectName || !rawDate) { 
+        showToast("⚠️ البيانات ناقصة", 3000, "#f59e0b"); return; 
+    }
+    
+    const formattedDate = rawDate.split("-").reverse().join("/");
+    const btn = document.querySelector('#attendanceRecordsModal .btn-main');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = 'Wait...';
+
+    try {
+        const attQuery = query(collection(db, "attendance"), where("date", "==", formattedDate), where("subject", "==", subjectName));
+        const attSnap = await getDocs(attQuery);
+        
+        if (attSnap.empty) { 
+            showToast("❌ لا توجد بيانات", 3000, "#ef4444"); 
+            btn.innerHTML = oldText; return; 
+        }
+
+        const attendeesMap = {};
+        attSnap.forEach(d => attendeesMap[d.data().id] = d.data());
+
+        const stQuery = query(collection(db, "students"), where("academic_level", "==", level));
+        const stSnap = await getDocs(stQuery);
+        
+        let report = [];
+        stSnap.forEach(doc => {
+            const s = doc.data();
+            if (attendeesMap[s.id]) {
+                report.push({name: s.name, id: s.id, st: "✅ حاضر", bg: ""});
+                delete attendeesMap[s.id];
+            } else {
+                report.push({name: s.name, id: s.id, st: "❌ غائب", bg: "style='background:#fef2f2; color:red'"});
+            }
+        });
+        
+        for (let id in attendeesMap) report.push({name: attendeesMap[id].name, id: id, st: "✅ حاضر (تخلفات)", bg: "style='background:#fef08a'"});
+
+        let csv = `\uFEFFالاسم,الكود,الحالة\n`;
+        report.forEach(r => csv += `${r.name},"${r.id}",${r.st}\n`);
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Archive_${subjectName}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        playSuccess();
+        document.getElementById('attendanceRecordsModal').style.display = 'none';
+
+    } catch (e) { console.error(e); } finally { btn.innerHTML = oldText; }
+};
+// ==========================================
+//  نظام الدخول الآمن (Firebase Auth) 🔐
+// ==========================================
+
+// 1. دالة فتح نافذة الدخول (اربط دي بزرار "إدخال بيانات الطلاب" الرئيسي)
+window.openAdminLogin = function() {
+    // لو مسجل دخول قبل كده، افتح علطول
+    if (sessionStorage.getItem("is_logged_in_securely")) {
+        document.getElementById('dataEntryModal').style.display = 'flex';
+    } else {
+        document.getElementById('secureLoginModal').style.display = 'flex';
+    }
+};
+
+// 2. دالة تنفيذ الدخول
+window.performSecureLogin = async function() {
+    const email = document.getElementById('adminEmail').value;
+    const pass = document.getElementById('adminPass').value;
+    const btn = document.querySelector('#secureLoginModal .btn-main');
+
+    if (!email || !pass) {
+        showToast("⚠️ اكتب البيانات الأول", 3000, "#f59e0b");
+        return;
+    }
+
+    const oldText = btn.innerHTML;
+    btn.innerHTML = 'جاري التحقق...';
+
+    try {
+        // هنا السحر: بنسأل سيرفر جوجل
+        await signInWithEmailAndPassword(auth, email, pass);
+        
+        // لو مطلعش خطأ، يبقى تمام
+        showToast("🔓 تم تسجيل الدخول بنجاح", 3000, "#10b981");
+        document.getElementById('secureLoginModal').style.display = 'none';
+        
+        // حفظ حالة الدخول مؤقتاً (عشان ميسألوش تاني طول الجلسة)
+        sessionStorage.setItem("is_logged_in_securely", "true");
+        
+        // فتح لوحة التحكم الأصلية
+        document.getElementById('dataEntryModal').style.display = 'flex';
+
+    } catch (error) {
+        console.error(error);
+        showToast("❌ بيانات الدخول غير صحيحة!", 3000, "#ef4444");
+    } finally {
+        btn.innerHTML = oldText;
     }
 };
