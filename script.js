@@ -2,8 +2,7 @@
 //  1. استيراد مكتبات Firebase (العقل المدبر)
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// إعدادات Firebase الخاصة بك
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";// إعدادات Firebase الخاصة بك
 const firebaseConfig = {
   apiKey: "AIzaSyAn4rmd8AfTf6oBvrDewqpeK9x1-mgksyI",
   authDomain: "attendance-system-pro-dbdf1.firebaseapp.com",
@@ -871,6 +870,7 @@ const db = getFirestore(app);
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     allData.push({
+                        docId: doc.id,
                         uniID: data.id,
                         subject: data.subject,
                         time: data.time_str || (data.timestamp ? data.timestamp.toDate().toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'}) : '--:--'),
@@ -881,16 +881,14 @@ const db = getFirestore(app);
                     });
                 });
 
-                cachedReportData = allData;
+                // التعديل السحري هنا: ربط البيانات بالنافذة العالمية
+                window.cachedReportData = allData; 
 
                 if (allData.length === 0) {
-                    container.innerHTML = `<div class="empty-state" style="margin-top:50px;"><i class="fa-solid fa-folder-open" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>لا توجد سجلات اليوم (${dateStr}).</div>`;
+                    container.innerHTML = `<div class="empty-state">لا توجد سجلات اليوم.</div>`;
                 } else {
                     renderSubjectsList(allData);
                 }
-            }, (error) => {
-                console.error("Firebase Sync Error:", error);
-                container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">❌ خطأ في الصلاحيات أو الاتصال.<br><small>${error.message}</small></div>`;
             });
 
         } catch (e) {
@@ -900,14 +898,41 @@ const db = getFirestore(app);
     }
 
     function renderSubjectsList(data) {
-        const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
-        let html = '';
-        subjects.forEach(subject => {
-            const count = data.filter(i => i.subject === subject).length;
-            html += `<div class="subject-big-card" onclick="openSubjectDetails('${subject}')"><div class="sub-card-info"><h3>${subject}</h3><span><i class="fa-solid fa-users"></i> إجمالي الحضور: ${count}</span></div><div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div></div>`;
-        });
-        document.getElementById('subjectsContainer').innerHTML = html;
+    const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
+    let html = '';
+    
+    if (subjects.length === 0) {
+        document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">لا توجد سجلات.</div>';
+        return;
     }
+
+    subjects.forEach(subject => {
+        const count = data.filter(i => i.subject === subject).length;
+        
+        // الكود الجديد:
+        // 1. الزرار بيستدعي exportAttendanceSheet (الدالة الجديدة)
+        // 2. التصميم متناسق مع باقي الكروت
+        html += `
+        <div class="subject-big-card" onclick="openSubjectDetails('${subject}')">
+            <div style="display:flex; align-items:center;">
+                <div class="sub-card-info">
+                    <h3>${subject}</h3>
+                    <span><i class="fa-solid fa-users"></i> إجمالي الحضور: ${count}</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button onclick="event.stopPropagation(); exportAttendanceSheet('${subject}')" class="btn-download-excel" title="تصدير كشف كامل">
+                    <i class="fa-solid fa-file-excel"></i>
+                </button>
+                
+                <div class="sub-arrow"><i class="fa-solid fa-chevron-left"></i></div>
+            </div>
+        </div>`;
+    });
+    
+    document.getElementById('subjectsContainer').innerHTML = html;
+}
 
     function getHighlights() { return JSON.parse(localStorage.getItem(HIGHLIGHT_STORAGE_KEY) || "[]"); }
     function toggleHighlightStorage(id) {
@@ -1057,43 +1082,50 @@ const db = getFirestore(app);
     document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
     
     // ==========================================
-    //  ADMIN: UPLOAD EXCEL STUDENTS TO FIREBASE
+    //  New Smart Upload System (With Batch ID)
     // ==========================================
-    
-    // استمع لتغيير الملف عند اختياره
-    const fileInput = document.getElementById('excelFileInput');
-    if (fileInput) {
-        fileInput.addEventListener('change', async function(e) {
+
+    // 1. دالة لفتح نافذة اختيار الملف فقط لو تم اختيار الفرقة
+    window.triggerUploadProcess = function() {
+        const level = document.getElementById('uploadLevelSelect').value;
+        if (!level) {
+            alert("⚠️ خطأ: يجب اختيار الفرقة الدراسية من القائمة أولاً!");
+            return;
+        }
+        // لو اختار الفرقة، نفتح له نافذة الملفات
+        document.getElementById('excelFileInput').click();
+    };
+
+    // 2. الاستماع لتغيير الملف (التنفيذ الفعلي)
+    const fileInputSmart = document.getElementById('excelFileInput');
+    if (fileInputSmart) {
+        fileInputSmart.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
+            // قراءة المستوى المختار
+            const selectedLevel = document.getElementById('uploadLevelSelect').value;
             const statusDiv = document.getElementById('uploadStatus');
-            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري قراءة الملف...';
+            
+            // إنشاء Batch ID فريد (السحر هنا)
+            const batchID = `BATCH_L${selectedLevel}_${Date.now()}`; 
+
+            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحليل والتصنيف...';
 
             try {
-                // قراءة ملف الإكسل
                 const rows = await readXlsxFile(file);
-                
-                // المتوقع: الصف الأول عناوين، البيانات تبدأ من الصف الثاني
-                // العمود الأول: الكود (ID)، العمود الثاني: الاسم (Name)
-                
-                // تجاهل الصف الأول (العناوين)
-                const data = rows.slice(1); 
-                
+                const data = rows.slice(1); // تخطي صف العناوين
+
                 if (data.length === 0) {
                     statusDiv.innerText = "❌ الملف فارغ!";
                     return;
                 }
 
-                statusDiv.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-bounce"></i> جاري رفع ${data.length} طالب...`;
+                statusDiv.innerHTML = `<i class="fa-solid fa-server"></i> جاري رفع ${data.length} طالب للفرقة ${selectedLevel}...`;
 
-                // استخدام Batch للكتابة السريعة (تسمح بـ 500 عملية في المرة الواحدة)
-                const batchSize = 450; 
+                const batchSize = 450;
                 let chunks = [];
-                
-                for (let i = 0; i < data.length; i += batchSize) {
-                    chunks.push(data.slice(i, i + batchSize));
-                }
+                for (let i = 0; i < data.length; i += batchSize) chunks.push(data.slice(i, i + batchSize));
 
                 let totalUploaded = 0;
 
@@ -1104,37 +1136,46 @@ const db = getFirestore(app);
                         let studentId = row[0]; 
                         let studentName = row[1];
 
-                        // تأكد أن البيانات موجودة وصحيحة
                         if (studentId && studentName) {
-                            // تحويل الـ ID لنص لإزالة أي تنسيق أرقام غريب
                             studentId = String(studentId).trim();
                             studentName = String(studentName).trim();
 
-                            // تحديد المستند باستخدام الـ ID ليكون هو مفتاح المستند
                             const docRef = doc(db, "students", studentId);
+                            
+                            // البيانات الجديدة التي ستضاف لكل طالب
                             batch.set(docRef, { 
                                 name: studentName,
                                 id: studentId,
+                                academic_level: selectedLevel, // رقم الفرقة
+                                upload_batch_id: batchID,      // كود الشيت للحذف
                                 created_at: Timestamp.now()
-                            });
+                            }, { merge: true });
                         }
                     });
 
                     await batch.commit();
                     totalUploaded += chunk.length;
-                    statusDiv.innerText = `تم رفع ${totalUploaded} من ${data.length}...`;
+                    statusDiv.innerText = `تم معالجة ${totalUploaded} طالب...`;
                 }
 
-                statusDiv.innerHTML = `<span style="color: #10b981; font-weight: bold;">✅ تم بنجاح! تم حفظ ${totalUploaded} طالب.</span>`;
+                // حفظ سجل الشيت في كولكشن منفصل
+                await addDoc(collection(db, "upload_history"), {
+                    batch_id: batchID,
+                    level: selectedLevel,
+                    filename: file.name,
+                    count: totalUploaded,
+                    timestamp: Timestamp.now(),
+                    admin_name: "Admin"
+                });
+
+                statusDiv.innerHTML = `<span style="color: #10b981;">✅ تم بنجاح! تم حفظ وتصنيف ${totalUploaded} طالب.</span>`;
                 playSuccess();
-                
-                // تفريغ الملف لتمكين إعادة الرفع
-                fileInput.value = '';
+                fileInputSmart.value = ''; 
 
             } catch (error) {
-                console.error("Excel Upload Error:", error);
-                statusDiv.innerText = "❌ حدث خطأ في قراءة أو رفع الملف.";
-                alert("تأكد أن ملف الإكسل يحتوي على عمودين: الكود والاسم.");
+                console.error("Upload Error:", error);
+                statusDiv.innerText = "❌ حدث خطأ غير متوقع.";
+                alert(error.message);
             }
         });
     }
@@ -1206,3 +1247,399 @@ if ('serviceWorker' in navigator) {
             .catch(err => { console.error('ServiceWorker registration failed: ', err); });
     });
 }
+// ==========================================
+//  FIREBASE: EXPORT TO EXCEL (تصدير حسب المادة)
+// ==========================================
+// ==========================================
+//  تصدير المادة المحددة إلى ملف Excel
+// ==========================================
+window.exportSubjectToExcel = function(subjectName) {
+    // التحقق من وجود بيانات
+    if (!window.cachedReportData || window.cachedReportData.length === 0) {
+        alert("لا توجد بيانات متاحة حالياً للتصدير.");
+        return;
+    }
+
+    // فلترة الطلاب حسب المادة المختارة
+    const filteredStudents = window.cachedReportData.filter(s => s.subject === subjectName);
+
+    if (filteredStudents.length === 0) {
+        alert(`لا يوجد حضور مسجل في مادة: ${subjectName}`);
+        return;
+    }
+
+    // تجهيز البيانات بتنسيق مناسب للإكسل
+    const dataForExcel = filteredStudents.map((student, index) => ({
+        "م": index + 1,
+        "اسم الطالب": student.name,
+        "الكود الجامعي": student.uniID,
+        "المجموعة": student.group,
+        "وقت التسجيل": student.time,
+        "القاعة": student.hall || "غير محدد",
+        "كود الجلسة": student.code || "N/A"
+    }));
+
+    try {
+        // إنشاء ورقة العمل
+        const worksheet = XLSX.utils.json_to_sheet(dataForExcel);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "الحضور");
+
+        // ضبط اتجاه النص للعربية (يمين لليسار)
+        worksheet['!dir'] = 'rtl';
+
+        // تحميل الملف
+        const fileName = `حضور_${subjectName}_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    } catch (error) {
+        console.error("Excel Export Error:", error);
+        alert("حدث خطأ أثناء إنشاء ملف الإكسل. تأكد من إضافة مكتبة XLSX في ملف HTML.");
+    }
+};
+
+// جعل الدالة متاحة للضغط
+window.exportSubjectToExcel = exportSubjectToExcel;
+function playClick() {
+    try {
+        const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+        audio.play().catch(e => console.log("Audio play blocked"));
+    } catch (e) {
+        console.log("Audio not supported");
+    }
+}
+// ==========================================
+//  تصدير الحضور لملف Excel باسم المادة
+// ==========================================
+window.exportSubjectToExcel = function(subjectName) {
+    // 1. جلب البيانات من المخزن العالمي
+    const allData = window.cachedReportData || [];
+
+    // 2. فلترة البيانات للمادة المطلوبة فقط
+    const filteredData = allData.filter(item => item.subject === subjectName);
+
+    if (filteredData.length === 0) {
+        alert(`⚠️ لا توجد بيانات مسجلة لمادة: ${subjectName}`);
+        return;
+    }
+
+    // 3. تنسيق البيانات داخل الجدول
+    const excelRows = filteredData.map((student, index) => ({
+        "م": index + 1,
+        "اسم المادة": subjectName, // إضافة اسم المادة داخل كل سطر
+        "اسم الطالب": student.name,
+        "الكود الجامعي": student.uniID,
+        "المجموعة": student.group,
+        "وقت الحضور": student.time,
+        "المدرج/القاعة": student.hall,
+        "كود الجلسة": student.code
+    }));
+
+    try {
+        // 4. إنشاء ملف الإكسل
+        const worksheet = XLSX.utils.json_to_sheet(excelRows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, subjectName); // اسم الشيت بالأسفل
+
+        // ضبط الاتجاه لليمين (RTL)
+        worksheet['!dir'] = 'rtl';
+
+        // 5. تحميل الملف باسم المادة والتاريخ
+        const dateStr = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
+        const fileName = `حضور_${subjectName}_بتاريخ_${dateStr}.xlsx`;
+
+        XLSX.writeFile(workbook, fileName);
+
+    } catch (error) {
+        console.error("Excel Export Error:", error);
+        alert("حدث خطأ أثناء تصدير الملف. تأكد من تحميل الصفحة بالكامل.");
+    }
+};
+// ==========================================
+//  نظام إدارة وحذف الشيتات (Upload History)
+// ==========================================
+
+// 1. فتح السجل وجلب البيانات
+window.openUploadHistory = async function() {
+    playClick();
+    document.getElementById('manageUploadsModal').style.display = 'flex';
+    const container = document.getElementById('uploadsHistoryContainer');
+    
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري جلب السجل...</div>';
+
+    try {
+        // جلب آخر 20 عملية رفع
+        const q = query(collection(db, "upload_history"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            container.innerHTML = '<div class="empty-state">لا توجد عمليات رفع مسجلة.</div>';
+            return;
+        }
+
+        let html = '';
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
+            const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+            
+            // تحديد لون حسب الفرقة
+            let badgeColor = "#0f172a";
+            if(data.level == "1") badgeColor = "#0ea5e9";
+            else if(data.level == "2") badgeColor = "#8b5cf6";
+            
+            html += `
+            <div class="list-item-manage" style="flex-direction:column; align-items:flex-start; gap:8px; background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <div style="font-weight:bold; color:#1e293b; font-size:14px;">${data.filename || 'ملف بدون اسم'}</div>
+                    <div style="background:${badgeColor}; color:white; padding:2px 8px; border-radius:6px; font-size:10px;">الفرقة ${data.level}</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <div style="font-size:11px; color:#64748b;">${dateStr} • <span style="color:#10b981; font-weight:bold;">${data.count} طالب</span></div>
+                    <button onclick="deleteBatch('${data.batch_id}', '${doc.id}')" style="background:#fee2e2; color:#ef4444; border:none; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">
+                        <i class="fa-solid fa-trash-can"></i> حذف الشيت
+                    </button>
+                </div>
+            </div>`;
+        });
+        
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = '<div style="color:red; text-align:center;">حدث خطأ في جلب البيانات</div>';
+    }
+};
+
+// ==========================================
+//  تحديث نهائي: دالة الحذف (المضادة للتعليق)
+// ==========================================
+window.deleteBatch = function(batchId, historyDocId) {
+    if(!batchId) return;
+
+    showModernConfirm(
+        "حذف الشيت نهائياً 🗑️",
+        "تحذير: سيتم حذف جميع الطلاب المسجلين في هذا الشيت.<br>هذا الإجراء لا يمكن التراجع عنه. هل أنت متأكد؟",
+        async function() {
+            const container = document.getElementById('uploadsHistoryContainer');
+            
+            // تصميم رسالة التحميل
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:200px; animation: fadeIn 0.5s;">
+                    <div style="position:relative; width:60px; height:60px; margin-bottom:20px;">
+                        <div style="position:absolute; width:100%; height:100%; border:4px solid #f1f5f9; border-radius:50%;"></div>
+                        <div style="position:absolute; width:100%; height:100%; border:4px solid #ef4444; border-top-color:transparent; border-radius:50%; animation: spin 1s linear infinite;"></div>
+                        <i class="fa-solid fa-trash-can" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#ef4444; font-size:20px;"></i>
+                    </div>
+                    <div style="font-weight:800; color:#1e293b; font-size:16px; margin-bottom:5px;">جاري حذف البيانات...</div>
+                </div>
+            `;
+
+            try {
+                // 1. حذف الطلاب (Batch Delete)
+                const q = query(collection(db, "students"), where("upload_batch_id", "==", batchId));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.docs.length > 0) {
+                    const chunks = [];
+                    const docs = snapshot.docs;
+                    for (let i = 0; i < docs.length; i += 400) chunks.push(docs.slice(i, i + 400));
+                    
+                    for (const chunk of chunks) {
+                        const batch = writeBatch(db);
+                        chunk.forEach(doc => batch.delete(doc.ref));
+                        await batch.commit();
+                    }
+                }
+
+                // 2. حذف سجل الشيت
+                await deleteDoc(doc(db, "upload_history", historyDocId));
+
+                // 3. نجاح
+                try { playSuccess(); } catch(e){} // تشغيل الصوت بأمان
+                showToast(`تم الحذف بنجاح.`, 3000, "#10b981");
+
+            } catch (error) {
+                console.error("Delete Error:", error);
+                showToast("حدث خطأ بسيط، لكن قد يكون الحذف تم.", 3000, "#f59e0b");
+            } finally {
+                // =============================================
+                // هذا الجزء سيعمل دائماً وسيخفي رسالة التحميل
+                // =============================================
+                openUploadHistory(); 
+            }
+        }
+    );
+};
+// دوال فتح وإغلاق النافذة الجديدة
+window.openManageStudentsModal = function() {
+    playClick();
+    document.getElementById('manageStudentsModal').style.display = 'flex';
+};
+
+window.closeManageStudentsModal = function() {
+    playClick();
+    document.getElementById('manageStudentsModal').style.display = 'none';
+};
+
+// تعديل دالة الرفع لتستخدم التنبيه الحديث (بدل alert)
+window.triggerUploadProcess = function() {
+    const level = document.getElementById('uploadLevelSelect').value;
+    
+    if (!level) {
+        if(navigator.vibrate) navigator.vibrate(200);
+        showToast("⚠️ يرجى اختيار الفرقة الدراسية أولاً!", 3000, "#ef4444");
+        
+        // تأثير بصري للفت الانتباه
+        const selectBox = document.getElementById('uploadLevelSelect');
+        selectBox.focus();
+        selectBox.style.borderColor = "#ef4444";
+        setTimeout(() => selectBox.style.borderColor = "#e2e8f0", 2000);
+        return;
+    }
+    document.getElementById('excelFileInput').click();
+};
+// ==========================================
+//  دوال نافذة التأكيد الحديثة (Modern Confirm)
+// ==========================================
+
+// 1. دالة الإظهار
+window.showModernConfirm = function(title, text, actionCallback) {
+    playClick(); // تشغيل صوت النقر
+    
+    // تحديث النصوص
+    const titleEl = document.getElementById('modernConfirmTitle');
+    const textEl = document.getElementById('modernConfirmText');
+    
+    if(titleEl) titleEl.innerText = title;
+    if(textEl) textEl.innerHTML = text;
+    
+    // حفظ الأمر اللي هيتنفذ لو ضغط "نعم"
+    window.pendingAction = actionCallback;
+    
+    // إظهار النافذة
+    const modal = document.getElementById('modernConfirmModal');
+    if(modal) modal.style.display = 'flex';
+};
+
+// 2. دالة الإغلاق
+window.closeModernConfirm = function() {
+    playClick();
+    const modal = document.getElementById('modernConfirmModal');
+    if(modal) modal.style.display = 'none';
+    window.pendingAction = null; // إلغاء الأمر المعلق
+};
+
+// 3. تفعيل زر "نعم"
+const confirmBtn = document.getElementById('btnConfirmYes');
+if (confirmBtn) {
+    confirmBtn.onclick = function() {
+        if (window.pendingAction) window.pendingAction(); // تنفيذ الأمر
+        closeModernConfirm(); // إغلاق النافذة
+    };
+}
+// ==========================================
+//  تصدير شيت الحضور والغياب الذكي
+// ==========================================
+window.exportAttendanceSheet = async function(subjectName) {
+    playClick();
+    
+    // 1. تصفية الحاضرين في هذه المادة من البيانات المحملة حالياً
+    const attendees = cachedReportData.filter(s => s.subject === subjectName);
+    
+    if (attendees.length === 0) {
+        showToast("لا يوجد حضور لتصديره", 3000, "#f59e0b");
+        return;
+    }
+
+    const toastID = showToast("⏳ جاري تحضير ملف الإكسيل (حضور + غياب)...", 10000, "#3b82f6");
+
+    try {
+        // 2. معرفة الفرقة الدراسية (بناءً على أول طالب حاضر)
+        // نفترض أن الطالب المسجل يحتوي على حقل academic_level في قاعدة البيانات
+        // سنقوم بجلب بيانات طالب واحد للتأكد من الفرقة
+        const sampleID = attendees[0].uniID;
+        const studentDoc = await getDoc(doc(db, "students", sampleID));
+        
+        let targetLevel = null;
+        if (studentDoc.exists()) {
+            targetLevel = studentDoc.data().academic_level;
+        }
+
+        if (!targetLevel) {
+            // لو معرفناش نحدد الفرقة، نستخدم الحضور فقط
+            alert("⚠️ تنبيه: لم يتم تحديد الفرقة الدراسية لهذا الشيت. سيتم تصدير الحاضرين فقط.");
+            // (يمكنك هنا استدعاء دالة تصدير بسيطة للحاضرين فقط لو أردت)
+            targetLevel = "UNKNOWN"; 
+        }
+
+        // 3. جلب "جميع" طلاب هذه الفرقة من قاعدة البيانات
+        let allStudents = [];
+        if (targetLevel !== "UNKNOWN") {
+            const q = query(collection(db, "students"), where("academic_level", "==", targetLevel));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                allStudents.push(doc.data());
+            });
+        } else {
+            // في حالة عدم معرفة الفرقة، نعتبر الحاضرين هم الكل
+            allStudents = attendees.map(a => ({ id: a.uniID, name: a.name }));
+        }
+
+        // 4. دمج القائمتين (تحديد من حضر ومن غاب)
+        let finalReport = allStudents.map(student => {
+            // هل هذا الطالب موجود في قائمة الحاضرين؟
+            const attendanceRecord = attendees.find(a => a.uniID == student.id); // مقارنة مرنة
+            
+            return {
+                name: student.name,
+                id: student.id,
+                status: attendanceRecord ? "✅ حاضر" : "❌ غائب",
+                time: attendanceRecord ? attendanceRecord.time : "--:--",
+                group: student.group || attendanceRecord?.group || "--"
+            };
+        });
+
+        // 5. الترتيب: الحاضرون أولاً، ثم الغائبون
+        finalReport.sort((a, b) => {
+            if (a.status === b.status) {
+                return a.name.localeCompare(b.name, 'ar'); // ترتيب أبجدي داخل كل مجموعة
+            }
+            return a.status === "✅ حاضر" ? -1 : 1; // الحاضر يظهر قبل الغائب
+        });
+
+        // 6. إنشاء ملف CSV (يدعم العربية)
+        let csvContent = "\uFEFF"; // BOM لجعل الإكسيل يقرأ العربي صح
+        csvContent += "الاسم,الكود الجامعي,الحالة,وقت التسجيل,المجموعة\n"; // العناوين
+
+        finalReport.forEach(row => {
+            // تنظيف البيانات من الفواصل عشان ملف CSV ميبوظش
+            const cleanName = row.name.replace(/,/g, " ");
+            const cleanID = `"${row.id}"`; // وضع الكود بين علامات تنصيص لمنع تحويله لرقم علمي
+            csvContent += `${cleanName},${cleanID},${row.status},${row.time},${row.group}\n`;
+        });
+
+        // 7. تنزيل الملف
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        // تسمية الملف: المادة - التاريخ
+        const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${subjectName}_${dateStr}_كشف_كامل.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // إخفاء التنبيه
+        const toast = document.getElementById('toastNotification');
+        if(toast) toast.style.display = 'none';
+        
+        playSuccess();
+
+    } catch (error) {
+        console.error("Export Error:", error);
+        alert("حدث خطأ أثناء التصدير: " + error.message);
+    }
+};
