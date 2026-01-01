@@ -758,13 +758,51 @@
             <label style="display:block; margin-bottom:5px; font-weight:bold; color:#1e293b;">تاريخ المحاضرة:</label>
             <input type="date" id="historyDateInput" class="modern-input" style="width:100%; margin-bottom:15px;">
 
+            <label style="display:block; margin-bottom:5px; font-weight:bold; color:#1e293b;">الفرقة الدراسية:</label>
+            <div class="modern-select-wrapper" style="margin-bottom:15px;">
+                <select id="archiveLevelSelect" class="modern-select-input" onchange="clearSearchBox()">
+                    <option value="" disabled selected>-- اختر الفرقة --</option>
+                    <option value="1">الفرقة الأولى</option>
+                    <option value="2">الفرقة الثانية</option>
+                    <option value="3">الفرقة الثالثة</option>
+                    <option value="4">الفرقة الرابعة</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+            </div>
+
             <label style="display:block; margin-bottom:5px; font-weight:bold; color:#1e293b;">اسم المادة:</label>
-            <input type="text" id="historySubjectInput" class="modern-input" placeholder="اكتب اسم المادة بدقة (مثال: اناتومى نظري)" style="width:100%; margin-bottom:20px;">
+            
+            <div style="position: relative; margin-bottom:20px;">
+                <input type="text" id="archiveSubjectInput" class="modern-input" 
+                       placeholder="اكتب للبحث (أ = ا)..." 
+                       style="width:100%;" 
+                       oninput="smartSubjectSearch()" 
+                       onfocus="smartSubjectSearch()"> <div id="suggestionBox" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #cbd5e1; border-radius:0 0 8px 8px; max-height:150px; overflow-y:auto; z-index:1000; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+                    </div>
+            </div>
 
             <button onclick="downloadHistoricalSheet()" class="btn-main" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
-                تحميل الشيت (حضور + غياب) <i class="fa-solid fa-cloud-arrow-down"></i>
+                  تحميل كشف الحضور <i class="fa-solid fa-cloud-arrow-down"></i>
             </button>
 
+        </div>
+    </div>
+</div>
+<div id="secureLoginModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 400px;">
+        <div class="report-modal-header">
+            <div class="modal-title">🔐 دخول المشرفين</div>
+            <button onclick="document.getElementById('secureLoginModal').style.display='none'" class="btn-close-stylish">إغلاق</button>
+        </div>
+        
+        <div style="padding: 20px;">
+            <label style="display:block; margin-bottom:5px; font-weight:bold;">البريد الإلكتروني الموحد:</label>
+            <input type="email" id="adminEmail" class="modern-input" placeholder="admin@nursing.com" style="width:100%; margin-bottom:15px; direction:ltr;">
+
+            <label style="display:block; margin-bottom:5px; font-weight:bold;">كلمة المرور:</label>
+            <input type="password" id="adminPass" class="modern-input" placeholder="********" style="width:100%; margin-bottom:20px; direction:ltr;">
+
+            <button onclick="performSecureLogin()" class="btn-main" style="width:100%;">تسجيل الدخول</button>
         </div>
     </div>
 </div>
