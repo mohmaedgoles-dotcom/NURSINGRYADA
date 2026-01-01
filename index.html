@@ -20,6 +20,7 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://unpkg.com/read-excel-file@5.x/bundle/read-excel-file.min.js"></script>
     <script defer src="./face-api.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div id="topToast"></div>
@@ -170,7 +171,7 @@
         </div>
     </div>
     
-    <div id="modernConfirmModal" class="modal-overlay" style="z-index: 99999;">
+    <div id="modernConfirmModal" class="modal-overlay" style="z-index: 210000000;">
         <div class="modal-box confirm-box-style">
             <div class="confirm-icon-animate">
                 <i class="fa-solid fa-trash-can"></i>
@@ -203,21 +204,14 @@
                         <span>إدارة المواد</span>
                     </button>
 
-                    <div style="width: 100%;">
-                        <input type="file" id="excelFileInput" style="display: none;" accept=".xlsx, .xls" />
-                        <button onclick="document.getElementById('excelFileInput').click()" class="admin-sub-btn" style="width:100%; height:70px; flex-direction:row; font-size:15px; background: #f0fdf4; border: 1px solid #10b981; color: #15803d;">
-                            <i class="fa-solid fa-file-excel sub-btn-icon" style="color: #10b981; font-size: 20px;"></i>
-                            <span>رفع بيانات الطلاب (Excel)</span>
-                        </button>
-                        <div id="uploadStatus" style="font-size: 11px; text-align: center; margin-top: 5px; color: #64748b; font-weight:bold; min-height: 15px;"></div>
-                    </div>
-                    <div style="margin-top:10px; font-size:11px; color:#94a3b8;">
-                        * يتم تحديث قاعدة البيانات تلقائياً عند الرفع.
-                    </div>
+                    <button onclick="openManageStudentsModal()" class="admin-sub-btn btn-manage-students" style="width:100%; height:70px; flex-direction:row; font-size:15px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #86efac; color: #166534; margin-top: 10px;">
+                      <i class="fa-solid fa-users-gear sub-btn-icon" style="color: #166534; font-size: 20px;"></i>
+                      <span>إدارة قاعدة بيانات الطلاب</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div></div>
+    </div>
 
     <div id="manageHallsModal" class="modal-overlay">
         <div class="modal-box">
@@ -687,9 +681,66 @@
             </div>
         </div>
     </div>
+    <div id="manageUploadsModal" class="modal-overlay" style="z-index: 200000000;">
+         <div class="modal-box">
+             <div class="report-modal-header">
+                 <div class="modal-title" style="margin:0; font-size:16px;">سجل الملفات المرفوعة</div>
+                 <button onclick="document.getElementById('manageUploadsModal').style.display='none'" class="btn-close-stylish" style="width:auto; padding:5px 15px;">إغلاق</button>
+             </div>
+             <div class="report-views-container">
+                    <div style="padding:15px; overflow-y:auto; height:100%;">
+                         <div id="uploadsHistoryContainer">
+                            <div style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</div>
+                         </div>
+                    </div>
+             </div>
+         </div>
+    </div>
+    <div id="manageStudentsModal" class="modal-overlay">
+         <div class="modal-box" style="background: #f8fafc; padding: 0; overflow: hidden;">
+        
+            <div class="report-modal-header">
+                <div class="modal-title" style="margin:0; font-size:16px; color:#0f172a;">إدارة بيانات الطلاب</div>
+                <button onclick="closeManageStudentsModal()" class="btn-close-stylish" style="width:auto; padding:5px 15px;">إغلاق</button>
+            </div>
+
+            <div class="report-views-container" style="padding: 20px;">
+            
+                <div class="modern-card-action">
+                    <div class="card-label"><i class="fa-solid fa-layer-group"></i> الخطوة الأولى: تحديد الفرقة</div>
+                    <div class="modern-select-wrapper">
+                        <select id="uploadLevelSelect" class="modern-select-input">
+                           <option value="" disabled selected>-- اضغط لاختيار الفرقة --</option>
+                           <option value="1">الفرقة الأولى</option>
+                           <option value="2">الفرقة الثانية</option>
+                           <option value="3">الفرقة الثالثة</option>
+                           <option value="4">الفرقة الرابعة</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="modern-card-action" style="margin-top: 15px; border-color: #bbf7d0; background: #f0fdf4;">
+                     <div class="card-label" style="color: #166534;"><i class="fa-solid fa-cloud-arrow-up"></i> الخطوة الثانية: رفع الملف</div>
+                     <input type="file" id="excelFileInput" style="display: none;" accept=".xlsx, .xls" />
+                     <button onclick="triggerUploadProcess()" class="btn-action-modern upload-btn">
+                           اختر ملف Excel <i class="fa-solid fa-file-excel"></i>
+                     </button>
+                     <div id="uploadStatus" style="font-size: 11px; text-align: center; margin-top: 8px; color: #166534; font-weight:bold; min-height: 15px;"></div>
+                </div>
+
+                <div class="separator-line">أو</div>
+
+                <button onclick="openUploadHistory()" class="btn-history-modern">
+                   <i class="fa-solid fa-clock-rotate-left"></i> عرض السجل / حذف شيت سابق
+                </button>
+
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <script type="module" src="script.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.min.js"></script>
 </body>
 </html>
