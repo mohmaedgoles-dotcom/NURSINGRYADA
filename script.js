@@ -1,44 +1,46 @@
 // ==========================================
-//  1. استيراد مكتبات Firebase (العقل المدبر)
+//  1. استيراد مكتبات Firebase (تم إضافة Auth)
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";// إعدادات Firebase الخاصة بك
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // <--- هذا السطر الجديد
+let unsubscribeSessionListener = null; // متغير لمراقبة الجلسة
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAn4rmd8AfTf6oBvrDewqpeK9x1-mgksyI",
-  authDomain: "attendance-system-pro-dbdf1.firebaseapp.com",
-  projectId: "attendance-system-pro-dbdf1",
-  storageBucket: "attendance-system-pro-dbdf1.firebasestorage.app",
-  messagingSenderId: "1094544109334",
-  appId: "1:1094544109334:web:a7395159d617b3e6e82a37"
+    apiKey: "AIzaSyAn4rmd8AfTf6oBvrDewqpeK9x1-mgksyI",
+    authDomain: "attendance-system-pro-dbdf1.firebaseapp.com",
+    projectId: "attendance-system-pro-dbdf1",
+    storageBucket: "attendance-system-pro-dbdf1.firebasestorage.app",
+    messagingSenderId: "1094544109334",
+    appId: "1:1094544109334:web:a7395159d617b3e6e82a37"
 };
 
-// تشغيل Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app); // <--- تفعيل الـ Auth
 
 // ==========================================
 //  2. منطق التطبيق (System Logic)
 // ==========================================
-(function() {
-    
+(function () {
+
     // رابط قديم لجلب أسماء الطلاب فقط (سنحتفظ به مؤقتاً كقاعدة بيانات للأسماء)
     // يمكن استبداله لاحقاً بـ Firebase Collection "students"
-    const STUDENT_DB_URL = "https://script.google.com/macros/s/AKfycbxi2Itb_GW4OXkP6ki5PmzN1O8GFY70XoQyYiWKUdKYHxhXL7YGMFfA2tXcXAWbC_ez/exec"; 
+    const STUDENT_DB_URL = "https://script.google.com/macros/s/AKfycbxi2Itb_GW4OXkP6ki5PmzN1O8GFY70XoQyYiWKUdKYHxhXL7YGMFfA2tXcXAWbC_ez/exec";
 
     const CONFIG = {
-        gps: { 
-            targetLat: 30.43841622978127,  
-            targetLong: 30.836735200410153, 
-            allowedDistanceKm: 5        
+        gps: {
+            targetLat: 30.43841622978127,
+            targetLong: 30.836735200410153,
+            allowedDistanceKm: 5
         },
         modelsUrl: './models'
     };
-    
+
     const LOCAL_STORAGE_DB_KEY = "offline_students_db_v2";
     const ALERT_STORAGE_KEY = "persistent_student_alerts_v2";
-    const DEVICE_ID_KEY = "unique_device_id_v1"; 
-    const HIGHLIGHT_STORAGE_KEY = "student_highlights_persistent"; 
-    const EVAL_STORAGE_KEY = "student_evaluations_v1"; 
+    const DEVICE_ID_KEY = "unique_device_id_v1";
+    const HIGHLIGHT_STORAGE_KEY = "student_highlights_persistent";
+    const EVAL_STORAGE_KEY = "student_evaluations_v1";
 
     let studentsDB = {};
     let wakeLock = null;
@@ -54,16 +56,16 @@ const db = getFirestore(app);
     try {
         const savedAlerts = localStorage.getItem(ALERT_STORAGE_KEY);
         if (savedAlerts) systemAlerts = JSON.parse(savedAlerts);
-    } catch (e) {}
+    } catch (e) { }
 
     // تحميل قاعدة بيانات الطلاب (Local Cache)
     const savedDB = localStorage.getItem(LOCAL_STORAGE_DB_KEY);
     if (savedDB) {
-        try { studentsDB = JSON.parse(savedDB); } catch(e) {}
+        try { studentsDB = JSON.parse(savedDB); } catch (e) { }
     }
-    
+
     // محاولة تحديث أسماء الطلاب في الخلفية
-    fetch(`${STUDENT_DB_URL}?action=getDB`).then(r => r.json()).then(d => { if(!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => console.log("DB Fetch Error - Using Cache"));
+    fetch(`${STUDENT_DB_URL}?action=getDB`).then(r => r.json()).then(d => { if (!d.error) { studentsDB = d; localStorage.setItem(LOCAL_STORAGE_DB_KEY, JSON.stringify(d)); } }).catch(e => console.log("DB Fetch Error - Using Cache"));
 
     let defaultSubjects = {
         "first_year": ["اساسيات تمريض 1 نظري", "اساسيات تمريض 1 عملي", "تمريض بالغين 1 نظرى", "تمريض بالغين 1 عملى", "اناتومى نظرى", "اناتومى عملى", "تقييم صحى نظرى", "تقييم صحى عملى", "مصطلحات طبية", "فسيولوجى", "تكنولوجيا المعلومات"],
@@ -74,14 +76,14 @@ const db = getFirestore(app);
     let defaultHalls = ["037", "038", "039", "019", "025", "123", "124", "127", "131", "132", "133", "134", "231", "335", "121", "118", "E334", "E335", "E336", "E337", "E344", "E345", "E346", "E347", "E240", "E241", "E242", "E245", "E231", "E230", "E243", "E233", "E222", "E234"];
     let hallsList = JSON.parse(localStorage.getItem('hallsList_v4')) || defaultHalls;
 
-    const ADMIN_AUTH_TOKEN = "secure_admin_session_token_v99"; 
-    
+    const ADMIN_AUTH_TOKEN = "secure_admin_session_token_v99";
+
     const DATA_ENTRY_TIMEOUT_SEC = 20;
     const SESSION_END_TIME_KEY = "data_entry_deadline_v2";
     const TEMP_NAME_KEY = "temp_student_name";
     const TEMP_ID_KEY = "temp_student_id";
     const TEMP_CODE_KEY = "temp_session_code";
-    
+
     const MAX_ATTEMPTS = 9999;
     const TODAY_DATE_KEY = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
     const BAN_KEY = "daily_ban_" + TODAY_DATE_KEY;
@@ -92,23 +94,23 @@ const db = getFirestore(app);
     let html5QrCode;
     let sessionEndTime = 0;
     let processIsActive = false;
-    
-    let userLat = "", userLng = ""; 
+
+    let userLat = "", userLng = "";
     let lastNoseX = 0, lastNoseY = 0;
-    let faceCheckInterval = null; 
-    let videoStream = null;        
+    let faceCheckInterval = null;
+    let videoStream = null;
     const FACE_MODELS_URL = CONFIG.modelsUrl;
-    const TIMER_DURATION_FACE = 3; 
+    const TIMER_DURATION_FACE = 3;
     const TIMER_CIRCUMFERENCE_FACE = 282.7;
-    
+
     let isProcessingClick = false;
 
     // PWA Install Logic
     let deferredPrompt;
     const installBox = document.getElementById('installAppPrompt');
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; if(installBox) installBox.style.display = 'flex'; });
-    window.addEventListener('appinstalled', () => { if(installBox) installBox.style.display = 'none'; deferredPrompt = null; showToast("شكراً لتثبيت التطبيق! 🚀", 4000, "#10b981"); });
-    function triggerAppInstall() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choiceResult) => { if (choiceResult.outcome === 'accepted') { if(installBox) installBox.style.display = 'none'; } deferredPrompt = null; }); } }
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; if (installBox) installBox.style.display = 'flex'; });
+    window.addEventListener('appinstalled', () => { if (installBox) installBox.style.display = 'none'; deferredPrompt = null; showToast("شكراً لتثبيت التطبيق! 🚀", 4000, "#10b981"); });
+    function triggerAppInstall() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choiceResult) => { if (choiceResult.outcome === 'accepted') { if (installBox) installBox.style.display = 'none'; } deferredPrompt = null; }); } }
 
     // ========================
     // Logic Functions
@@ -118,11 +120,11 @@ const db = getFirestore(app);
         if (isProcessingClick) return;
         if (element && (element.disabled || element.classList.contains('disabled') || element.classList.contains('locked'))) return;
         isProcessingClick = true;
-        if(element) { element.style.pointerEvents = 'none'; element.style.opacity = '0.7'; }
+        if (element) { element.style.pointerEvents = 'none'; element.style.opacity = '0.7'; }
         if (typeof callback === 'function') callback();
         setTimeout(() => {
             isProcessingClick = false;
-            if(element) { element.style.pointerEvents = 'auto'; element.style.opacity = '1'; }
+            if (element) { element.style.pointerEvents = 'auto'; element.style.opacity = '1'; }
         }, 600);
     }
 
@@ -140,16 +142,16 @@ const db = getFirestore(app);
     function openDataEntryMenu() { document.getElementById('dataEntryModal').style.display = 'flex'; }
     function openManageHalls() { renderHallsManage(); document.getElementById('manageHallsModal').style.display = 'flex'; }
     function openManageSubjects() { renderSubjectsManage(); document.getElementById('manageSubjectsModal').style.display = 'flex'; }
-    
+
     function renderHallsManage() {
         const container = document.getElementById('hallsListManage');
         container.innerHTML = hallsList.map(h => `<div class="list-item-manage"><span style="font-weight:bold;">${h}</span><button class="btn-delete-mini" onclick="deleteHall('${h}')"><i class="fa-solid fa-trash"></i></button></div>`).join('');
     }
     function addHall() {
         const val = document.getElementById('newHallInput').value.trim();
-        if(val && !hallsList.includes(val)) { hallsList.push(val); localStorage.setItem('hallsList_v4', JSON.stringify(hallsList)); document.getElementById('newHallInput').value = ''; renderHallsManage(); renderHallOptions(); }
+        if (val && !hallsList.includes(val)) { hallsList.push(val); localStorage.setItem('hallsList_v4', JSON.stringify(hallsList)); document.getElementById('newHallInput').value = ''; renderHallsManage(); renderHallOptions(); }
     }
-    function deleteHall(val) { if(confirm('هل أنت متأكد من حذف القاعة؟')) { hallsList = hallsList.filter(h => h !== val); localStorage.setItem('hallsList_v4', JSON.stringify(hallsList)); renderHallsManage(); renderHallOptions(); } }
+    function deleteHall(val) { if (confirm('هل أنت متأكد من حذف القاعة؟')) { hallsList = hallsList.filter(h => h !== val); localStorage.setItem('hallsList_v4', JSON.stringify(hallsList)); renderHallsManage(); renderHallOptions(); } }
 
     function renderSubjectsManage() {
         const year = document.getElementById('manageYearSelect').value;
@@ -159,9 +161,9 @@ const db = getFirestore(app);
     function addSubject() {
         const year = document.getElementById('manageYearSelect').value;
         const val = document.getElementById('newSubjectInput').value.trim();
-        if(val && !subjectsData[year].includes(val)) { subjectsData[year].push(val); localStorage.setItem('subjectsData_v4', JSON.stringify(subjectsData)); document.getElementById('newSubjectInput').value = ''; renderSubjectsManage(); }
+        if (val && !subjectsData[year].includes(val)) { subjectsData[year].push(val); localStorage.setItem('subjectsData_v4', JSON.stringify(subjectsData)); document.getElementById('newSubjectInput').value = ''; renderSubjectsManage(); }
     }
-    function deleteSubject(val) { if(confirm('هل أنت متأكد من حذف المادة؟')) { const year = document.getElementById('manageYearSelect').value; subjectsData[year] = subjectsData[year].filter(s => s !== val); localStorage.setItem('subjectsData_v4', JSON.stringify(subjectsData)); renderSubjectsManage(); } }
+    function deleteSubject(val) { if (confirm('هل أنت متأكد من حذف المادة؟')) { const year = document.getElementById('manageYearSelect').value; subjectsData[year] = subjectsData[year].filter(s => s !== val); localStorage.setItem('subjectsData_v4', JSON.stringify(subjectsData)); renderSubjectsManage(); } }
 
     // --- (Future) Firebase Sync Logic for Alerts ---
     async function syncGlobalAlerts() {
@@ -216,7 +218,7 @@ const db = getFirestore(app);
 
     function toggleAlertDetails(index) {
         if (!systemAlerts[index].isRead) { systemAlerts[index].isRead = true; localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts)); checkStoredAlerts(); }
-        const el = document.getElementById(`alert-detail-${index}`); if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        const el = document.getElementById(`alert-detail-${index}`); if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
     function deleteSingleAlert(index) { if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { systemAlerts.splice(index, 1); localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts)); checkStoredAlerts(); } }
     function openDeleteAlertsConfirm() { if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) document.getElementById('deleteAlertsConfirmModal').style.display = 'flex'; }
@@ -229,7 +231,7 @@ const db = getFirestore(app);
     }
     function showNotificationModal() {
         const isAdmin = !!sessionStorage.getItem(ADMIN_AUTH_TOKEN);
-        if (!isAdmin) { const btn = document.getElementById('notificationBtn'); btn.classList.add('shake-lock'); if(navigator.vibrate) navigator.vibrate(100); return; }
+        if (!isAdmin) { const btn = document.getElementById('notificationBtn'); btn.classList.add('shake-lock'); if (navigator.vibrate) navigator.vibrate(100); return; }
         checkStoredAlerts(); document.getElementById('identityAlertModal').style.display = 'flex';
     }
     function closeIdentityAlert() { document.getElementById('identityAlertModal').style.display = 'none'; }
@@ -240,56 +242,56 @@ const db = getFirestore(app);
     }
     function openExamModal() { playClick(); document.getElementById('examModal').style.display = 'flex'; }
     function closeExamModal() { playClick(); document.getElementById('examModal').style.display = 'none'; }
-    function handleReportClick() { const btn = document.getElementById('btnViewReport'); if (btn.classList.contains('locked')) { if(navigator.vibrate) navigator.vibrate(50); } else { safeClick(btn, openReportModal); } }
+    function handleReportClick() { const btn = document.getElementById('btnViewReport'); if (btn.classList.contains('locked')) { if (navigator.vibrate) navigator.vibrate(50); } else { safeClick(btn, openReportModal); } }
 
     function resetApplicationState() {
-        attendanceData = {}; attendanceData.isVerified = false; 
+        attendanceData = {}; attendanceData.isVerified = false;
         sessionStorage.removeItem(TEMP_NAME_KEY); sessionStorage.removeItem(TEMP_ID_KEY); sessionStorage.removeItem(TEMP_CODE_KEY); sessionStorage.removeItem(SESSION_END_TIME_KEY);
         document.getElementById('uniID').value = ''; document.getElementById('attendanceCode').value = ''; document.getElementById('sessionPass').value = '';
-        
+
         const yearWrapper = document.getElementById('yearSelectWrapper'); yearWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة --'; yearWrapper.classList.remove('open');
         yearWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected')); document.getElementById('yearSelect').value = '';
-        
+
         const groupWrapper = document.getElementById('groupSelectWrapper'); groupWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة أولاً --'; groupWrapper.classList.add('disabled'); groupWrapper.classList.remove('open');
         document.getElementById('groupOptionsContainer').innerHTML = ''; document.getElementById('groupSelect').innerHTML = '<option value="" disabled selected>-- اختر الفرقة أولاً --</option>';
 
         const subjectWrapper = document.getElementById('subjectSelectWrapper'); subjectWrapper.querySelector('.trigger-text').textContent = '-- اختر الفرقة أولاً --'; subjectWrapper.classList.add('disabled'); subjectWrapper.classList.remove('open');
         document.getElementById('subjectOptionsContainer').innerHTML = ''; document.getElementById('subjectSelect').innerHTML = '<option value="" disabled selected>-- اختر الفرقة أولاً --</option>';
-        
+
         const hallWrapper = document.getElementById('hallSelectWrapper'); hallWrapper.querySelector('.trigger-text').textContent = '-- اختر المدرج --'; hallWrapper.classList.remove('open');
         hallWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected')); document.getElementById('hallSelect').value = '';
-        
+
         const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; btn.innerHTML = 'تأكيد الحضور <i class="fa-solid fa-paper-plane"></i>';
         document.getElementById('scanNameDisplay').innerText = '--'; document.getElementById('scanIDDisplay').innerText = '--';
         document.getElementById('scanDisciplineDisplay').innerText = "0"; document.getElementById('scanDisciplineDisplay').className = "student-info-value discipline-score-display safe";
 
-        const verifyBtn = document.getElementById('btnVerify'); if(verifyBtn) { verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية'; verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)'; verifyBtn.style.display = 'flex'; verifyBtn.classList.remove('disabled'); }
-        const bypassCheck = document.getElementById('bypassCheckbox'); if(bypassCheck) bypassCheck.checked = false;
-        checkStoredAlerts(); 
+        const verifyBtn = document.getElementById('btnVerify'); if (verifyBtn) { verifyBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية'; verifyBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)'; verifyBtn.style.display = 'flex'; verifyBtn.classList.remove('disabled'); }
+        const bypassCheck = document.getElementById('bypassCheckbox'); if (bypassCheck) bypassCheck.checked = false;
+        checkStoredAlerts();
     }
 
     fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => userIP = d.ip).catch(e => userIP = "Hidden IP");
-    function playClick() { document.getElementById('clickSound').play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate(10); }
-    function playSuccess() { document.getElementById('successSound').play().catch(e=>{}); if(navigator.vibrate) navigator.vibrate([50, 50, 50]); }
-    function playBeep() { document.getElementById('beepSound').play().catch(e=>{}); }
+    function playClick() { document.getElementById('clickSound').play().catch(e => { }); if (navigator.vibrate) navigator.vibrate(10); }
+    function playSuccess() { document.getElementById('successSound').play().catch(e => { }); if (navigator.vibrate) navigator.vibrate([50, 50, 50]); }
+    function playBeep() { document.getElementById('beepSound').play().catch(e => { }); }
     function convertArabicToEnglish(s) { return s.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
-    async function requestWakeLock() { try { if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {} }
+    async function requestWakeLock() { try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { } }
     function releaseWakeLock() { if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); } }
-    
+
     function getAttemptsLeft() { return 999; }
     function decrementAttempts() { return 999; }
-    function updateUIForAttempts() { const container = document.getElementById('attemptsHeartsContainer'); if(container) container.innerHTML = ''; }
+    function updateUIForAttempts() { const container = document.getElementById('attemptsHeartsContainer'); if (container) container.innerHTML = ''; }
 
     window.history.pushState(null, null, window.location.href);
     window.onpopstate = function () {
-        if (processIsActive && !sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { checkBanStatus(); window.history.pushState(null, null, window.location.href); } 
+        if (processIsActive && !sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { checkBanStatus(); window.history.pushState(null, null, window.location.href); }
         else if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { goBackToWelcome(); }
     };
-    function handleStrictPenalty() {}
+    function handleStrictPenalty() { }
     window.addEventListener('beforeunload', () => { handleStrictPenalty(); });
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') { if (isOpeningMaps) return; if (processIsActive && !sessionStorage.getItem(ADMIN_AUTH_TOKEN)) location.reload(); releaseWakeLock(); } 
-        else { if (isOpeningMaps) isOpeningMaps = false; if(processIsActive) requestWakeLock(); }
+        if (document.visibilityState === 'hidden') { if (isOpeningMaps) return; if (processIsActive && !sessionStorage.getItem(ADMIN_AUTH_TOKEN)) location.reload(); releaseWakeLock(); }
+        else { if (isOpeningMaps) isOpeningMaps = false; if (processIsActive) requestWakeLock(); }
     });
     function checkBanStatus() { return false; }
 
@@ -310,10 +312,10 @@ const db = getFirestore(app);
     }
 
     function switchScreen(id) {
-        window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         const allSections = document.querySelectorAll('.section'); const nextScreen = document.getElementById(id);
         allSections.forEach(el => { if (el.classList.contains('active')) el.classList.remove('active'); });
-        nextScreen.classList.add('active'); updateHeaderState(id); updateUIForAttempts(); 
+        nextScreen.classList.add('active'); updateHeaderState(id); updateUIForAttempts();
         const adminBack = document.getElementById('adminFloatingBack'); const isAdmin = !!sessionStorage.getItem(ADMIN_AUTH_TOKEN);
         if (isAdmin && id !== 'screenWelcome' && id !== 'screenAdminLogin') { adminBack.style.display = 'flex'; } else { adminBack.style.display = 'none'; }
         if (!isAdmin && (id === 'screenDataEntry' || id === 'screenScanQR' || id === 'screenFaceCheck' || id === 'screenLoading')) { processIsActive = true; requestWakeLock(); } else { processIsActive = false; releaseWakeLock(); }
@@ -324,17 +326,17 @@ const db = getFirestore(app);
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`; window.open(mapsUrl, '_blank');
     }
 
-    window.onload = function() {
-        initGlobalGuard(); updateUIForMode(); setupCustomSelects(); checkStoredAlerts(); startGPSWatcher(); renderHallOptions(); 
-        document.getElementById('hallSearchInput').addEventListener('input', function(e) { renderHallOptions(e.target.value); });
+    window.onload = function () {
+        initGlobalGuard(); updateUIForMode(); setupCustomSelects(); checkStoredAlerts(); startGPSWatcher(); renderHallOptions();
+        document.getElementById('hallSearchInput').addEventListener('input', function (e) { renderHallOptions(e.target.value); });
         setInterval(() => {
-            const now = new Date(); const timeStr = now.toLocaleTimeString('en-US', {hour12: true, hour:'2-digit', minute:'2-digit'}); const dateStr = now.toLocaleDateString('en-GB'); 
+            const now = new Date(); const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }); const dateStr = now.toLocaleDateString('en-GB');
             const timeEl = document.getElementById('currentTime'); const dateEl = document.getElementById('currentDate');
-            if(timeEl) timeEl.innerText = timeStr; if(dateEl) dateEl.innerText = dateStr;
+            if (timeEl) timeEl.innerText = timeStr; if (dateEl) dateEl.innerText = dateStr;
         }, 1000);
-        document.getElementById('submitBtn').addEventListener('click', function(e) { e.preventDefault(); submitToGoogle(); });
+        document.getElementById('submitBtn').addEventListener('click', function (e) { e.preventDefault(); submitToGoogle(); });
     };
-    
+
     function renderHallOptions(filter = "") {
         const hallContainer = document.getElementById('hallOptionsContainer'); const hallSelect = document.getElementById('hallSelect');
         hallSelect.innerHTML = '<option value="" disabled selected>-- اختر المدرج --</option>'; hallContainer.innerHTML = '';
@@ -342,13 +344,13 @@ const db = getFirestore(app);
         filteredHalls.forEach(val => {
             let opt = document.createElement('option'); opt.value = val; opt.text = val; hallSelect.appendChild(opt);
             let cOpt = document.createElement('div'); cOpt.className = "custom-option"; cOpt.setAttribute('data-value', val); cOpt.innerHTML = `<span>${val}</span>`;
-            cOpt.addEventListener('click', function(e) {
+            cOpt.addEventListener('click', function (e) {
                 e.stopPropagation(); hallContainer.parentElement.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected'); document.querySelector('#hallSelectWrapper .trigger-text').textContent = val;
                 document.getElementById('hallSelectWrapper').classList.remove('open'); hallSelect.value = val; playClick(); checkAllConditions();
             }); hallContainer.appendChild(cOpt);
         });
-        if(filteredHalls.length === 0) { hallContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#94a3b8; font-size:12px;">لا توجد نتائج</div>'; }
+        if (filteredHalls.length === 0) { hallContainer.innerHTML = '<div style="padding:10px; text-align:center; color:#94a3b8; font-size:12px;">لا توجد نتائج</div>'; }
     }
 
     function startGPSWatcher() {
@@ -360,31 +362,77 @@ const db = getFirestore(app);
     }
 
     function updateUIForMode() {
-        const token = sessionStorage.getItem(ADMIN_AUTH_TOKEN); const isAdmin = !!token; 
-        const badge = document.getElementById('adminBadge'); const loginBtn = document.getElementById('btnAdminLogin'); const logoutBtn = document.getElementById('btnAdminLogout');
-        const reportBtn = document.getElementById('btnViewReport'); const reportIcon = document.getElementById('reportIcon'); const adminFloating = document.getElementById('adminFloatingBack');
-        const notifBtn = document.getElementById('notificationBtn'); const adminBypassContainer = document.getElementById('adminBypassContainer'); const btnDataEntry = document.getElementById('btnDataEntry');
-        
+        const isAdmin = sessionStorage.getItem(ADMIN_AUTH_TOKEN);
+
+        // 1. التحكم في العناصر القديمة (عشان ما نبوظش حاجة)
+        const badge = document.getElementById('adminBadge');
+        const loginBtn = document.getElementById('btnAdminLogin');
+        const logoutBtn = document.getElementById('btnAdminLogout');
+        const reportBtn = document.getElementById('btnViewReport');
+        const adminFloating = document.getElementById('adminFloatingBack');
+        const notifBtn = document.getElementById('notificationBtn');
+        const adminBypassContainer = document.getElementById('adminBypassContainer');
+        const btnDataEntry = document.getElementById('btnDataEntry');
+        const sessionBtn = document.getElementById('btnToggleSession'); // <-- ده الجديد المهم
+
         if (isAdmin) {
-            badge.style.display = 'block'; loginBtn.style.display = 'none'; logoutBtn.style.display = 'flex'; reportBtn.classList.remove('locked'); reportBtn.classList.add('unlocked'); reportIcon.className = 'fa-solid fa-list-check sub-btn-icon'; 
-            document.getElementById('adminDeleteAlert').style.display = 'flex'; notifBtn.classList.remove('locked');
-            if(adminBypassContainer) adminBypassContainer.style.display = 'block'; if(btnDataEntry) btnDataEntry.style.display = 'flex'; syncGlobalAlerts();
+            // --- وضع الأدمن ---
+            if (badge) badge.style.display = 'block';
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'flex';
+
+            if (reportBtn) {
+                reportBtn.classList.remove('locked');
+                reportBtn.classList.add('unlocked');
+            }
+
+            document.getElementById('adminDeleteAlert').style.display = 'flex';
+            if (notifBtn) notifBtn.classList.remove('locked');
+            if (adminBypassContainer) adminBypassContainer.style.display = 'block';
+            if (btnDataEntry) btnDataEntry.style.display = 'flex';
+
+            // إظهار زر التحكم في الجلسة وتشغيل المراقبة
+            if (sessionBtn) sessionBtn.style.display = 'flex';
+            if (!unsubscribeSessionListener) listenToSessionState();
+
+            syncGlobalAlerts();
+
         } else {
-            badge.style.display = 'none'; loginBtn.style.display = 'flex'; logoutBtn.style.display = 'none'; reportBtn.classList.remove('unlocked'); reportBtn.classList.add('locked'); reportIcon.className = 'fa-solid fa-lock sub-btn-icon'; adminFloating.style.display = 'none'; 
-            document.getElementById('adminDeleteAlert').style.display = 'none'; notifBtn.classList.add('locked');
-            if(adminBypassContainer) adminBypassContainer.style.display = 'block'; if(btnDataEntry) btnDataEntry.style.display = 'none';
+            // --- وضع الطالب ---
+            if (badge) badge.style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'flex';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+
+            if (reportBtn) {
+                reportBtn.classList.remove('unlocked');
+                reportBtn.classList.add('locked');
+            }
+
+            document.getElementById('adminDeleteAlert').style.display = 'none';
+            if (notifBtn) notifBtn.classList.add('locked');
+            if (adminBypassContainer) adminBypassContainer.style.display = 'none';
+            if (btnDataEntry) btnDataEntry.style.display = 'none';
+
+            // إخفاء زر التحكم في الجلسة وإيقاف المراقبة
+            if (sessionBtn) sessionBtn.style.display = 'none';
+            if (unsubscribeSessionListener) {
+                unsubscribeSessionListener();
+                unsubscribeSessionListener = null;
+            }
         }
-        updateUIForAttempts(); checkStoredAlerts(); 
+
+        updateUIForAttempts();
+        checkStoredAlerts();
     }
 
     function detectFakeGPS(pos) { return (pos.coords.accuracy < 2 || (pos.coords.altitude === null && pos.coords.accuracy < 10)); }
     function checkLocationStrict(onSuccess) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => { 
+                (pos) => {
                     if (detectFakeGPS(pos)) { showError("🚫 تم اكتشاف موقع وهمي (Fake GPS). يرجى إغلاق أي برامج تلاعب بالموقع.", false); return; }
-                    userLat = pos.coords.latitude; userLng = pos.coords.longitude; checkDistance(onSuccess); 
-                }, (err) => { document.getElementById('locationForceModal').style.display = 'flex'; }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 } 
+                    userLat = pos.coords.latitude; userLng = pos.coords.longitude; checkDistance(onSuccess);
+                }, (err) => { document.getElementById('locationForceModal').style.display = 'flex'; }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
             );
         } else { document.getElementById('locationForceModal').style.display = 'flex'; }
     }
@@ -394,6 +442,78 @@ const db = getFirestore(app);
         onSuccess();
     }
 
+    // ==========================================
+    // 🎮 دوال التحكم في الجلسة (نسخة Global)
+    // ==========================================
+
+    // 1. دالة تغيير الحالة (فتح/قفل)
+    window.toggleSessionState = async function () {
+        // التأكد من أن المستخدم أدمن
+        if (!sessionStorage.getItem("secure_admin_session_token_v99")) return;
+
+        const btn = document.getElementById('btnToggleSession');
+        // معرفة الحالة الحالية من شكل الزر
+        const isCurrentlyOpen = btn.classList.contains('session-open');
+        const newState = !isCurrentlyOpen;
+
+        const txt = document.getElementById('sessionText');
+        if (txt) txt.innerText = "جاري التحديث...";
+
+        try {
+            const docRef = doc(db, "settings", "control_panel");
+            // إرسال الحالة الجديدة للسيرفر
+            await setDoc(docRef, { isActive: newState }, { merge: true });
+
+            // التحديث سيتم تلقائياً عبر الـ Listener
+            if (newState) showToast("🟢 تم فتح التسجيل", 3000, "#10b981");
+            else showToast("🔴 تم إغلاق التسجيل", 3000, "#ef4444");
+
+        } catch (e) {
+            console.error("Session Toggle Error:", e);
+            showToast("خطأ في الاتصال", 3000, "#ef4444");
+        }
+    };
+
+    // 2. دالة المراقبة الحية
+    window.listenToSessionState = function () {
+        if (!sessionStorage.getItem("secure_admin_session_token_v99")) return;
+
+        const docRef = doc(db, "settings", "control_panel");
+
+        // تشغيل المراقبة الحية (onSnapshot)
+        unsubscribeSessionListener = onSnapshot(docRef, (docSnap) => {
+            const isActive = docSnap.exists() ? docSnap.data().isActive : false;
+            updateSessionButtonUI(isActive);
+        }, (error) => {
+            console.error("Session Listener Error:", error);
+        });
+    };
+
+    // 3. تحديث شكل الزر
+    function updateSessionButtonUI(isOpen) {
+        const btn = document.getElementById('btnToggleSession');
+        const icon = document.getElementById('sessionIcon');
+        const txt = document.getElementById('sessionText');
+
+        if (!btn) return;
+
+        if (isOpen) {
+            btn.classList.add('session-open');
+            btn.style.background = "#dcfce7";
+            btn.style.color = "#166534";
+            btn.style.border = "2px solid #22c55e";
+            if (icon) icon.className = "fa-solid fa-satellite-dish fa-beat-fade";
+            if (txt) txt.innerText = "التسجيل متاح ";
+        } else {
+            btn.classList.remove('session-open');
+            btn.style.background = "#fee2e2";
+            btn.style.color = "#991b1b";
+            btn.style.border = "2px solid #ef4444";
+            if (icon) icon.className = "fa-solid fa-lock";
+            if (txt) txt.innerText = "التسجيل مغلق";
+        }
+    }
+
     async function startProcess(skip = false) {
         playClick(); resetApplicationState();
         if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { generateCodeAndShowDataEntry(); return; }
@@ -401,7 +521,7 @@ const db = getFirestore(app);
     }
 
     function generateCodeAndShowDataEntry() {
-        playClick(); if (checkBanStatus()) return; 
+        playClick(); if (checkBanStatus()) return;
         attendanceData = {}; let code = (Math.floor(142 + Math.random() * 1280) * 7); if (code < 1000) code += 7000;
         attendanceData.code = code.toString(); document.getElementById('attendanceCode').value = code; sessionStorage.setItem(TEMP_CODE_KEY, code.toString());
         const newEndTime = Date.now() + (DATA_ENTRY_TIMEOUT_SEC * 1000); sessionEndTime = newEndTime; sessionStorage.setItem(SESSION_END_TIME_KEY, newEndTime.toString());
@@ -412,23 +532,23 @@ const db = getFirestore(app);
         const savedDeadline = sessionStorage.getItem(SESSION_END_TIME_KEY);
         if (savedDeadline) sessionEndTime = parseInt(savedDeadline); else { sessionEndTime = Date.now() + (DATA_ENTRY_TIMEOUT_SEC * 1000); sessionStorage.setItem(SESSION_END_TIME_KEY, sessionEndTime.toString()); }
         const circle = document.getElementById('timerProgress'); const text = document.getElementById('timerNumber'); const circumference = 2 * Math.PI * 35;
-        if(countdownInterval) clearInterval(countdownInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
         countdownInterval = setInterval(() => {
             const now = Date.now(); const remainingMs = sessionEndTime - now; const secondsLeft = Math.max(0, Math.ceil(remainingMs / 1000));
             const percent = Math.max(0, remainingMs / (DATA_ENTRY_TIMEOUT_SEC * 1000)); const offset = circumference - (percent * circumference);
             text.innerText = secondsLeft.toString(); circle.style.strokeDashoffset = offset;
             if (secondsLeft > 10) circle.style.stroke = "#10b981"; else if (secondsLeft > 5) circle.style.stroke = "#f59e0b"; else { circle.style.stroke = "#ef4444"; circle.parentElement.classList.add('timer-pulse'); }
             if (remainingMs <= 0) {
-                clearInterval(countdownInterval); 
+                clearInterval(countdownInterval);
                 if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { text.innerText = "0"; return; }
                 document.getElementById('nextStepBtn').disabled = true; hideConnectionLostModal(); processIsActive = false; releaseWakeLock();
-                let left = decrementAttempts(); updateUIForAttempts(); 
+                let left = decrementAttempts(); updateUIForAttempts();
                 document.getElementById('timeoutMessage').innerText = `انتهى الوقت. انتبه: في المرة القادمة سيتم حظرك.`;
-                document.getElementById('timeoutModal').style.display = 'flex'; if(navigator.vibrate) navigator.vibrate(300);
+                document.getElementById('timeoutModal').style.display = 'flex'; if (navigator.vibrate) navigator.vibrate(300);
             }
         }, 100);
     }
-    
+
     function closeTimeoutModal() { document.getElementById('timeoutModal').style.display = 'none'; location.reload(); }
 
     // ==========================================
@@ -436,7 +556,7 @@ const db = getFirestore(app);
     // ==========================================
     async function handleIdSubmit() {
         playClick();
-        
+
         // 1. تجهيز الكود المدخل
         let rawId = document.getElementById('uniID').value.trim();
         const uniIdVal = convertArabicToEnglish(rawId); // تحويل الأرقام لعربي لإنجليزي
@@ -446,10 +566,10 @@ const db = getFirestore(app);
         // تنظيف الرسائل القديمة
         alertBox.style.display = 'none';
 
-        if (!uniIdVal) { 
-            alertBox.innerText = "⚠️ يرجى إدخال الكود الجامعي."; 
-            alertBox.style.display = 'block'; 
-            return; 
+        if (!uniIdVal) {
+            alertBox.innerText = "⚠️ يرجى إدخال الكود الجامعي.";
+            alertBox.style.display = 'block';
+            return;
         }
 
         // 2. تغيير شكل الزر لـ "جاري التحميل"
@@ -467,34 +587,34 @@ const db = getFirestore(app);
                 // ✅ الطالب موجود!
                 const studentData = docSnap.data();
                 const studentName = studentData.name; // جلب الاسم من الداتا
-                
+
                 // حفظ البيانات مؤقتاً للجلسة الحالية
-                attendanceData.uniID = uniIdVal; 
+                attendanceData.uniID = uniIdVal;
                 attendanceData.name = studentName;
-                sessionStorage.setItem(TEMP_ID_KEY, uniIdVal); 
+                sessionStorage.setItem(TEMP_ID_KEY, uniIdVal);
                 sessionStorage.setItem(TEMP_NAME_KEY, studentName);
-                
+
                 // عرض الاسم في الشاشة وتحديث الواجهة
-                document.getElementById('scanNameDisplay').innerText = studentName; 
+                document.getElementById('scanNameDisplay').innerText = studentName;
                 document.getElementById('scanIDDisplay').innerText = uniIdVal;
-                
+
                 // الانتقال للشاشة التالية (الكاميرا)
-                if(countdownInterval) clearInterval(countdownInterval); 
-                stopCameraSafely(); 
-                switchScreen('screenScanQR'); 
+                if (countdownInterval) clearInterval(countdownInterval);
+                stopCameraSafely();
+                switchScreen('screenScanQR');
                 playSuccess();
 
             } else {
                 // ❌ الطالب غير موجود
                 console.log("No student found with ID:", uniIdVal);
-                alertBox.innerText = "❌ هذا الكود غير مسجل في النظام."; 
-                alertBox.style.display = 'block'; 
-                if(navigator.vibrate) navigator.vibrate(300);
+                alertBox.innerText = "❌ هذا الكود غير مسجل في النظام.";
+                alertBox.style.display = 'block';
+                if (navigator.vibrate) navigator.vibrate(300);
             }
 
         } catch (error) {
             console.error("Error fetching student:", error);
-            alertBox.innerText = "⚠️ خطأ في الاتصال بالسيرفر."; 
+            alertBox.innerText = "⚠️ خطأ في الاتصال بالسيرفر.";
             alertBox.style.display = 'block';
         } finally {
             // 4. إرجاع الزر لحالته الأصلية
@@ -505,7 +625,7 @@ const db = getFirestore(app);
 
     function toggleBypassMode() {
         const chk = document.getElementById('bypassCheckbox'); const btnVerify = document.getElementById('btnVerify');
-        if(chk.checked) { attendanceData.isVerified = true; userLat = CONFIG.gps.targetLat; userLng = CONFIG.gps.targetLong; btnVerify.style.display = 'none'; document.getElementById('bypassModal').style.display = 'flex'; setTimeout(() => { document.getElementById('bypassModal').style.display = 'none'; }, 2000); } 
+        if (chk.checked) { attendanceData.isVerified = true; userLat = CONFIG.gps.targetLat; userLng = CONFIG.gps.targetLong; btnVerify.style.display = 'none'; document.getElementById('bypassModal').style.display = 'flex'; setTimeout(() => { document.getElementById('bypassModal').style.display = 'none'; }, 2000); }
         else { attendanceData.isVerified = false; btnVerify.style.display = 'flex'; btnVerify.innerHTML = '<i class="fa-solid fa-fingerprint"></i> التحقق من الهوية'; btnVerify.classList.remove('disabled'); }
         checkAllConditions();
     }
@@ -546,49 +666,49 @@ const db = getFirestore(app);
         const video = document.getElementById('video'); const camBorder = document.getElementById('camBorder'); const statusTxt = document.getElementById('statusTxt');
         timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE_FACE; timerNum.innerText = TIMER_DURATION_FACE;
         const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 });
-        if(faceCheckInterval) clearInterval(faceCheckInterval);
+        if (faceCheckInterval) clearInterval(faceCheckInterval);
         faceCheckInterval = setInterval(async () => {
-            if(video.paused || video.ended) return;
+            if (video.paused || video.ended) return;
             const det = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor().withFaceExpressions();
-            if(det) {
+            if (det) {
                 const nose = det.landmarks.getNose()[0]; const jaw = det.landmarks.getJawOutline();
                 const ratio = Math.abs(nose.x - jaw[0].x) / Math.abs(nose.x - jaw[16].x); const expr = det.expressions;
                 const isStableFace = expr.neutral > 0.8 || (expr.happy < 0.1 && expr.surprised < 0.1);
                 const moveDist = Math.sqrt(Math.pow(nose.x - lastNoseX, 2) + Math.pow(nose.y - lastNoseY, 2));
-                lastNoseX = nose.x; lastNoseY = nose.y; const isNotMoving = moveDist < 10; 
-                if(step === 0) {
-                    if(ratio > 0.8 && ratio < 1.2 && isStableFace && isNotMoving) {
+                lastNoseX = nose.x; lastNoseY = nose.y; const isNotMoving = moveDist < 10;
+                if (step === 0) {
+                    if (ratio > 0.8 && ratio < 1.2 && isStableFace && isNotMoving) {
                         camBorder.className = "cam-container status-ok"; statusTxt.innerText = "ممتاز.. خليك ثابت"; statusTxt.style.color = "var(--success)"; alertBadge.style.display = "none";
-                        if(!counting) {
+                        if (!counting) {
                             counting = true; modernTimer.style.display = "flex"; timerNum.innerText = count; timerBar.style.stroke = "#10b981";
                             timerInterval = setInterval(() => {
                                 const elapsed = (TIMER_DURATION_FACE - count) + 1; const progress = elapsed / TIMER_DURATION_FACE;
                                 const offset = TIMER_CIRCUMFERENCE_FACE - (progress * TIMER_CIRCUMFERENCE_FACE); timerBar.style.strokeDashoffset = offset;
                                 count--; timerNum.innerText = count;
-                                if(count <= 0) { 
-                                    clearInterval(timerInterval); modernTimer.style.display = "none"; step = 1; camBorder.className = "cam-container"; 
+                                if (count <= 0) {
+                                    clearInterval(timerInterval); modernTimer.style.display = "none"; step = 1; camBorder.className = "cam-container";
                                     statusTxt.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><span>انظر لليمين</span><i class="fa-solid fa-arrow-right-long arrow-anim"></i></div>';
-                                    statusTxt.style.color = "var(--warning)"; if(navigator.vibrate) navigator.vibrate(50); 
+                                    statusTxt.style.color = "var(--warning)"; if (navigator.vibrate) navigator.vibrate(50);
                                 }
                             }, 1000);
                         }
                     } else {
-                        if(counting) { clearInterval(timerInterval); counting = false; count = TIMER_DURATION_FACE; timerNum.innerText = TIMER_DURATION_FACE; modernTimer.style.display = "none"; timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE_FACE; document.getElementById('beepSound').play(); }
+                        if (counting) { clearInterval(timerInterval); counting = false; count = TIMER_DURATION_FACE; timerNum.innerText = TIMER_DURATION_FACE; modernTimer.style.display = "none"; timerBar.style.strokeDashoffset = TIMER_CIRCUMFERENCE_FACE; document.getElementById('beepSound').play(); }
                         camBorder.className = "cam-container status-error"; alertBadge.style.display = "block";
-                        if(!isNotMoving) alertBadge.innerText = "⚠️ لا تتحرك!"; else if(!isStableFace) alertBadge.innerText = "😐 بدون تعابير!"; else alertBadge.innerText = "👀 انظر للأمام";
+                        if (!isNotMoving) alertBadge.innerText = "⚠️ لا تتحرك!"; else if (!isStableFace) alertBadge.innerText = "😐 بدون تعابير!"; else alertBadge.innerText = "👀 انظر للأمام";
                         statusTxt.style.color = "var(--danger)";
                     }
-                } else if(step === 1) {
-                    if(ratio < 0.5) {
-                        clearInterval(faceCheckInterval); if(videoStream) videoStream.getTracks().forEach(track => track.stop()); document.getElementById('beepSound').play(); 
-                        attendanceData.vector = Array.from(det.descriptor); 
+                } else if (step === 1) {
+                    if (ratio < 0.5) {
+                        clearInterval(faceCheckInterval); if (videoStream) videoStream.getTracks().forEach(track => track.stop()); document.getElementById('beepSound').play();
+                        attendanceData.vector = Array.from(det.descriptor);
                         const statusTxt = document.getElementById('statusTxt'); statusTxt.innerHTML = '<div class="progress-container"><div class="progress-fill"></div></div><div style="font-size:12px;margin-top:5px;">جاري التحليل...</div>';
-                        
+
                         // Fake verifying against Server for now (Logic ready)
                         setTimeout(() => {
                             const successModal = document.getElementById('verificationSuccessModal'); successModal.style.display = 'flex';
-                            attendanceData.isVerified = true; 
-                            const verifyBtn = document.getElementById('btnVerify'); verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية'; 
+                            attendanceData.isVerified = true;
+                            const verifyBtn = document.getElementById('btnVerify'); verifyBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التحقق من الهوية';
                             verifyBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)'; verifyBtn.classList.add('disabled');
                             setTimeout(() => { successModal.style.display = 'none'; switchScreen('screenScanQR'); playSuccess(); checkAllConditions(); }, 2500);
                         }, 1000);
@@ -608,54 +728,54 @@ const db = getFirestore(app);
     async function submitToGoogle() {
         playClick();
         const btn = document.getElementById('submitBtn');
-        
+
         // منع التكرار لو الزر مضغوط
-        if(btn.disabled && btn.innerText.includes('جاري')) return;
+        if (btn.disabled && btn.innerText.includes('جاري')) return;
 
         // 1. التحقق من الموقع (GPS)
-        if(!userLat || !userLng) { 
-            checkLocationStrict(() => submitToGoogle()); 
-            return; 
+        if (!userLat || !userLng) {
+            checkLocationStrict(() => submitToGoogle());
+            return;
         }
 
         const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
-        
+
         // 2. تجميع البيانات
-        const selectedSubject = document.getElementById('subjectSelect').value; 
+        const selectedSubject = document.getElementById('subjectSelect').value;
         const selectedGroup = document.getElementById('groupSelect').value;
-        const sessionPassVal = document.getElementById('sessionPass').value; 
+        const sessionPassVal = document.getElementById('sessionPass').value;
         const selectedHall = document.getElementById('hallSelect').value;
-        
+
         // التحقق من أن كل الخانات ممتلئة
-        if(!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedGroup || !attendanceData.isVerified) { 
-            showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b'); 
-            return; 
+        if (!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedGroup || !attendanceData.isVerified) {
+            showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b');
+            return;
         }
-        
+
         // تغيير الزر لـ "جاري الحفظ"
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...'; 
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...';
         btn.disabled = true;
 
         const now = new Date();
         // تنسيق التاريخ (عشان نمنع الطالب يسجل مرتين في نفس المادة في نفس اليوم)
         // Format: DD/MM/YYYY
-        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
+        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
 
         try {
             // 3. التحقق من التكرار في Firebase (Duplicate Check)
             // بنسأل السيرفر: هل الطالب ده سجل المادة دي في التاريخ ده قبل كده؟
-            const q = query(collection(db, "attendance"), 
-                            where("id", "==", attendanceData.uniID), 
-                            where("date", "==", dateStr),
-                            where("subject", "==", selectedSubject));
-            
+            const q = query(collection(db, "attendance"),
+                where("id", "==", attendanceData.uniID),
+                where("date", "==", dateStr),
+                where("subject", "==", selectedSubject));
+
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
                 // الطالب مسجل قبل كده!
-                document.getElementById('duplicateModal').style.display = 'flex'; 
-                btn.innerHTML = originalText; 
-                btn.disabled = false; 
+                document.getElementById('duplicateModal').style.display = 'flex';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
                 return;
             }
 
@@ -669,7 +789,7 @@ const db = getFirestore(app);
                 hall: selectedHall || "N/A",    // القاعة
                 date: dateStr,                  // تاريخ اليوم
                 timestamp: Timestamp.now(),     // وقت السيرفر الدقيق (للترتيب)
-                time_str: now.toLocaleTimeString('en-US', {hour12: true, hour: '2-digit', minute:'2-digit'}), // وقت مقروء
+                time_str: now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }), // وقت مقروء
                 device_id: deviceId,            // بصمة الجهاز
                 gps_lat: userLat,               // الموقع
                 gps_lng: userLng,
@@ -685,58 +805,58 @@ const db = getFirestore(app);
             // ===========================
 
             // تحديث واجهة الإيصال (Receipt)
-            document.getElementById('receiptName').innerText = attendanceData.name; 
-            document.getElementById('receiptID').innerText = attendanceData.uniID; 
-            document.getElementById('receiptGroup').innerText = selectedGroup; 
-            document.getElementById('receiptSubject').innerText = selectedSubject; 
-            document.getElementById('receiptHall').innerText = selectedHall || 'N/A'; 
-            document.getElementById('receiptDate').innerText = dateStr; 
+            document.getElementById('receiptName').innerText = attendanceData.name;
+            document.getElementById('receiptID').innerText = attendanceData.uniID;
+            document.getElementById('receiptGroup').innerText = selectedGroup;
+            document.getElementById('receiptSubject').innerText = selectedSubject;
+            document.getElementById('receiptHall').innerText = selectedHall || 'N/A';
+            document.getElementById('receiptDate').innerText = dateStr;
             document.getElementById('receiptTime').innerText = payload.time_str;
 
             // إنهاء العملية وتنظيف الذاكرة
-            processIsActive = false; 
+            processIsActive = false;
             releaseWakeLock();
-            let left = decrementAttempts(); 
-            updateUIForAttempts(); 
+            let left = decrementAttempts();
+            updateUIForAttempts();
             if (left === 0) { localStorage.setItem(BAN_KEY, "true"); }
 
             // التبديل لشاشة النجاح وتشغيل الصوت
             resetApplicationState();
-            switchScreen('screenSuccess'); 
-            playSuccess(); 
-            
+            switchScreen('screenSuccess');
+            playSuccess();
+
             // إضافة للسجل المحلي (عشان لو حب يشوف هو سجل إيه)
-            cachedReportData.push({ 
-                uniID: attendanceData.uniID, 
-                subject: selectedSubject, 
-                time: payload.time_str, 
-                group: selectedGroup, 
-                name: attendanceData.name, 
-                hall: selectedHall 
+            cachedReportData.push({
+                uniID: attendanceData.uniID,
+                subject: selectedSubject,
+                time: payload.time_str,
+                group: selectedGroup,
+                name: attendanceData.name,
+                hall: selectedHall
             });
 
         } catch (err) {
             console.error("Firebase Submit Error: ", err);
-            btn.innerHTML = originalText; 
-            btn.disabled = false; 
+            btn.innerHTML = originalText;
+            btn.disabled = false;
             showToast("فشل الاتصال بالسيرفر. تأكد من الإنترنت.", 4000, '#ef4444');
         }
     }
 
-    function addKey(num) { playClick(); const i = document.getElementById('uniID'); if(i.value.length<10) i.value+=num; }
-    function backspaceKey() { playClick(); const i = document.getElementById('uniID'); i.value=i.value.slice(0,-1); }
-    function clearKey() { playClick(); document.getElementById('uniID').value=''; }
-    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) { var R = 6371; var dLat = (lat2-lat1) * (Math.PI/180); var dLon = (lon2-lon1) * (Math.PI/180); var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2); return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); }
-    
-    async function goBackToWelcome() { 
+    function addKey(num) { playClick(); const i = document.getElementById('uniID'); if (i.value.length < 10) i.value += num; }
+    function backspaceKey() { playClick(); const i = document.getElementById('uniID'); i.value = i.value.slice(0, -1); }
+    function clearKey() { playClick(); document.getElementById('uniID').value = ''; }
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) { var R = 6371; var dLat = (lat2 - lat1) * (Math.PI / 180); var dLon = (lon2 - lon1) * (Math.PI / 180); var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))); }
+
+    async function goBackToWelcome() {
         playClick(); window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (geo_watch_id) navigator.geolocation.clearWatch(geo_watch_id); 
-        if(countdownInterval) clearInterval(countdownInterval); await stopCameraSafely(); 
-        sessionStorage.removeItem(SESSION_END_TIME_KEY); sessionStorage.removeItem(TEMP_NAME_KEY); sessionStorage.removeItem(TEMP_ID_KEY); sessionStorage.removeItem(TEMP_CODE_KEY); 
-        processIsActive = false; releaseWakeLock(); document.getElementById('uniID').value = ''; 
-        document.getElementById('startScanCard').style.display = 'flex'; hideConnectionLostModal(); switchScreen('screenWelcome'); 
+        if (geo_watch_id) navigator.geolocation.clearWatch(geo_watch_id);
+        if (countdownInterval) clearInterval(countdownInterval); await stopCameraSafely();
+        sessionStorage.removeItem(SESSION_END_TIME_KEY); sessionStorage.removeItem(TEMP_NAME_KEY); sessionStorage.removeItem(TEMP_ID_KEY); sessionStorage.removeItem(TEMP_CODE_KEY);
+        processIsActive = false; releaseWakeLock(); document.getElementById('uniID').value = '';
+        document.getElementById('startScanCard').style.display = 'flex'; hideConnectionLostModal(); switchScreen('screenWelcome');
     }
-    
+
     function closeSelect(overlay) { const wrapper = overlay.parentElement; wrapper.classList.remove('open'); }
     function setupCustomSelects() {
         const yearWrapper = document.getElementById('yearSelectWrapper'); const groupWrapper = document.getElementById('groupSelectWrapper');
@@ -750,13 +870,13 @@ const db = getFirestore(app);
         groupWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(groupWrapper, e));
         subjectWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(subjectWrapper, e));
         hallWrapper.querySelector('.custom-select-trigger').addEventListener('click', (e) => toggleSelect(hallWrapper, e));
-        
+
         yearWrapper.querySelectorAll('.custom-option').forEach(op => {
-            op.addEventListener('click', function(e) {
+            op.addEventListener('click', function (e) {
                 e.stopPropagation(); yearWrapper.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected'); yearWrapper.querySelector('.trigger-text').textContent = this.querySelector('span').textContent;
                 yearWrapper.classList.remove('open'); document.getElementById('yearSelect').value = this.getAttribute('data-value');
-                playClick(); updateGroups(); updateSubjects(); 
+                playClick(); updateGroups(); updateSubjects();
             });
         });
     }
@@ -769,11 +889,11 @@ const db = getFirestore(app);
         if (y) {
             gReal.disabled = false; gWrapper.classList.remove('disabled');
             let prefix = (y === "first_year") ? "1G" : "2G";
-            for(let i=1; i<=20; i++) {
+            for (let i = 1; i <= 20; i++) {
                 let groupName = prefix + i;
                 const opt = document.createElement("option"); opt.value = groupName; opt.text = groupName; gReal.appendChild(opt);
                 const cOpt = document.createElement('div'); cOpt.className = 'custom-option'; cOpt.innerHTML = `<span class="english-num">${groupName}</span>`; cOpt.setAttribute('data-value', groupName);
-                cOpt.addEventListener('click', function(e) {
+                cOpt.addEventListener('click', function (e) {
                     e.stopPropagation(); gOptions.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                     this.classList.add('selected'); gTriggerText.textContent = groupName;
                     gWrapper.classList.remove('open'); gReal.value = this.getAttribute('data-value');
@@ -793,7 +913,7 @@ const db = getFirestore(app);
             subjectsData[y].forEach(sub => {
                 const opt = document.createElement("option"); opt.value = sub; opt.text = sub; sReal.appendChild(opt);
                 const cOpt = document.createElement('div'); cOpt.className = 'custom-option'; cOpt.innerHTML = `<span>${sub}</span>`; cOpt.setAttribute('data-value', sub);
-                cOpt.addEventListener('click', function(e) {
+                cOpt.addEventListener('click', function (e) {
                     e.stopPropagation(); sOptions.querySelectorAll('.custom-option').forEach(o => o.classList.remove('selected'));
                     this.classList.add('selected'); sTriggerText.textContent = this.querySelector('span').textContent;
                     sWrapper.classList.remove('open'); sReal.value = this.getAttribute('data-value');
@@ -804,114 +924,200 @@ const db = getFirestore(app);
         checkAllConditions();
     }
 
-    function checkAllConditions() { 
+    function checkAllConditions() {
         const year = document.getElementById('yearSelect').value; const group = document.getElementById('groupSelect').value;
-        const sub = document.getElementById('subjectSelect').value; const qrPass = document.getElementById('sessionPass').value; 
+        const sub = document.getElementById('subjectSelect').value; const qrPass = document.getElementById('sessionPass').value;
         const isVerified = attendanceData.isVerified === true; const hall = document.getElementById('hallSelect').value;
-        const btn = document.getElementById('submitBtn'); 
-        if(year && group && sub && hall && qrPass && isVerified) { btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; } 
-        else { btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; } 
-    }
-    
-    async function stopCameraSafely() { if(html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch(e) {} } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
-    function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; proceedToCamera(); } 
-    async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if(navigator.vibrate) navigator.vibrate([100,50,100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
-    
-    async function checkAdminPassword() { 
-        playClick(); const inputPass = document.getElementById('adminPassword').value;
-        // Simple client-side check for demo, can be upgraded to Firebase Auth later
-        if (inputPass === "admin123") { 
-            playSuccess(); const modal = document.getElementById('adminSuccessModal'); modal.style.display = 'flex';
-            const sessionToken = "admin_verified_" + Date.now(); sessionStorage.setItem(ADMIN_AUTH_TOKEN, sessionToken); 
-            setTimeout(() => { modal.style.display = 'none'; updateUIForMode(); switchScreen('screenWelcome'); }, 2000);
-        } else { document.getElementById('adminAlert').innerText = "❌ خطأ"; document.getElementById('adminAlert').style.display = 'block'; document.getElementById('adminPassword').value = ''; } 
+        const btn = document.getElementById('submitBtn');
+        if (year && group && sub && hall && qrPass && isVerified) { btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; }
+        else { btn.disabled = true; btn.style.opacity = "0.6"; btn.style.cursor = "not-allowed"; }
     }
 
-    function showError(msg, isPermanent = false) { if(countdownInterval) clearInterval(countdownInterval); document.getElementById('errorMsg').innerHTML = msg; const retryBtn = document.getElementById('retryBtn'); if(isPermanent) retryBtn.style.display = 'none'; else { retryBtn.style.display = 'inline-block'; retryBtn.onclick = function() { location.reload(); }; } switchScreen('screenError'); if(navigator.vibrate) navigator.vibrate(300); }
+    async function stopCameraSafely() { if (html5QrCode && html5QrCode.isScanning) { try { await html5QrCode.stop(); } catch (e) { } } document.getElementById('qr-reader').style.display = 'none'; releaseWakeLock(); }
+    function retryCamera() { document.getElementById('cameraErrorModal').style.display = 'none'; proceedToCamera(); }
+    async function startQrScanner() { playClick(); requestWakeLock(); await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('qr-reader').style.display = 'block'; document.getElementById('qr-reader').innerHTML = '<div class="scanner-laser" style="display:block"></div>'; document.getElementById('submitBtn').disabled = true; document.getElementById('sessionPass').value = ''; html5QrCode = new Html5Qrcode("qr-reader"); try { await html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (t) => { playBeep(); html5QrCode.stop().then(() => { document.getElementById('qr-reader').style.display = 'none'; document.getElementById('scanSuccessMsg').style.display = 'flex'; document.getElementById('sessionPass').value = t; checkAllConditions(); if (navigator.vibrate) navigator.vibrate([100, 50, 100]); releaseWakeLock(); }); }); } catch (err) { await stopCameraSafely(); document.getElementById('startScanCard').style.display = 'none'; document.getElementById('retryCamBtn').style.display = 'flex'; document.getElementById('cameraErrorModal').style.display = 'flex'; } }
+
+    // 1. دالة إظهار وإخفاء كلمة المرور
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('adminPassword');
+        const icon = document.getElementById('eyeIcon');
+
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            icon.style.color = '#0ea5e9'; // لون أزرق عند الإظهار
+        } else {
+            passInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            icon.style.color = '#94a3b8'; // لون رمادي عند الإخفاء
+        }
+    }
+
+    async function checkAdminPassword() {
+        playClick();
+
+        // 1. تعريف العناصر (تأكدنا أن كل شيء موجود)
+        const email = document.getElementById('adminEmailInput').value.trim();
+        const pass = document.getElementById('adminPassword').value;
+        const btn = document.querySelector('#screenAdminLogin .btn-main');
+        const alertBox = document.getElementById('adminAlert'); // <--- تعريف الصندوق
+
+        // 2. إخفاء التنبيه القديم عند بدء المحاولة الجديدة
+        if (alertBox) alertBox.style.display = 'none';
+
+        // 3. التحقق لو الخانات فاضية
+        if (!email || !pass) {
+            if (navigator.vibrate) navigator.vibrate(200);
+            // إظهار التنبيه فوراً
+            if (alertBox) {
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> يرجى كتابة البيانات`;
+                alertBox.style.display = 'flex';
+            }
+            return;
+        }
+
+        // تغيير شكل الزر للتحميل
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الدخول...';
+        btn.disabled = true;
+
+        try {
+            // محاولة الدخول
+            await signInWithEmailAndPassword(auth, email, pass);
+
+            // --- نجاح الدخول ---
+            playSuccess();
+            const modal = document.getElementById('adminSuccessModal');
+            modal.style.display = 'flex';
+
+            const sessionToken = "admin_verified_SECURE_" + Date.now();
+            sessionStorage.setItem(ADMIN_AUTH_TOKEN, sessionToken);
+
+            setTimeout(() => {
+                modal.style.display = 'none';
+                updateUIForMode();
+                switchScreen('screenWelcome');
+                document.getElementById('adminPassword').value = '';
+            }, 2000);
+
+        } catch (error) {
+            console.error("Login Error:", error);
+
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            // تحديد نص الرسالة
+            let msg = "حدث خطأ غير معروف";
+
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                msg = "البريد أو كلمة المرور خطأ";
+            } else if (error.code === 'auth/invalid-email') {
+                msg = "صيغة البريد غير صحيحة";
+            } else if (error.code === 'auth/too-many-requests') {
+                msg = "محاولات كثيرة.. انتظر قليلاً";
+            } else if (error.code === 'auth/network-request-failed') {
+                msg = "تأكد من اتصال الإنترنت";
+            }
+
+            // 4. إظهار المربع الأحمر المودرن (هذا هو السطر المهم)
+            if (alertBox) {
+                alertBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${msg}`;
+                alertBox.style.display = 'flex';
+            }
+
+        } finally {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+
+    function showError(msg, isPermanent = false) { if (countdownInterval) clearInterval(countdownInterval); document.getElementById('errorMsg').innerHTML = msg; const retryBtn = document.getElementById('retryBtn'); if (isPermanent) retryBtn.style.display = 'none'; else { retryBtn.style.display = 'inline-block'; retryBtn.onclick = function () { location.reload(); }; } switchScreen('screenError'); if (navigator.vibrate) navigator.vibrate(300); }
     function performLogout() { playClick(); sessionStorage.removeItem(ADMIN_AUTH_TOKEN); location.reload(); }
     function openLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'flex'; }
     function closeLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'none'; }
     function showConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'flex'; }
     function hideConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'none'; }
     async function checkRealConnection() { return true; }
-    function initGlobalGuard() { setInterval(async () => { const o = await checkRealConnection(); if (!o) showConnectionLostModal(); else hideConnectionLostModal(); }, 2000); 
+    function initGlobalGuard() {
+        setInterval(async () => { const o = await checkRealConnection(); if (!o) showConnectionLostModal(); else hideConnectionLostModal(); }, 2000);
         if (!isMobileDevice()) { document.getElementById('desktop-blocker').style.display = 'flex'; document.body.style.overflow = 'hidden'; throw new Error("Desktop access denied."); }
     }
-    
+
     // ==========================================
     //  FIREBASE: READ REPORTS (REAL-TIME)
     // ==========================================
     let unsubscribeReport = null; // أضف هذا السطر هنا بالضبط قبل الدالة
- // ==========================================
-// 1. دالة فتح السجل وجلب البيانات
-// ==========================================
-async function openReportModal() {
-    playClick();
-    document.getElementById('reportModal').style.display = 'flex';
-    showSubjectsView();
+    // ==========================================
+    // 1. دالة فتح السجل وجلب البيانات
+    // ==========================================
+    async function openReportModal() {
+        playClick();
+        document.getElementById('reportModal').style.display = 'flex';
+        showSubjectsView();
 
-    const now = new Date();
-    const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth()+1)).slice(-2) + '/' + now.getFullYear();
-    document.getElementById('reportDateDisplay').innerText = dateStr;
-    
-    const container = document.getElementById('subjectsContainer');
-    container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري الاتصال بالسيرفر...</div></div>`;
+        const now = new Date();
+        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
+        document.getElementById('reportDateDisplay').innerText = dateStr;
 
-    if (window.unsubscribeReport) window.unsubscribeReport();
+        const container = document.getElementById('subjectsContainer');
+        container.innerHTML = `<div style="text-align:center; padding:50px 20px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--primary); margin-bottom:15px;"></i><div style="font-weight:bold; color:#64748b;">جاري الاتصال بالسيرفر...</div></div>`;
 
-    try {
-        const q = query(
-            collection(db, "attendance"), 
-            where("date", "==", dateStr), 
-            orderBy("timestamp", "desc")
-        );
+        if (window.unsubscribeReport) window.unsubscribeReport();
 
-        window.unsubscribeReport = onSnapshot(q, (querySnapshot) => {
-            let allData = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                allData.push({
-                    docId: doc.id,
-                    uniID: data.id,
-                    subject: data.subject,
-                    time: data.time_str || '--:--',
-                    group: data.group,
-                    name: data.name,
-                    hall: data.hall,
-                    code: data.session_code
+        try {
+            const q = query(
+                collection(db, "attendance"),
+                where("date", "==", dateStr),
+                orderBy("timestamp", "desc")
+            );
+
+            window.unsubscribeReport = onSnapshot(q, (querySnapshot) => {
+                let allData = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allData.push({
+                        docId: doc.id,
+                        uniID: data.id,
+                        subject: data.subject,
+                        time: data.time_str || '--:--',
+                        group: data.group,
+                        name: data.name,
+                        hall: data.hall,
+                        code: data.session_code
+                    });
                 });
+
+                // تحديث المتغيرات عشان الأسماء تظهر
+                window.cachedReportData = allData;
+                cachedReportData = allData;
+
+                if (allData.length === 0) {
+                    container.innerHTML = `<div class="empty-state">لا توجد سجلات اليوم.</div>`;
+                } else {
+                    renderSubjectsList(allData);
+                }
             });
 
-            // تحديث المتغيرات عشان الأسماء تظهر
-            window.cachedReportData = allData; 
-            cachedReportData = allData; 
-
-            if (allData.length === 0) {
-                container.innerHTML = `<div class="empty-state">لا توجد سجلات اليوم.</div>`;
-            } else {
-                renderSubjectsList(allData);
-            }
-        });
-
-    } catch (e) {
-        console.error("General Report Error:", e);
-        container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">⚠️ فشل فتح السجل.</div>`;
-    }
-}
-
-function renderSubjectsList(data) {
-    const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
-    let html = '';
-
-    if (subjects.length === 0) {
-        document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">لا توجد سجلات.</div>';
-        return;
+        } catch (e) {
+            console.error("General Report Error:", e);
+            container.innerHTML = `<div style="color:#ef4444; text-align:center; padding:30px;">⚠️ فشل فتح السجل.</div>`;
+        }
     }
 
-    subjects.forEach(subject => {
-        const count = data.filter(i => i.subject === subject).length;
-        
-        html += `
+    function renderSubjectsList(data) {
+        const subjects = [...new Set(data.map(item => item.subject || "غير محدد"))];
+        let html = '';
+
+        if (subjects.length === 0) {
+            document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">لا توجد سجلات.</div>';
+            return;
+        }
+
+        subjects.forEach(subject => {
+            const count = data.filter(i => i.subject === subject).length;
+
+            html += `
         <div class="subject-big-card" onclick="openSubjectDetails('${subject}')" 
              style="display: flex; flex-direction: column; padding: 15px 20px; gap: 12px; margin-bottom: 12px;">
 
@@ -942,33 +1148,33 @@ function renderSubjectsList(data) {
             </div>
 
         </div>`;
-    });
+        });
 
-    document.getElementById('subjectsContainer').innerHTML = html;
-}
+        document.getElementById('subjectsContainer').innerHTML = html;
+    }
 
     function getHighlights() { return JSON.parse(localStorage.getItem(HIGHLIGHT_STORAGE_KEY) || "[]"); }
     function toggleHighlightStorage(id) {
-        let list = getHighlights(); if(list.includes(id)) list = list.filter(x => x !== id); else list.push(id);
+        let list = getHighlights(); if (list.includes(id)) list = list.filter(x => x !== id); else list.push(id);
         localStorage.setItem(HIGHLIGHT_STORAGE_KEY, JSON.stringify(list)); return list.includes(id);
     }
 
     function getEvaluations() { return JSON.parse(localStorage.getItem(EVAL_STORAGE_KEY) || "{}"); }
-    
+
     function updateSliderUI(val) {
         const display = document.getElementById('sliderValue'); const slider = document.getElementById('behaviorSlider');
         let colorClass = "slider-green"; let text = `مخالفة بسيطة (${val}/10)`; let colorHex = "#10b981";
-        if(val >= 4 && val <= 6) { colorClass = "slider-yellow"; text = `مخالفة متوسطة (${val}/10)`; colorHex = "#f59e0b"; }
-        else if(val >= 7 && val <= 8) { colorClass = "slider-orange"; text = `مخالفة مرتفعة (${val}/10)`; colorHex = "#f97316"; }
-        else if(val >= 9) { colorClass = "slider-red"; text = `مخالفة جسيمة (${val}/10)`; colorHex = "#ef4444"; }
+        if (val >= 4 && val <= 6) { colorClass = "slider-yellow"; text = `مخالفة متوسطة (${val}/10)`; colorHex = "#f59e0b"; }
+        else if (val >= 7 && val <= 8) { colorClass = "slider-orange"; text = `مخالفة مرتفعة (${val}/10)`; colorHex = "#f97316"; }
+        else if (val >= 9) { colorClass = "slider-red"; text = `مخالفة جسيمة (${val}/10)`; colorHex = "#ef4444"; }
         slider.className = "range-slider " + colorClass; display.innerText = text; display.style.color = colorHex;
     }
 
     function openEvaluation(studentName, studentID, currentTotal = 0) {
         playClick(); currentEvalID = studentID; currentEvalName = studentName;
         document.getElementById('evalStudentName').innerText = studentName;
-        const savedEvals = getEvaluations(); const totalScore = savedEvals[studentID] || 0; 
-        document.getElementById('evalCurrentTotal').innerText = totalScore; 
+        const savedEvals = getEvaluations(); const totalScore = savedEvals[studentID] || 0;
+        document.getElementById('evalCurrentTotal').innerText = totalScore;
         const slider = document.getElementById('behaviorSlider'); slider.value = 1; updateSliderUI(1);
         document.getElementById('evaluationModal').style.display = 'flex';
     }
@@ -979,16 +1185,16 @@ function renderSubjectsList(data) {
     //  FIREBASE: SAVE DISCIPLINE
     // ==========================================
     async function saveEvaluation() {
-        if(!currentEvalID) return;
+        if (!currentEvalID) return;
         const val = parseInt(document.getElementById('behaviorSlider').value);
-        
+
         // Local Update
         let evals = getEvaluations(); const oldVal = parseInt(evals[currentEvalID] || 0);
         evals[currentEvalID] = oldVal + val; localStorage.setItem(EVAL_STORAGE_KEY, JSON.stringify(evals));
-        
+
         const btn = document.querySelector('#evaluationModal .btn-main'); const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
-        
+
         try {
             await addDoc(collection(db, "discipline"), {
                 id: currentEvalID,
@@ -997,11 +1203,11 @@ function renderSubjectsList(data) {
                 total_score: evals[currentEvalID],
                 timestamp: Timestamp.now()
             });
-            
-            playSuccess(); closeEvaluation(); showToast("تم تسجيل المخالفة بنجاح", 2000, "#ef4444");
-            const currentSub = document.getElementById('currentSubjectTitle').innerText; if(currentSub !== "--") openSubjectDetails(currentSub); 
 
-        } catch(e) {
+            playSuccess(); closeEvaluation(); showToast("تم تسجيل المخالفة بنجاح", 2000, "#ef4444");
+            const currentSub = document.getElementById('currentSubjectTitle').innerText; if (currentSub !== "--") openSubjectDetails(currentSub);
+
+        } catch (e) {
             console.error(e);
             alert("فشل في الاتصال بالسيرفر، تم الحفظ محلياً فقط.");
             closeEvaluation();
@@ -1018,13 +1224,13 @@ function renderSubjectsList(data) {
     function openSubjectDetails(subjectName) {
         playClick(); document.getElementById('currentSubjectTitle').innerText = subjectName;
         let students = cachedReportData.filter(s => s.subject === subjectName);
-        students.sort((a, b) => { return a.group.localeCompare(b.group, undefined, {numeric: true, sensitivity: 'base'}); });
-        const highlights = getHighlights(); const evaluations = getEvaluations(); 
+        students.sort((a, b) => { return a.group.localeCompare(b.group, undefined, { numeric: true, sensitivity: 'base' }); });
+        const highlights = getHighlights(); const evaluations = getEvaluations();
         let html = '';
         students.forEach(item => {
-            const sessionCode = item.code || "N/A"; const hallName = item.hall || "N/A"; const groupName = item.group || "Unknown"; 
+            const sessionCode = item.code || "N/A"; const hallName = item.hall || "N/A"; const groupName = item.group || "Unknown";
             const studentName = item.name || "غير معروف"; const studentID = item.uniID || "---"; const timeStr = item.time || "--:--";
-            const totalDiscipline = evaluations[studentID] || 0; 
+            const totalDiscipline = evaluations[studentID] || 0;
             const highlightClass = highlights.includes(studentID) ? 'highlighted-red' : '';
             const evalBadge = getDisciplineBadge(totalDiscipline);
             html += `<div class="student-detailed-card ${highlightClass}" id="card-${studentID}">
@@ -1055,17 +1261,17 @@ function renderSubjectsList(data) {
 
     function showSubjectsView() { playClick(); document.getElementById('viewSubjects').style.transform = 'translateX(0)'; document.getElementById('viewStudents').style.transform = 'translateX(100%)'; }
     function closeReportModal() { playClick(); document.getElementById('reportModal').style.display = 'none'; }
-    
+
     let pendingAction = null;
     function showModernConfirm(title, text, actionCallback) {
         playClick(); document.getElementById('modernConfirmTitle').innerText = title; document.getElementById('modernConfirmText').innerHTML = text;
         const modal = document.getElementById('modernConfirmModal'); modal.style.display = 'flex'; pendingAction = actionCallback;
-        const yesBtn = document.getElementById('btnConfirmYes'); yesBtn.onclick = function() { if (pendingAction) pendingAction(); closeModernConfirm(); }; if(navigator.vibrate) navigator.vibrate(50);
+        const yesBtn = document.getElementById('btnConfirmYes'); yesBtn.onclick = function () { if (pendingAction) pendingAction(); closeModernConfirm(); }; if (navigator.vibrate) navigator.vibrate(50);
     }
     function closeModernConfirm() { playClick(); document.getElementById('modernConfirmModal').style.display = 'none'; pendingAction = null; }
 
     async function deleteEntry(id, subject, btn) {
-        showModernConfirm("حذف نهائي", "سيتم حذف الطالب من السجل. هل أنت متأكد؟", async function() {
+        showModernConfirm("حذف نهائي", "سيتم حذف الطالب من السجل. هل أنت متأكد؟", async function () {
             const card = btn.closest('.student-detailed-card'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             card.style.opacity = '0'; setTimeout(() => { card.remove(); }, 300);
             showToast("تم الحذف من القائمة.", 2000, '#ef4444');
@@ -1080,26 +1286,26 @@ function renderSubjectsList(data) {
     }
 
     async function clearAllReport() {
-        showModernConfirm("تصفيه السجل", "سيتم مسح البيانات. هل أنت متأكد؟", async function() {
-             document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم التنظيف محلياً.</div>'; playSuccess();
-             // Firebase clear logic can be added here if needed
+        showModernConfirm("تصفيه السجل", "سيتم مسح البيانات. هل أنت متأكد؟", async function () {
+            document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم التنظيف محلياً.</div>'; playSuccess();
+            // Firebase clear logic can be added here if needed
         });
     }
-    
+
     function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
     function showToast(message, duration = 3000, bgColor = '#334155') { const toast = document.getElementById('toastNotification'); toast.style.backgroundColor = bgColor; toast.innerText = message; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, duration); }
 
-    document.addEventListener('contextmenu', function(e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
-    document.addEventListener('copy', function(e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
-    document.addEventListener('cut', function(e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
-    document.addEventListener('paste', function(e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
-    
+    document.addEventListener('contextmenu', function (e) { e.preventDefault(); showToast('إجراء محظور لأسباب أمنية.', 2000, '#ef4444'); });
+    document.addEventListener('copy', function (e) { e.preventDefault(); showToast('النسخ محظور لأسباب أمنية.', 2000, '#ef4444'); });
+    document.addEventListener('cut', function (e) { e.preventDefault(); showToast('القص محظور لأسباب أمنية.', 2000, '#ef4444'); });
+    document.addEventListener('paste', function (e) { e.preventDefault(); showToast('اللصق محظور لأسباب أمنية.', 2000, '#ef4444'); });
+
     // ==========================================
     //  New Smart Upload System (With Batch ID)
     // ==========================================
 
     // 1. دالة لفتح نافذة اختيار الملف فقط لو تم اختيار الفرقة
-    window.triggerUploadProcess = function() {
+    window.triggerUploadProcess = function () {
         const level = document.getElementById('uploadLevelSelect').value;
         if (!level) {
             alert("⚠️ خطأ: يجب اختيار الفرقة الدراسية من القائمة أولاً!");
@@ -1112,16 +1318,16 @@ function renderSubjectsList(data) {
     // 2. الاستماع لتغيير الملف (التنفيذ الفعلي)
     const fileInputSmart = document.getElementById('excelFileInput');
     if (fileInputSmart) {
-        fileInputSmart.addEventListener('change', async function(e) {
+        fileInputSmart.addEventListener('change', async function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
             // قراءة المستوى المختار
             const selectedLevel = document.getElementById('uploadLevelSelect').value;
             const statusDiv = document.getElementById('uploadStatus');
-            
+
             // إنشاء Batch ID فريد (السحر هنا)
-            const batchID = `BATCH_L${selectedLevel}_${Date.now()}`; 
+            const batchID = `BATCH_L${selectedLevel}_${Date.now()}`;
 
             statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحليل والتصنيف...';
 
@@ -1144,9 +1350,9 @@ function renderSubjectsList(data) {
 
                 for (const chunk of chunks) {
                     const batch = writeBatch(db);
-                    
+
                     chunk.forEach(row => {
-                        let studentId = row[0]; 
+                        let studentId = row[0];
                         let studentName = row[1];
 
                         if (studentId && studentName) {
@@ -1154,9 +1360,9 @@ function renderSubjectsList(data) {
                             studentName = String(studentName).trim();
 
                             const docRef = doc(db, "students", studentId);
-                            
+
                             // البيانات الجديدة التي ستضاف لكل طالب
-                            batch.set(docRef, { 
+                            batch.set(docRef, {
                                 name: studentName,
                                 id: studentId,
                                 academic_level: selectedLevel, // رقم الفرقة
@@ -1183,7 +1389,7 @@ function renderSubjectsList(data) {
 
                 statusDiv.innerHTML = `<span style="color: #10b981;">✅ تم بنجاح! تم حفظ وتصنيف ${totalUploaded} طالب.</span>`;
                 playSuccess();
-                fileInputSmart.value = ''; 
+                fileInputSmart.value = '';
 
             } catch (error) {
                 console.error("Upload Error:", error);
@@ -1266,7 +1472,7 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 //  تصدير المادة المحددة إلى ملف Excel
 // ==========================================
-window.exportSubjectToExcel = function(subjectName) {
+window.exportSubjectToExcel = function (subjectName) {
     // التحقق من وجود بيانات
     if (!window.cachedReportData || window.cachedReportData.length === 0) {
         alert("لا توجد بيانات متاحة حالياً للتصدير.");
@@ -1313,11 +1519,12 @@ window.exportSubjectToExcel = function(subjectName) {
 // جعل الدالة متاحة للضغط
 window.exportSubjectToExcel = exportSubjectToExcel;
 function playClick() {
+    if (navigator.vibrate) navigator.vibrate(10);
 }
 // ==========================================
 //  تصدير الحضور لملف Excel باسم المادة
 // ==========================================
-window.exportSubjectToExcel = function(subjectName) {
+window.exportSubjectToExcel = function (subjectName) {
     // 1. جلب البيانات من المخزن العالمي
     const allData = window.cachedReportData || [];
 
@@ -1366,18 +1573,18 @@ window.exportSubjectToExcel = function(subjectName) {
 // ==========================================
 
 // 1. فتح السجل وجلب البيانات
-window.openUploadHistory = async function() {
+window.openUploadHistory = async function () {
     playClick();
     document.getElementById('manageUploadsModal').style.display = 'flex';
     const container = document.getElementById('uploadsHistoryContainer');
-    
+
     container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b;"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري جلب السجل...</div>';
 
     try {
         // جلب آخر 20 عملية رفع
         const q = query(collection(db, "upload_history"), orderBy("timestamp", "desc"));
         const querySnapshot = await getDocs(q);
-        
+
         if (querySnapshot.empty) {
             container.innerHTML = '<div class="empty-state">لا توجد عمليات رفع مسجلة.</div>';
             return;
@@ -1387,13 +1594,13 @@ window.openUploadHistory = async function() {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
-            const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-            
+            const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
             // تحديد لون حسب الفرقة
             let badgeColor = "#0f172a";
-            if(data.level == "1") badgeColor = "#0ea5e9";
-            else if(data.level == "2") badgeColor = "#8b5cf6";
-            
+            if (data.level == "1") badgeColor = "#0ea5e9";
+            else if (data.level == "2") badgeColor = "#8b5cf6";
+
             html += `
             <div class="list-item-manage" style="flex-direction:column; align-items:flex-start; gap:8px; background:#fff; border:1px solid #e2e8f0; padding:15px; border-radius:12px; margin-bottom:10px;">
                 <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
@@ -1408,7 +1615,7 @@ window.openUploadHistory = async function() {
                 </div>
             </div>`;
         });
-        
+
         container.innerHTML = html;
 
     } catch (error) {
@@ -1420,15 +1627,15 @@ window.openUploadHistory = async function() {
 // ==========================================
 //  تحديث نهائي: دالة الحذف (المضادة للتعليق)
 // ==========================================
-window.deleteBatch = function(batchId, historyDocId) {
-    if(!batchId) return;
+window.deleteBatch = function (batchId, historyDocId) {
+    if (!batchId) return;
 
     showModernConfirm(
         "حذف الشيت نهائياً 🗑️",
         "تحذير: سيتم حذف جميع الطلاب المسجلين في هذا الشيت.<br>هذا الإجراء لا يمكن التراجع عنه. هل أنت متأكد؟",
-        async function() {
+        async function () {
             const container = document.getElementById('uploadsHistoryContainer');
-            
+
             // تصميم رسالة التحميل
             container.innerHTML = `
                 <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:200px; animation: fadeIn 0.5s;">
@@ -1445,12 +1652,12 @@ window.deleteBatch = function(batchId, historyDocId) {
                 // 1. حذف الطلاب (Batch Delete)
                 const q = query(collection(db, "students"), where("upload_batch_id", "==", batchId));
                 const snapshot = await getDocs(q);
-                
+
                 if (snapshot.docs.length > 0) {
                     const chunks = [];
                     const docs = snapshot.docs;
                     for (let i = 0; i < docs.length; i += 400) chunks.push(docs.slice(i, i + 400));
-                    
+
                     for (const chunk of chunks) {
                         const batch = writeBatch(db);
                         chunk.forEach(doc => batch.delete(doc.ref));
@@ -1462,7 +1669,7 @@ window.deleteBatch = function(batchId, historyDocId) {
                 await deleteDoc(doc(db, "upload_history", historyDocId));
 
                 // 3. نجاح
-                try { playSuccess(); } catch(e){} // تشغيل الصوت بأمان
+                try { playSuccess(); } catch (e) { } // تشغيل الصوت بأمان
                 showToast(`تم الحذف بنجاح.`, 3000, "#10b981");
 
             } catch (error) {
@@ -1472,30 +1679,30 @@ window.deleteBatch = function(batchId, historyDocId) {
                 // =============================================
                 // هذا الجزء سيعمل دائماً وسيخفي رسالة التحميل
                 // =============================================
-                openUploadHistory(); 
+                openUploadHistory();
             }
         }
     );
 };
 // دوال فتح وإغلاق النافذة الجديدة
-window.openManageStudentsModal = function() {
+window.openManageStudentsModal = function () {
     playClick();
     document.getElementById('manageStudentsModal').style.display = 'flex';
 };
 
-window.closeManageStudentsModal = function() {
+window.closeManageStudentsModal = function () {
     playClick();
     document.getElementById('manageStudentsModal').style.display = 'none';
 };
 
 // تعديل دالة الرفع لتستخدم التنبيه الحديث (بدل alert)
-window.triggerUploadProcess = function() {
+window.triggerUploadProcess = function () {
     const level = document.getElementById('uploadLevelSelect').value;
-    
+
     if (!level) {
-        if(navigator.vibrate) navigator.vibrate(200);
+        if (navigator.vibrate) navigator.vibrate(200);
         showToast("⚠️ يرجى اختيار الفرقة الدراسية أولاً!", 3000, "#ef4444");
-        
+
         // تأثير بصري للفت الانتباه
         const selectBox = document.getElementById('uploadLevelSelect');
         selectBox.focus();
@@ -1510,47 +1717,47 @@ window.triggerUploadProcess = function() {
 // ==========================================
 
 // 1. دالة الإظهار
-window.showModernConfirm = function(title, text, actionCallback) {
+window.showModernConfirm = function (title, text, actionCallback) {
     playClick(); // تشغيل صوت النقر
-    
+
     // تحديث النصوص
     const titleEl = document.getElementById('modernConfirmTitle');
     const textEl = document.getElementById('modernConfirmText');
-    
-    if(titleEl) titleEl.innerText = title;
-    if(textEl) textEl.innerHTML = text;
-    
+
+    if (titleEl) titleEl.innerText = title;
+    if (textEl) textEl.innerHTML = text;
+
     // حفظ الأمر اللي هيتنفذ لو ضغط "نعم"
     window.pendingAction = actionCallback;
-    
+
     // إظهار النافذة
     const modal = document.getElementById('modernConfirmModal');
-    if(modal) modal.style.display = 'flex';
+    if (modal) modal.style.display = 'flex';
 };
 
 // 2. دالة الإغلاق
-window.closeModernConfirm = function() {
+window.closeModernConfirm = function () {
     playClick();
     const modal = document.getElementById('modernConfirmModal');
-    if(modal) modal.style.display = 'none';
+    if (modal) modal.style.display = 'none';
     window.pendingAction = null; // إلغاء الأمر المعلق
 };
 
 // 3. تفعيل زر "نعم"
 const confirmBtn = document.getElementById('btnConfirmYes');
 if (confirmBtn) {
-    confirmBtn.onclick = function() {
+    confirmBtn.onclick = function () {
         if (window.pendingAction) window.pendingAction(); // تنفيذ الأمر
         closeModernConfirm(); // إغلاق النافذة
     };
 }
-window.exportAttendanceSheet = async function(subjectName) {
+window.exportAttendanceSheet = async function (subjectName) {
     playClick();
 
     // ==========================================
     // 1. إصلاح مشكلة subjectsData (تعريف المواد داخلياً)
     // ==========================================
-    
+
     // نحاول نجيب المواد من التخزين عشان لو أنت ضفت مواد جديدة
     let subjectsConfig = JSON.parse(localStorage.getItem('subjectsData_v4'));
 
@@ -1591,7 +1798,7 @@ window.exportAttendanceSheet = async function(subjectName) {
         // 4. جلب دفعة الغياب بالكامل (بناءً على الفرقة اللي حددناها)
         const q = query(collection(db, "students"), where("academic_level", "==", TARGET_LEVEL));
         const querySnapshot = await getDocs(q);
-        
+
         let allStudentsInLevel = [];
         querySnapshot.forEach((doc) => {
             const s = doc.data();
@@ -1599,7 +1806,7 @@ window.exportAttendanceSheet = async function(subjectName) {
                 id: s.id,
                 name: s.name,
                 level: s.academic_level,
-                isMainList: true 
+                isMainList: true
             });
         });
 
@@ -1608,7 +1815,7 @@ window.exportAttendanceSheet = async function(subjectName) {
         // أ) معالجة أبناء الدفعة الأصليين
         allStudentsInLevel.forEach(student => {
             const attendanceRecord = attendeesMap[student.id];
-            
+
             if (attendanceRecord) {
                 // حاضر
                 finalReport.push({
@@ -1616,7 +1823,7 @@ window.exportAttendanceSheet = async function(subjectName) {
                     status: "✅ حاضر",
                     time: attendanceRecord.time,
                     group: attendanceRecord.group,
-                    rowColor: "" 
+                    rowColor: ""
                 });
                 delete attendeesMap[student.id];
             } else {
@@ -1626,7 +1833,7 @@ window.exportAttendanceSheet = async function(subjectName) {
                     status: "❌ غائب",
                     time: "--:--",
                     group: "--",
-                    rowColor: "style='color: #ef4444; background-color: #fef2f2;'" 
+                    rowColor: "style='color: #ef4444; background-color: #fef2f2;'"
                 });
             }
         });
@@ -1634,12 +1841,12 @@ window.exportAttendanceSheet = async function(subjectName) {
         // ب) معالجة التخلفات (المتبقيين)
         for (let intruderID in attendeesMap) {
             const intruder = attendeesMap[intruderID];
-            let realLevel = "تخلفات"; 
+            let realLevel = "تخلفات";
             try {
-                 const docRef = doc(db, "students", intruderID);
-                 const docSnap = await getDoc(docRef);
-                 if(docSnap.exists()) realLevel = docSnap.data().academic_level;
-            } catch(e){}
+                const docRef = doc(db, "students", intruderID);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) realLevel = docSnap.data().academic_level;
+            } catch (e) { }
 
             finalReport.push({
                 id: intruder.uniID,
@@ -1648,7 +1855,7 @@ window.exportAttendanceSheet = async function(subjectName) {
                 status: "✅ حاضر",
                 time: intruder.time,
                 group: intruder.group,
-                rowColor: "style='background-color: #fef08a; color: #854d0e; font-weight:bold;'" 
+                rowColor: "style='background-color: #fef08a; color: #854d0e; font-weight:bold;'"
             });
         }
 
@@ -1704,7 +1911,7 @@ window.exportAttendanceSheet = async function(subjectName) {
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-        
+
         link.setAttribute("href", url);
         link.setAttribute("download", `${subjectName}_الفرقة_${TARGET_LEVEL}_${dateStr}.xls`);
         link.style.visibility = 'hidden';
@@ -1713,7 +1920,7 @@ window.exportAttendanceSheet = async function(subjectName) {
         document.body.removeChild(link);
 
         playSuccess();
-        if(document.getElementById('toastNotification')) document.getElementById('toastNotification').style.display = 'none';
+        if (document.getElementById('toastNotification')) document.getElementById('toastNotification').style.display = 'none';
 
     } catch (error) {
         console.error(error);
@@ -1725,13 +1932,13 @@ window.exportAttendanceSheet = async function(subjectName) {
 // حل مشكلة showToast ورسائل التنبيه
 // ==========================================
 if (typeof showToast === 'undefined') {
-    window.showToast = function(message, duration = 3000, bgColor = '#334155') { 
-        const toast = document.getElementById('toastNotification'); 
-        if(toast) {
-            toast.style.backgroundColor = bgColor; 
-            toast.innerText = message; 
-            toast.style.display = 'block'; 
-            setTimeout(() => { toast.style.display = 'none'; }, duration); 
+    window.showToast = function (message, duration = 3000, bgColor = '#334155') {
+        const toast = document.getElementById('toastNotification');
+        if (toast) {
+            toast.style.backgroundColor = bgColor;
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, duration);
         } else {
             // بديل لو العنصر مش موجود يظهر رسالة عادية
             console.log("تنبيه: " + message);
@@ -1741,16 +1948,16 @@ if (typeof showToast === 'undefined') {
 // ==========================================
 // تعريف دوال الصوت عشان تمنع الأخطاء
 // ==========================================
-window.playSuccess = function() {
+window.playSuccess = function () {
     // دالة فارغة: عشان الكود ميعطلش لما يحاول يشغل صوت
     console.log("تمت العملية بنجاح ✅");
 };
 
-window.playClick = function() {
+window.playClick = function () {
     // دالة فارغة: عشان الكود ميعطلش عند النقر
 };
 
-window.playBeep = function() {
+window.playBeep = function () {
     // دالة فارغة
 };
 // ============================================================
@@ -1766,15 +1973,15 @@ const ARCHIVE_SUBJECTS = {
 };
 
 // 2. دالة تحديث الاقتراحات (بتشتغل لما تختار الفرقة)
-window.updateArchiveSubjects = function() {
+window.updateArchiveSubjects = function () {
     const level = document.getElementById('archiveLevelSelect').value;
     const dataList = document.getElementById('subjectsList'); // القائمة الخفية
     const inputField = document.getElementById('archiveSubjectInput'); // مربع الكتابة
-    
+
     // تفريغ الاقتراحات القديمة وتفريغ خانة الكتابة
     dataList.innerHTML = '';
-    inputField.value = ''; 
-    
+    inputField.value = '';
+
     if (!level || !ARCHIVE_SUBJECTS[level]) return;
 
     // إضافة المواد كـ اقتراحات
@@ -1786,13 +1993,13 @@ window.updateArchiveSubjects = function() {
 };
 
 // 3. دالة التحميل (تم إصلاح سبب رسالة الخطأ)
-window.downloadHistoricalSheet = async function() {
+window.downloadHistoricalSheet = async function () {
     playClick();
 
     // جلب البيانات من المدخلات الجديدة
     const level = document.getElementById('archiveLevelSelect').value;
     // هنا التغيير: بنجيب القيمة من مربع الكتابة مش القائمة
-    const subjectName = document.getElementById('archiveSubjectInput').value.trim(); 
+    const subjectName = document.getElementById('archiveSubjectInput').value.trim();
     const rawDate = document.getElementById('historyDateInput').value;
 
     // التحقق من البيانات
@@ -1819,7 +2026,7 @@ window.downloadHistoricalSheet = async function() {
         // البحث في الداتابيز
         const attQuery = query(collection(db, "attendance"), where("date", "==", formattedDate), where("subject", "==", subjectName));
         const attSnap = await getDocs(attQuery);
-        
+
         if (attSnap.empty) {
             showToast(`❌ مفيش بيانات لمادة (${subjectName}) يوم ${formattedDate}`, 4000, "#ef4444");
             btn.innerHTML = oldText;
@@ -1853,11 +2060,11 @@ window.downloadHistoricalSheet = async function() {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Archive_${subjectName}_${formattedDate.replace(/\//g,'-')}.csv`;
+        link.download = `Archive_${subjectName}_${formattedDate.replace(/\//g, '-')}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         playSuccess();
         document.getElementById('attendanceRecordsModal').style.display = 'none';
 
@@ -1889,21 +2096,21 @@ function normalizeText(text) {
 }
 
 // تعديل دالة البحث الذكي (عشان ما تمسحش الكلام)
-window.smartSubjectSearch = function() {
+window.smartSubjectSearch = function () {
     const input = document.getElementById('archiveSubjectInput');
     const box = document.getElementById('suggestionBox');
     const level = document.getElementById('archiveLevelSelect').value;
 
     // لو مفيش فرقة، نخفي القائمة بس وما نمسحش الكلام
     if (!level) {
-        if(box) box.style.display = 'none';
-        return; 
+        if (box) box.style.display = 'none';
+        return;
     }
 
-    const query = normalizeText(input.value); 
+    const query = normalizeText(input.value);
     const list = SEARCH_DB[level] || [];
-    
-    box.innerHTML = ''; 
+
+    box.innerHTML = '';
     let hasResults = false;
 
     list.forEach(subject => {
@@ -1912,11 +2119,11 @@ window.smartSubjectSearch = function() {
             const item = document.createElement('div');
             item.innerText = subject;
             item.style.cssText = "padding:10px; cursor:pointer; border-bottom:1px solid #f1f5f9; color:#334155; transition:0.2s;";
-            
-            item.onmouseover = function() { this.style.backgroundColor = "#f0f9ff"; };
-            item.onmouseout = function() { this.style.backgroundColor = "white"; };
-            
-            item.onclick = function() {
+
+            item.onmouseover = function () { this.style.backgroundColor = "#f0f9ff"; };
+            item.onmouseout = function () { this.style.backgroundColor = "white"; };
+
+            item.onclick = function () {
                 input.value = subject;
                 box.style.display = 'none';
             };
@@ -1934,33 +2141,33 @@ window.smartSubjectSearch = function() {
 };
 
 // 2. دالة مسح الخانة عند تغيير الفرقة
-window.clearSearchBox = function() {
+window.clearSearchBox = function () {
     document.getElementById('archiveSubjectInput').value = '';
     document.getElementById('suggestionBox').style.display = 'none';
 };
 
 // 3. إغلاق القائمة لو ضغطت في أي مكان بره
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const box = document.getElementById('suggestionBox');
     const input = document.getElementById('archiveSubjectInput');
     if (e.target !== box && e.target !== input) {
-        if(box) box.style.display = 'none';
+        if (box) box.style.display = 'none';
     }
 });
 
 // ==========================================
 // دالة التحميل (زي ما هي بدون تعديل)
 // ==========================================
-window.downloadHistoricalSheet = async function() {
+window.downloadHistoricalSheet = async function () {
     playClick();
     const level = document.getElementById('archiveLevelSelect').value;
     const subjectName = document.getElementById('archiveSubjectInput').value; // هنا بناخد من الـ input
     const rawDate = document.getElementById('historyDateInput').value;
 
-    if (!level || !subjectName || !rawDate) { 
-        showToast("⚠️ البيانات ناقصة", 3000, "#f59e0b"); return; 
+    if (!level || !subjectName || !rawDate) {
+        showToast("⚠️ البيانات ناقصة", 3000, "#f59e0b"); return;
     }
-    
+
     const formattedDate = rawDate.split("-").reverse().join("/");
     const btn = document.querySelector('#attendanceRecordsModal .btn-main');
     const oldText = btn.innerHTML;
@@ -1969,10 +2176,10 @@ window.downloadHistoricalSheet = async function() {
     try {
         const attQuery = query(collection(db, "attendance"), where("date", "==", formattedDate), where("subject", "==", subjectName));
         const attSnap = await getDocs(attQuery);
-        
-        if (attSnap.empty) { 
-            showToast("❌ لا توجد بيانات", 3000, "#ef4444"); 
-            btn.innerHTML = oldText; return; 
+
+        if (attSnap.empty) {
+            showToast("❌ لا توجد بيانات", 3000, "#ef4444");
+            btn.innerHTML = oldText; return;
         }
 
         const attendeesMap = {};
@@ -1980,23 +2187,23 @@ window.downloadHistoricalSheet = async function() {
 
         const stQuery = query(collection(db, "students"), where("academic_level", "==", level));
         const stSnap = await getDocs(stQuery);
-        
+
         let report = [];
         stSnap.forEach(doc => {
             const s = doc.data();
             if (attendeesMap[s.id]) {
-                report.push({name: s.name, id: s.id, st: "✅ حاضر", bg: ""});
+                report.push({ name: s.name, id: s.id, st: "✅ حاضر", bg: "" });
                 delete attendeesMap[s.id];
             } else {
-                report.push({name: s.name, id: s.id, st: "❌ غائب", bg: "style='background:#fef2f2; color:red'"});
+                report.push({ name: s.name, id: s.id, st: "❌ غائب", bg: "style='background:#fef2f2; color:red'" });
             }
         });
-        
-        for (let id in attendeesMap) report.push({name: attendeesMap[id].name, id: id, st: "✅ حاضر (تخلفات)", bg: "style='background:#fef08a'"});
+
+        for (let id in attendeesMap) report.push({ name: attendeesMap[id].name, id: id, st: "✅ حاضر (تخلفات)", bg: "style='background:#fef08a'" });
 
         let csv = `\uFEFFالاسم,الكود,الحالة\n`;
         report.forEach(r => csv += `${r.name},"${r.id}",${r.st}\n`);
-        
+
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -2004,7 +2211,7 @@ window.downloadHistoricalSheet = async function() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         playSuccess();
         document.getElementById('attendanceRecordsModal').style.display = 'none';
 
@@ -2015,7 +2222,7 @@ window.downloadHistoricalSheet = async function() {
 // ==========================================
 
 // 1. دالة فتح نافذة الدخول (اربط دي بزرار "إدخال بيانات الطلاب" الرئيسي)
-window.openAdminLogin = function() {
+window.openAdminLogin = function () {
     // لو مسجل دخول قبل كده، افتح علطول
     if (sessionStorage.getItem("is_logged_in_securely")) {
         document.getElementById('dataEntryModal').style.display = 'flex';
@@ -2025,7 +2232,7 @@ window.openAdminLogin = function() {
 };
 
 // 2. دالة تنفيذ الدخول
-window.performSecureLogin = async function() {
+window.performSecureLogin = async function () {
     const email = document.getElementById('adminEmail').value;
     const pass = document.getElementById('adminPass').value;
     const btn = document.querySelector('#secureLoginModal .btn-main');
@@ -2041,14 +2248,14 @@ window.performSecureLogin = async function() {
     try {
         // هنا السحر: بنسأل سيرفر جوجل
         await signInWithEmailAndPassword(auth, email, pass);
-        
+
         // لو مطلعش خطأ، يبقى تمام
         showToast("🔓 تم تسجيل الدخول بنجاح", 3000, "#10b981");
         document.getElementById('secureLoginModal').style.display = 'none';
-        
+
         // حفظ حالة الدخول مؤقتاً (عشان ميسألوش تاني طول الجلسة)
         sessionStorage.setItem("is_logged_in_securely", "true");
-        
+
         // فتح لوحة التحكم الأصلية
         document.getElementById('dataEntryModal').style.display = 'flex';
 
@@ -2059,3 +2266,23 @@ window.performSecureLogin = async function() {
         btn.innerHTML = oldText;
     }
 };
+// ... (أكوادك السابقة) ...
+
+// 1. ضع كود دالة العين هنا (قبل سطر التفعيل)
+function togglePasswordVisibility() {
+    const passInput = document.getElementById('adminPassword');
+    const icon = document.getElementById('eyeIcon');
+
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+        icon.style.color = '#0ea5e9';
+    } else {
+        passInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+        icon.style.color = '#94a3b8';
+    }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
