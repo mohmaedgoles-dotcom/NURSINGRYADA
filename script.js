@@ -895,7 +895,10 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
             }
 
             // 4. تجهيز الحزمة للإرسال
+            // 4. تجهيز الحزمة للإرسال
             const deviceId = getUniqueDeviceId();
+            
+            // --- بداية التغيير ---
             const payload = {
                 id: attendanceData.uniID,       // كود الطالب
                 name: attendanceData.name,      // اسم الطالب
@@ -903,18 +906,25 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                 subject: selectedSubject,       // المادة
                 hall: selectedHall || "N/A",    // القاعة
                 date: dateStr,                  // تاريخ اليوم
-                timestamp: Timestamp.now(),     // وقت السيرفر الدقيق (للترتيب)
-                time_str: now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }), // وقت مقروء
+                timestamp: Timestamp.now(),     // وقت السيرفر
+                time_str: now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }),
                 device_id: deviceId,            // بصمة الجهاز
                 gps_lat: userLat,               // الموقع
                 gps_lng: userLng,
                 session_code: sessionPassVal,   // كود الـ QR
-                verification: "FIREBASE_SECURE" // نوع التحقق
+                verification: "FIREBASE_SECURE",
+
+                // +++ [إضافة جديدة] تخزين بصمة الوجه للمقارنة +++
+                face_vector: attendanceData.vector || [] 
             };
+
+            // +++ [إضافة جديدة] استدعاء دالة كشف الغش قبل الحفظ +++
+            // تأكد أنك أضفت دالة checkForFraud في نهاية الملف كما اتفقنا
+            await checkForFraud(payload);
 
             // 5. الحفظ الفعلي في Firestore
             await addDoc(collection(db, "attendance"), payload);
-
+            // --- نهاية التغيير ---
             // ===========================
             //  تم الحفظ بنجاح! 🎉
             // ===========================
@@ -2419,3 +2429,79 @@ window.playSuccess = function () {
 window.playBeep = function () {
     // تم التعطيل لمنع الانهيار
 };
+// ==========================================
+    // 🕵️‍♂️ دالة كشف الغش والتحليل الذكي
+    // ==========================================
+    async function checkForFraud(currentData) {
+        // لو مفيش بصمة وجه، منقدرش نحلل
+        if (!currentData.face_vector || currentData.face_vector.length === 0) return;
+
+        try {
+            // 1. جلب كل سجلات الحضور لهذا اليوم
+            const q = query(collection(db, "attendance"), where("date", "==", currentData.date));
+            const querySnapshot = await getDocs(q);
+
+            let faceMatchCount = 0;
+            let fraudDetected = false;
+            let fraudReason = "";
+
+            querySnapshot.forEach((doc) => {
+                const record = doc.data();
+
+                // نتخطى السجل لو مفيش فيكتور مسجل
+                if (!record.face_vector || record.face_vector.length === 0) return;
+
+                // حساب المسافة بين الوجه الحالي والوجه المسجل (Euclidean Distance)
+                const distance = getEuclideanDistance(currentData.face_vector, record.face_vector);
+
+                // إذا كانت المسافة أقل من 0.5 فهذا يعني أنه "نفس الشخص"
+                if (distance < 0.5) {
+                    faceMatchCount++;
+
+                    // 🚨 كشف الحالة الأولى: نفس الوش بس بكود طالب تاني
+                    if (record.id !== currentData.id) {
+                        fraudDetected = true;
+                        fraudReason = `انتحال شخصية: الوجه مسجل مسبقاً باسم الطالب (${record.name}) بالكود (${record.id})`;
+                    }
+                }
+            });
+
+            // 🚨 كشف الحالة الثانية: سجل أكتر من 3 مرات بنفس الوش
+            // (نضيف 1 عشان نحسب المحاولة الحالية)
+            if (faceMatchCount >= 3) {
+                fraudDetected = true;
+                fraudReason = `تجاوز الحد المسموح: هذا الوجه قام بالتسجيل ${faceMatchCount + 1} مرات اليوم!`;
+            }
+
+            // إذا تم كشف غش، نبعت إشعار للجرس
+            if (fraudDetected) {
+                const newAlert = {
+                    name: currentData.name,
+                    id: currentData.id,
+                    timestamp: currentData.time_str,
+                    risk_level: "HIGH", // مستوى خطر عالي
+                    reason: "حالة غش مؤكدة",
+                    detail: fraudReason,
+                    hall: currentData.hall,
+                    isRead: false
+                };
+                
+                // إضافة للتنبيهات وعرضها
+                systemAlerts.unshift(newAlert);
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                checkStoredAlerts(); // تحديث أيقونة الجرس فوراً
+                
+                showToast(`⚠️ تم رصد مخالفة: ${fraudReason}`, 5000, "#ef4444");
+            }
+
+        } catch (error) {
+            console.error("Fraud Check Error:", error);
+        }
+    }
+
+    // دالة مساعدة لحساب الفرق بين الوجوه (رياضيات)
+    function getEuclideanDistance(descriptor1, descriptor2) {
+        if (!descriptor1 || !descriptor2 || descriptor1.length !== descriptor2.length) return 1.0;
+        const sum = descriptor1.map((val, i) => Math.pow(val - descriptor2[i], 2)).reduce((a, b) => a + b);
+        return Math.sqrt(sum);
+    }
