@@ -690,22 +690,61 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     }
 
     async function proceedToCamera() {
-        playClick(); requestWakeLock(); await stopCameraSafely(); switchScreen('screenFaceCheck');
-        const statusTxt = document.getElementById('statusTxt'); const loaderSpinner = document.getElementById('loaderSpinner');
+        playClick();
+        requestWakeLock();
+        await stopCameraSafely();
+        switchScreen('screenFaceCheck');
+
+        const statusTxt = document.getElementById('statusTxt');
+        const loaderSpinner = document.getElementById('loaderSpinner');
+
         try {
-            statusTxt.innerText = "الرجاء الانتظار..."; statusTxt.style.color = "var(--text-sub)"; loaderSpinner.style.display = 'flex';
+            statusTxt.innerText = "الرجاء الانتظار...";
+            statusTxt.style.color = "var(--text-sub)";
+            loaderSpinner.style.display = 'flex';
+
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS_URL),
                 faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODELS_URL),
                 faceapi.nets.faceExpressionNet.loadFromUri(FACE_MODELS_URL)
             ]);
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } });
-            videoStream = stream; const video = document.getElementById('video'); video.srcObject = stream;
-            await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            });
+
+            videoStream = stream;
+            const video = document.getElementById('video');
+            video.srcObject = stream;
+
+            await new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resolve();
+                };
+            });
+
             await new Promise(resolve => setTimeout(resolve, 100));
-            loaderSpinner.style.display = 'none'; statusTxt.innerText = "اثبت مكانك تماماً"; statusTxt.style.color = "var(--primary)"; startStrictAI();
-        } catch (e) { console.error("Camera Error:", e); document.getElementById('cameraErrorModal').style.display = 'flex'; switchScreen('screenScanQR'); }
+
+            loaderSpinner.style.display = 'none';
+            statusTxt.innerText = "اثبت مكانك تماماً";
+            statusTxt.style.color = "var(--primary)";
+
+            // تأكدنا هنا أن الدالة مكتوبة بشكل صحيح
+            startStrictAI();
+
+        } catch (e) {
+            // --- كود كشف الأخطاء الجديد ---
+            console.error("Camera Error:", e);
+            alert("سبب العطل: " + e.message);
+            document.getElementById('cameraErrorModal').style.display = 'flex';
+            switchScreen('screenScanQR');
+        }
     }
 
     function startStrictAI() {
@@ -2340,16 +2379,16 @@ window.togglePasswordVisibility = togglePasswordVisibility;
 // ضعه في نهاية ملف script.js
 // ==========================================
 
-window.playClick = function() {
+window.playClick = function () {
     // تم التعطيل لمنع الانهيار
     console.log("Audio skipped to prevent crash.");
 };
 
-window.playSuccess = function() {
+window.playSuccess = function () {
     // تم التعطيل لمنع الانهيار
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // اهتزاز بديل للصوت
 };
 
-window.playBeep = function() {
+window.playBeep = function () {
     // تم التعطيل لمنع الانهيار
 };
