@@ -546,7 +546,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
             if (!isSessionActive) {
                 // ⛔ الحالة مغلقة
                 if (navigator.vibrate) navigator.vibrate(500);
-                showToast("⛔ عذراً.. التسجيل مغلق حالياً", 4000, "#ef4444");
+                showToast("⛔ .. التسجيل مغلق ", 4000, "#ef4444");
 
                 // إرجاع الزر لحالته
                 btn.innerHTML = oldText;
