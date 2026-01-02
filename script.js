@@ -388,7 +388,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
 
             document.getElementById('adminDeleteAlert').style.display = 'flex';
             if (notifBtn) notifBtn.classList.remove('locked');
-            if (adminBypassContainer) adminBypassContainer.style.display = 'none';
+            if (adminBypassContainer) adminBypassContainer.style.display = 'block';
             if (btnDataEntry) btnDataEntry.style.display = 'flex';
 
             // إظهار زر التحكم في الجلسة وتشغيل المراقبة
@@ -410,7 +410,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
 
             document.getElementById('adminDeleteAlert').style.display = 'none';
             if (notifBtn) notifBtn.classList.add('locked');
-            if (adminBypassContainer) adminBypassContainer.style.display = 'none';
+            if (adminBypassContainer) adminBypassContainer.style.display = 'block';
             if (btnDataEntry) btnDataEntry.style.display = 'none';
 
             // إخفاء زر التحكم في الجلسة وإيقاف المراقبة
