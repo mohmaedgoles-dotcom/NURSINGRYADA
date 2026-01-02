@@ -532,7 +532,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
         const oldText = btn.innerHTML;
 
         // تغيير شكل الزر للتحميل
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق...';
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري التسجيل...';
         btn.style.pointerEvents = 'none';
 
         try {
