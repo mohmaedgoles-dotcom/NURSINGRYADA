@@ -1582,6 +1582,78 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     window.closeModernConfirm = closeModernConfirm;
     window.triggerAppInstall = triggerAppInstall;
 
+    // ... (باقي أكواد التصدير window.xxxx = xxxx) ...
+    window.triggerAppInstall = triggerAppInstall;
+
+
+    // =============================================================
+    // 👇👇👇 الصق دالة كشف الغش هنا (داخل القوسين) 👇👇👇
+    // =============================================================
+
+    async function checkForFraud(currentData) {
+        if (!currentData.face_vector || currentData.face_vector.length === 0) return;
+
+        try {
+            const q = query(collection(db, "attendance"), where("date", "==", currentData.date));
+            const querySnapshot = await getDocs(q);
+
+            let faceMatchCount = 0;
+            let fraudDetected = false;
+            let fraudReason = "";
+
+            querySnapshot.forEach((doc) => {
+                const record = doc.data();
+                if (!record.face_vector || record.face_vector.length === 0) return;
+
+                const distance = getEuclideanDistance(currentData.face_vector, record.face_vector);
+
+                if (distance < 0.5) {
+                    faceMatchCount++;
+                    // كشف انتحال الشخصية
+                    if (record.id !== currentData.id) {
+                        fraudDetected = true;
+                        fraudReason = `انتحال شخصية: الوجه مسجل باسم (${record.name}) وكود (${record.id})`;
+                    }
+                }
+            });
+
+            // كشف التكرار الزائد
+            if (faceMatchCount >= 3) {
+                fraudDetected = true;
+                fraudReason = `تجاوز الحد: هذا الوجه سجل ${faceMatchCount + 1} مرات اليوم!`;
+            }
+
+            if (fraudDetected) {
+                const newAlert = {
+                    name: currentData.name,
+                    id: currentData.id,
+                    timestamp: currentData.time_str,
+                    risk_level: "HIGH",
+                    reason: "حالة غش مؤكدة",
+                    detail: fraudReason,
+                    hall: currentData.hall,
+                    isRead: false
+                };
+                
+                // هنا مربط الفرس: المتغيرات دي متشافة هنا بس
+                systemAlerts.unshift(newAlert);
+                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
+                checkStoredAlerts(); 
+                showToast(`⚠️ تم رصد مخالفة: ${fraudReason}`, 5000, "#ef4444");
+            }
+
+        } catch (error) {
+            console.error("Fraud Check Error:", error);
+        }
+    }
+
+    function getEuclideanDistance(descriptor1, descriptor2) {
+        if (!descriptor1 || !descriptor2 || descriptor1.length !== descriptor2.length) return 1.0;
+        const sum = descriptor1.map((val, i) => Math.pow(val - descriptor2[i], 2)).reduce((a, b) => a + b);
+        return Math.sqrt(sum);
+    }
+
+// 👇👇👇 القوس النهائي للملف (تأكد إنه آخر حاجة) 👇👇👇
 })();
 
 if ('serviceWorker' in navigator) {
@@ -2429,79 +2501,3 @@ window.playSuccess = function () {
 window.playBeep = function () {
     // تم التعطيل لمنع الانهيار
 };
-// ==========================================
-    // 🕵️‍♂️ دالة كشف الغش والتحليل الذكي
-    // ==========================================
-    async function checkForFraud(currentData) {
-        // لو مفيش بصمة وجه، منقدرش نحلل
-        if (!currentData.face_vector || currentData.face_vector.length === 0) return;
-
-        try {
-            // 1. جلب كل سجلات الحضور لهذا اليوم
-            const q = query(collection(db, "attendance"), where("date", "==", currentData.date));
-            const querySnapshot = await getDocs(q);
-
-            let faceMatchCount = 0;
-            let fraudDetected = false;
-            let fraudReason = "";
-
-            querySnapshot.forEach((doc) => {
-                const record = doc.data();
-
-                // نتخطى السجل لو مفيش فيكتور مسجل
-                if (!record.face_vector || record.face_vector.length === 0) return;
-
-                // حساب المسافة بين الوجه الحالي والوجه المسجل (Euclidean Distance)
-                const distance = getEuclideanDistance(currentData.face_vector, record.face_vector);
-
-                // إذا كانت المسافة أقل من 0.5 فهذا يعني أنه "نفس الشخص"
-                if (distance < 0.5) {
-                    faceMatchCount++;
-
-                    // 🚨 كشف الحالة الأولى: نفس الوش بس بكود طالب تاني
-                    if (record.id !== currentData.id) {
-                        fraudDetected = true;
-                        fraudReason = `انتحال شخصية: الوجه مسجل مسبقاً باسم الطالب (${record.name}) بالكود (${record.id})`;
-                    }
-                }
-            });
-
-            // 🚨 كشف الحالة الثانية: سجل أكتر من 3 مرات بنفس الوش
-            // (نضيف 1 عشان نحسب المحاولة الحالية)
-            if (faceMatchCount >= 3) {
-                fraudDetected = true;
-                fraudReason = `تجاوز الحد المسموح: هذا الوجه قام بالتسجيل ${faceMatchCount + 1} مرات اليوم!`;
-            }
-
-            // إذا تم كشف غش، نبعت إشعار للجرس
-            if (fraudDetected) {
-                const newAlert = {
-                    name: currentData.name,
-                    id: currentData.id,
-                    timestamp: currentData.time_str,
-                    risk_level: "HIGH", // مستوى خطر عالي
-                    reason: "حالة غش مؤكدة",
-                    detail: fraudReason,
-                    hall: currentData.hall,
-                    isRead: false
-                };
-                
-                // إضافة للتنبيهات وعرضها
-                systemAlerts.unshift(newAlert);
-                localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
-                checkStoredAlerts(); // تحديث أيقونة الجرس فوراً
-                
-                showToast(`⚠️ تم رصد مخالفة: ${fraudReason}`, 5000, "#ef4444");
-            }
-
-        } catch (error) {
-            console.error("Fraud Check Error:", error);
-        }
-    }
-
-    // دالة مساعدة لحساب الفرق بين الوجوه (رياضيات)
-    function getEuclideanDistance(descriptor1, descriptor2) {
-        if (!descriptor1 || !descriptor2 || descriptor1.length !== descriptor2.length) return 1.0;
-        const sum = descriptor1.map((val, i) => Math.pow(val - descriptor2[i], 2)).reduce((a, b) => a + b);
-        return Math.sqrt(sum);
-    }
