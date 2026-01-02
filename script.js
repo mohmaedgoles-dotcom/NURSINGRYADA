@@ -2,7 +2,7 @@
 //  1. استيراد مكتبات Firebase (تم إضافة Auth)
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // <--- هذا السطر الجديد
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // <--- هذا السطر الجديد
 let unsubscribeSessionListener = null; // متغير لمراقبة الجلسة
 
 const firebaseConfig = {
@@ -514,11 +514,60 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
         }
     }
 
-    async function startProcess(skip = false) {
-        playClick(); resetApplicationState();
-        if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) { generateCodeAndShowDataEntry(); return; }
-        switchScreen('screenLoading'); checkLocationStrict(() => { switchScreen('screenReadyToStart'); playSuccess(); });
-    }
+    // ==========================================
+    // 🚀 دالة البدء (معدلة لتفحص حالة الجلسة أولاً)
+    // ==========================================
+    window.startProcess = async function () {
+        playClick();
+        resetApplicationState();
+
+        // 1. لو المستخدم أدمين -> يدخل فوراً بدون فحص
+        if (sessionStorage.getItem(ADMIN_AUTH_TOKEN)) {
+            generateCodeAndShowDataEntry();
+            return;
+        }
+
+        // 2. لو طالب -> لازم نسأل السيرفر الأول: الباب مفتوح؟
+        const btn = document.getElementById('mainActionBtn');
+        const oldText = btn.innerHTML;
+
+        // تغيير شكل الزر للتحميل
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري التحقق...';
+        btn.style.pointerEvents = 'none';
+
+        try {
+            // قراءة حالة الجلسة من Firebase
+            // استخدام المتغيرات العامة db و doc و getDoc
+            const docRef = doc(db, "settings", "control_panel");
+            const docSnap = await getDoc(docRef);
+
+            const isSessionActive = docSnap.exists() ? docSnap.data().isActive : false;
+
+            if (!isSessionActive) {
+                // ⛔ الحالة مغلقة
+                if (navigator.vibrate) navigator.vibrate(500);
+                showToast("⛔ عذراً.. التسجيل مغلق حالياً", 4000, "#ef4444");
+
+                // إرجاع الزر لحالته
+                btn.innerHTML = oldText;
+                btn.style.pointerEvents = 'auto';
+                return; // 🛑 وقف التنفيذ هنا فوراً
+            }
+
+            // ✅ الحالة مفتوحة -> نكمل الإجراءات
+            switchScreen('screenLoading');
+            checkLocationStrict(() => {
+                switchScreen('screenReadyToStart');
+                playSuccess();
+            });
+
+        } catch (error) {
+            console.error("Start Process Error:", error);
+            showToast("⚠️ تأكد من اتصال الإنترنت", 3000, "#f59e0b");
+            btn.innerHTML = oldText;
+            btn.style.pointerEvents = 'auto';
+        }
+    };
 
     function generateCodeAndShowDataEntry() {
         playClick(); if (checkBanStatus()) return;
