@@ -690,19 +690,36 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     }
 
     async function proceedToCamera() {
-        playClick();
-        requestWakeLock();
-        await stopCameraSafely();
-        switchScreen('screenFaceCheck');
-
-        const statusTxt = document.getElementById('statusTxt');
-        const loaderSpinner = document.getElementById('loaderSpinner');
-
+        // وضعنا كل شيء داخل الـ try لضمان التقاط أي خطأ من البداية
         try {
-            statusTxt.innerText = "الرجاء الانتظار...";
+            console.log("Step 1: Starting...");
+            playClick();
+
+            // محاولة طلب قفل الشاشة
+            try { await requestWakeLock(); } catch (e) { console.log("WakeLock skipped"); }
+
+            console.log("Step 2: Stopping old camera...");
+            // التأكد من إيقاف أي كاميرا سابقة
+            if (typeof stopCameraSafely === 'function') {
+                await stopCameraSafely();
+            }
+
+            console.log("Step 3: Switching Screen...");
+            switchScreen('screenFaceCheck');
+
+            const statusTxt = document.getElementById('statusTxt');
+            const loaderSpinner = document.getElementById('loaderSpinner');
+
+            if (!statusTxt || !loaderSpinner) {
+                throw new Error("عناصر الشاشة غير موجودة (statusTxt or loaderSpinner)");
+            }
+
+            statusTxt.innerText = "جاري تحميل ملفات الذكاء الاصطناعي...";
             statusTxt.style.color = "var(--text-sub)";
             loaderSpinner.style.display = 'flex';
 
+            console.log("Step 4: Loading Models...");
+            // تحميل الموديلات
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODELS_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODELS_URL),
@@ -710,6 +727,10 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                 faceapi.nets.faceExpressionNet.loadFromUri(FACE_MODELS_URL)
             ]);
 
+            console.log("Step 5: Requesting Camera...");
+            statusTxt.innerText = "جاري فتح الكاميرا...";
+
+            // طلب إذن الكاميرا
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'user',
@@ -718,10 +739,12 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                 }
             });
 
+            console.log("Step 6: Stream Acquired");
             videoStream = stream;
             const video = document.getElementById('video');
             video.srcObject = stream;
 
+            // انتظار تحميل الفيديو
             await new Promise((resolve) => {
                 video.onloadedmetadata = () => {
                     video.play();
@@ -735,15 +758,19 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
             statusTxt.innerText = "اثبت مكانك تماماً";
             statusTxt.style.color = "var(--primary)";
 
-            // تأكدنا هنا أن الدالة مكتوبة بشكل صحيح
+            console.log("Step 7: Starting AI");
             startStrictAI();
 
         } catch (e) {
-            // --- كود كشف الأخطاء الجديد ---
-            console.error("Camera Error:", e);
-            alert("سبب العطل: " + e.message);
+            // --- هذا الجزء سيلتقط الخطأ مهما كان مكانه ---
+            console.error("CRITICAL ERROR:", e);
+
+            // عرض رسالة الخطأ
+            alert("🔴 توقف النظام عند خطوة محددة!\nالسبب: " + e.message);
+
+            // محاولة العودة للشاشة السابقة
             document.getElementById('cameraErrorModal').style.display = 'flex';
-            switchScreen('screenScanQR');
+            try { switchScreen('screenScanQR'); } catch (err) { }
         }
     }
 
