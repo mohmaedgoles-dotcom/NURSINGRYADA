@@ -468,32 +468,171 @@ onAuthStateChanged(auth, (user) => {
     // ==========================================
 
     // 1. دالة تغيير الحالة (فتح/قفل)
+    // ==========================================
+    // 🎮 نظام التحكم في الجلسة بالوقت (مطور)
+    // ==========================================
+
+    let sessionInterval = null; // متغير للعداد
+
+    // 1. عند ضغط الدكتور على الزر (يفتح النافذة لو مغلق، ويقفل لو مفتوح)
     window.toggleSessionState = async function () {
-        // التأكد من أن المستخدم أدمن
         if (!sessionStorage.getItem("secure_admin_session_token_v99")) return;
 
         const btn = document.getElementById('btnToggleSession');
-        // معرفة الحالة الحالية من شكل الزر
         const isCurrentlyOpen = btn.classList.contains('session-open');
-        const newState = !isCurrentlyOpen;
 
-        const txt = document.getElementById('sessionText');
-        if (txt) txt.innerText = "جاري التحديث...";
+        if (isCurrentlyOpen) {
+            // لو مفتوح -> اقفله فوراً
+            closeSessionImmediately();
+        } else {
+            // لو مغلق -> افتح نافذة اختيار الوقت
+            document.getElementById('sessionTimeModal').style.display = 'flex';
+        }
+    };
+
+    // 2. دالة تشغيل الجلسة بالوقت المحدد (بترسل لفايربيس)
+    window.confirmSessionStart = async function (seconds) {
+        document.getElementById('sessionTimeModal').style.display = 'none';
 
         try {
             const docRef = doc(db, "settings", "control_panel");
-            // إرسال الحالة الجديدة للسيرفر
-            await setDoc(docRef, { isActive: newState }, { merge: true });
 
-            // التحديث سيتم تلقائياً عبر الـ Listener
-            if (newState) showToast("🟢 تم فتح التسجيل", 3000, "#10b981");
-            else showToast("🔴 تم إغلاق التسجيل", 3000, "#ef4444");
+            // إرسال وقت البدء والمدة للسيرفر
+            // isActive: true
+            // startTime: الوقت الحالي بالمللي ثانية
+            // duration: المدة بالثواني (-1 يعني مفتوح)
+            await setDoc(docRef, {
+                isActive: true,
+                startTime: Date.now(),
+                duration: seconds
+            }, { merge: true });
+
+            showToast(`تم فتح الجلسة: ${seconds == -1 ? 'وقت مفتوح' : seconds + ' ثانية'}`, 2000, "#10b981");
 
         } catch (e) {
-            console.error("Session Toggle Error:", e);
+            console.error(e);
             showToast("خطأ في الاتصال", 3000, "#ef4444");
         }
     };
+
+    // 3. دالة الغلق الفوري
+    async function closeSessionImmediately() {
+        try {
+            const docRef = doc(db, "settings", "control_panel");
+            await setDoc(docRef, { isActive: false, duration: 0 }, { merge: true });
+            showToast("🔴 تم إغلاق الجلسة يدوياً", 2000, "#ef4444");
+        } catch (e) { console.error(e); }
+    }
+
+    // 4. المراقب الذكي (بيشتغل عند الدكتور والطالب)
+    window.listenToSessionState = function () {
+        const docRef = doc(db, "settings", "control_panel");
+
+        unsubscribeSessionListener = onSnapshot(docRef, (docSnap) => {
+            if (!docSnap.exists()) return;
+
+            const data = docSnap.data();
+            const isActive = data.isActive;
+            const startTime = data.startTime || 0;
+            const duration = data.duration || 0;
+
+            // حساب الوقت المتبقي بناءً على توقيت السيرفر
+            handleSessionTimer(isActive, startTime, duration);
+        });
+    };
+
+    // 5. دالة العداد وحساب الوقت (القلب النابض)
+    function handleSessionTimer(isActive, startTime, duration) {
+        const btn = document.getElementById('btnToggleSession');
+        const icon = document.getElementById('sessionIcon');
+        const txt = document.getElementById('sessionText');
+        const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
+
+        // تنظيف أي عداد سابق
+        if (sessionInterval) clearInterval(sessionInterval);
+
+        if (!isActive) {
+            // --- حالة الإغلاق ---
+            if (btn) {
+                btn.classList.remove('session-open');
+                btn.style.background = "#fee2e2";
+                btn.style.color = "#991b1b";
+                btn.style.borderColor = "#ef4444";
+                if (icon) icon.className = "fa-solid fa-lock";
+                if (txt) txt.innerText = "التسجيل مغلق";
+            }
+            // لو طالب وكان بيسجل، نطرده فوراً
+            if (!isAdmin && processIsActive) {
+                // إغلاق أي نافذة مفتوحة
+                resetApplicationState();
+                switchScreen('screenWelcome');
+                showToast("⛔ انتهى وقت الجلسة!", 4000, "#ef4444");
+                if (navigator.vibrate) navigator.vibrate(500);
+            }
+            return;
+        }
+
+        // --- حالة الفتح ---
+
+        // دالة التحديث اللحظي
+        const updateTick = () => {
+            const now = Date.now();
+
+            // لو الوقت مفتوح (-1)
+            if (duration === -1) {
+                if (btn) {
+                    btn.classList.add('session-open');
+                    btn.style.background = "#dcfce7";
+                    btn.style.borderColor = "#22c55e";
+                    btn.style.color = "#166534";
+                    if (icon) icon.className = "fa-solid fa-unlock";
+                    if (txt) txt.innerText = "وقت مفتوح 🔓";
+                }
+                return;
+            }
+
+            // حساب الوقت المتبقي بدقة
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            const remaining = duration - elapsedSeconds;
+
+            if (remaining > 0) {
+                // لسه فيه وقت
+                if (btn) {
+                    btn.classList.add('session-open');
+                    btn.style.background = "#fff7ed"; // لون برتقالي فاتح
+                    btn.style.borderColor = "#f97316";
+                    btn.style.color = "#c2410c";
+                    if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin"; // أيقونة بتلف
+                    // عرض العداد داخل الزر
+                    if (txt) txt.innerText = `متبقي: ${remaining} ثانية`;
+                }
+            } else {
+                // الوقت خلص!
+                clearInterval(sessionInterval);
+
+                // لو أنا الأدمن، هبعت أمر الإغلاق للسيرفر
+                if (isAdmin) {
+                    closeSessionImmediately();
+                } else {
+                    // لو أنا طالب، الجلسة قفلت عندي خلاص
+                    if (btn) {
+                        btn.classList.remove('session-open');
+                        if (txt) txt.innerText = "انتهى الوقت";
+                    }
+                    // طرد الطالب لو بيسجل
+                    if (processIsActive) {
+                        resetApplicationState();
+                        switchScreen('screenWelcome');
+                        alert("عذراً، انتهى الوقت المحدد للجلسة أثناء تسجيلك.");
+                    }
+                }
+            }
+        };
+
+        // تشغيل التحديث كل ثانية
+        updateTick(); // تحديث فوري
+        sessionInterval = setInterval(updateTick, 1000);
+    }
 
     // 2. دالة المراقبة الحية
     window.listenToSessionState = function () {
@@ -897,22 +1036,68 @@ onAuthStateChanged(auth, (user) => {
     // ==========================================
     //  FIREBASE: SUBMIT ATTENDANCE (FINAL STEP)
     // ==========================================
+    // ==========================================
+    //  FIREBASE: SUBMIT ATTENDANCE (FINAL STEP)
+    // ==========================================
     async function submitToGoogle() {
         playClick();
         const btn = document.getElementById('submitBtn');
 
-        // منع التكرار لو الزر مضغوط
+        // تعريف النص الأصلي للزر لاستخدامه عند إعادة التعيين
+        const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
+
+        // منع التكرار لو الزر مضغوط حالياً
         if (btn.disabled && btn.innerText.includes('جاري')) return;
 
-        // 1. التحقق من الموقع (GPS)
+        // ============================================================
+        // 🛑 1. فحص الوقت الصارم (Server-Side Time Check)
+        // ============================================================
+        try {
+            // قراءة إعدادات الجلسة الحالية من السيرفر قبل السماح بالتسجيل
+            const docRef = doc(db, "settings", "control_panel");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const settings = docSnap.data();
+                const now = Date.now();
+                // حساب وقت النهاية (وقت البدء + المدة)
+                const endTime = settings.startTime + (settings.duration * 1000);
+
+                // الشرط القاتل:
+                // أ) الجلسة غير مفعلة (isActive = false)
+                // ب) أو الوقت انتهى (والمدة ليست مفتوحة -1)
+                if (!settings.isActive || (settings.duration !== -1 && now > endTime)) {
+
+                    // إظهار رسالة الخطأ
+                    showError("⛔ عذراً، انتهى وقت الجلسة وأُغلق النظام الآن.", false);
+
+                    // إعادة الزر لحالته
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+
+                    // طرد الطالب للصفحة الرئيسية بعد ثانيتين
+                    setTimeout(() => {
+                        resetApplicationState();
+                        switchScreen('screenWelcome');
+                    }, 2000);
+
+                    return; // 🛑 توقف هنا فوراً ولا تكمل الكود
+                }
+            }
+        } catch (e) {
+            console.error("Time Check Error:", e);
+            // في حالة خطأ الشبكة هنا، سنسمح بالإكمال ليتم اصطياد الخطأ في خطوة الحفظ الفعلية
+        }
+        // ============================================================
+
+
+        // 2. التحقق من الموقع (GPS)
         if (!userLat || !userLng) {
             checkLocationStrict(() => submitToGoogle());
             return;
         }
 
-        const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
-
-        // 2. تجميع البيانات
+        // 3. تجميع البيانات من الواجهة
         const selectedSubject = document.getElementById('subjectSelect').value;
         const selectedGroup = document.getElementById('groupSelect').value;
         const sessionPassVal = document.getElementById('sessionPass').value;
@@ -929,13 +1114,11 @@ onAuthStateChanged(auth, (user) => {
         btn.disabled = true;
 
         const now = new Date();
-        // تنسيق التاريخ (عشان نمنع الطالب يسجل مرتين في نفس المادة في نفس اليوم)
-        // Format: DD/MM/YYYY
+        // تنسيق التاريخ DD/MM/YYYY
         const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
 
         try {
-            // 3. التحقق من التكرار في Firebase (Duplicate Check)
-            // بنسأل السيرفر: هل الطالب ده سجل المادة دي في التاريخ ده قبل كده؟
+            // 4. التحقق من التكرار في Firebase (Duplicate Check)
             const q = query(collection(db, "attendance"),
                 where("id", "==", attendanceData.uniID),
                 where("date", "==", dateStr),
@@ -951,11 +1134,9 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-            // 4. تجهيز الحزمة للإرسال
-            // 4. تجهيز الحزمة للإرسال
+            // 5. تجهيز الحزمة للإرسال
             const deviceId = getUniqueDeviceId();
 
-            // --- بداية التغيير ---
             const payload = {
                 id: attendanceData.uniID,       // كود الطالب
                 name: attendanceData.name,      // اسم الطالب
@@ -970,18 +1151,15 @@ onAuthStateChanged(auth, (user) => {
                 gps_lng: userLng,
                 session_code: sessionPassVal,   // كود الـ QR
                 verification: "FIREBASE_SECURE",
-
-                // +++ [إضافة جديدة] تخزين بصمة الوجه للمقارنة +++
-                face_vector: attendanceData.vector || []
+                face_vector: attendanceData.vector || [] // بصمة الوجه
             };
 
-            // +++ [إضافة جديدة] استدعاء دالة كشف الغش قبل الحفظ +++
-            // تأكد أنك أضفت دالة checkForFraud في نهاية الملف كما اتفقنا
+            // 6. استدعاء دالة كشف الغش (Fraud Check)
             await checkForFraud(payload);
 
-            // 5. الحفظ الفعلي في Firestore
+            // 7. الحفظ الفعلي في Firestore
             await addDoc(collection(db, "attendance"), payload);
-            // --- نهاية التغيير ---
+
             // ===========================
             //  تم الحفظ بنجاح! 🎉
             // ===========================
@@ -998,6 +1176,7 @@ onAuthStateChanged(auth, (user) => {
             // إنهاء العملية وتنظيف الذاكرة
             processIsActive = false;
             releaseWakeLock();
+
             let left = decrementAttempts();
             updateUIForAttempts();
             if (left === 0) { localStorage.setItem(BAN_KEY, "true"); }
@@ -1007,7 +1186,7 @@ onAuthStateChanged(auth, (user) => {
             switchScreen('screenSuccess');
             playSuccess();
 
-            // إضافة للسجل المحلي (عشان لو حب يشوف هو سجل إيه)
+            // إضافة للسجل المحلي
             cachedReportData.push({
                 uniID: attendanceData.uniID,
                 subject: selectedSubject,
