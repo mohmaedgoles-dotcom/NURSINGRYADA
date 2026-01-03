@@ -848,7 +848,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script type="module" src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <div id="attendanceRecordsModal" class="modal-overlay">
         <div class="modal-box">
             <div class="report-modal-header">
@@ -984,6 +984,12 @@
             <button onclick="document.getElementById('sessionTimeModal').style.display='none'" class="btn-cancel-modern"
                 style="margin-top: 15px; width: 100%;">إلغاء</button>
         </div>
+    </div>
+    <div id="studentFloatingTimer" class="floating-timer" style="display: none;">
+        <div class="timer-icon-pulse">
+            <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+        <span id="floatingTimeText" class="en-font">00</span>
     </div>
 </body>
 
