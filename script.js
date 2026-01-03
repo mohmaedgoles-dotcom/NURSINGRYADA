@@ -577,7 +577,8 @@ onAuthStateChanged(auth, (user) => {
 
     // 2. دالة العداد والتحكم (القلب النابض)
     // ==========================================
-    // 2. دالة العداد والتحكم (القلب النابض) - نسخة الأيقونة العائمة
+    // ==========================================
+    // 2. دالة العداد والتحكم (النسخة المصححة)
     // ==========================================
     function handleSessionTimer(isActive, startTime, duration) {
         const btn = document.getElementById('btnToggleSession');
@@ -587,10 +588,11 @@ onAuthStateChanged(auth, (user) => {
         const floatText = document.getElementById('floatingTimeText');
         const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
 
+        // تنظيف أي عداد سابق
         if (sessionInterval) clearInterval(sessionInterval);
 
+        // 1. حالة الإغلاق
         if (!isActive) {
-            // ... (كود الإغلاق زي ما هو) ...
             if (btn) {
                 btn.classList.remove('session-open');
                 btn.style.background = "#fee2e2";
@@ -600,6 +602,8 @@ onAuthStateChanged(auth, (user) => {
                 if (txt) txt.innerText = "التسجيل مغلق";
             }
             if (floatTimer) floatTimer.style.display = 'none';
+
+            // طرد الطالب
             if (!isAdmin && processIsActive) {
                 resetApplicationState();
                 switchScreen('screenWelcome');
@@ -609,26 +613,35 @@ onAuthStateChanged(auth, (user) => {
             return;
         }
 
+        // 2. حالة الفتح (العداد)
         const updateTick = () => {
-            // 1. تحويل وقت البدء (لو جاي من السيرفر) لمللي ثانية
+            // +++++++++ [التصحيح هنا] +++++++++
+            // لو وقت السيرفر لسه "null" (جاري الكتابة)، ننتظر وميقفلش الجلسة
+            if (startTime === null) {
+                if (btn && txt) txt.innerText = "جاري البدء...";
+                return;
+            }
+            // ++++++++++++++++++++++++++++++++
+
+            const now = Date.now();
             let startMs = 0;
-            if (startTime && typeof startTime.toMillis === 'function') {
+
+            // تحويل وقت الفايربيس لرقم (مللي ثانية)
+            if (typeof startTime.toMillis === 'function') {
                 startMs = startTime.toMillis();
-            } else if (startTime) {
-                startMs = startTime; // لو لسه رقم عادي
+            } else {
+                startMs = startTime; // لو هو أصلاً رقم
             }
 
-            // 2. استخدام وقت السيرفر التقريبي للحساب (عشان نعالج فرق التوقيت)
-            // بنستخدم Date.now() هنا مؤقتاً، لكن بما إن نقطة البداية (startMs) موحدة من السيرفر، الفروقات هتقل جداً
-            const now = Date.now();
-
+            // أ) وقت مفتوح
             if (duration == -1) {
-                // ... (كود الوقت المفتوح زي ما هو) ...
                 if (isAdmin) {
                     if (btn) {
                         btn.classList.add('session-open');
                         btn.style.background = "#dcfce7";
                         btn.style.borderColor = "#22c55e";
+                        btn.style.color = "#166534";
+                        if (icon) icon.className = "fa-solid fa-unlock";
                         if (txt) txt.innerText = "وقت مفتوح 🔓";
                     }
                 } else {
@@ -641,19 +654,20 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-            // 3. الحساب المعدل
-            // بنضيف 2 ثانية تعويض عن تأخير الشبكة عشان الطالب ميتحسبش عليه وقت ضايع في التحميل
-            const latencyBuffer = 2000;
-            const elapsedSeconds = Math.floor((now - startMs - latencyBuffer) / 1000);
+            // ب) وقت محدد
+            // بنخصم 2 ثانية كـ هامش تأخير للإنترنت
+            const elapsedSeconds = Math.floor((now - startMs) / 1000);
             const remaining = duration - elapsedSeconds;
 
             if (remaining > 0) {
+                // لسه فيه وقت
                 if (isAdmin) {
                     if (btn) {
                         btn.classList.add('session-open');
                         btn.style.background = "#fff7ed";
                         btn.style.borderColor = "#f97316";
                         btn.style.color = "#c2410c";
+                        if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin";
                         if (txt) txt.innerText = `متبقي: ${remaining} ث`;
                     }
                 } else {
@@ -666,9 +680,17 @@ onAuthStateChanged(auth, (user) => {
                     if (btn) btn.style.display = 'none';
                 }
             } else {
+                // الوقت انتهى
                 clearInterval(sessionInterval);
+
                 if (isAdmin) {
-                    if (typeof closeSessionImmediately === 'function') closeSessionImmediately();
+                    // التأكد إن الدالة موجودة قبل استدعائها
+                    if (typeof closeSessionImmediately === 'function') {
+                        closeSessionImmediately();
+                    } else {
+                        // كود طوارئ لو الدالة مش موجودة
+                        setDoc(doc(db, "settings", "control_panel"), { isActive: false }, { merge: true });
+                    }
                 } else {
                     if (floatTimer) floatTimer.style.display = 'none';
                     if (processIsActive) {
