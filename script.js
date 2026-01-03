@@ -1112,169 +1112,163 @@ onAuthStateChanged(auth, (user) => {
     // ==========================================
     //  FIREBASE: SUBMIT ATTENDANCE (FINAL STEP)
     // ==========================================
-    async function submitToGoogle() {
-        playClick();
-        const btn = document.getElementById('submitBtn');
+    // ==========================================
+    // تعريف المتغير خارج الدالة (مهم جداً للحماية)
+    // ==========================================
+    let localSessionDeadline = null;
 
-        // تعريف النص الأصلي للزر لاستخدامه عند إعادة التعيين
-        const originalText = "تأكيد الحضور <i class='fa-solid fa-paper-plane'></i>";
+    // ==========================================
+    // 2. دالة العداد والتحكم في الجلسة (النسخة الكاملة)
+    // ==========================================
+    function handleSessionTimer(isActive, startTime, duration) {
+        const btn = document.getElementById('btnToggleSession');
+        const icon = document.getElementById('sessionIcon');
+        const txt = document.getElementById('sessionText');
+        const floatTimer = document.getElementById('studentFloatingTimer');
+        const floatText = document.getElementById('floatingTimeText');
+        const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
 
-        // منع التكرار لو الزر مضغوط حالياً
-        if (btn.disabled && btn.innerText.includes('جاري')) return;
+        // إيقاف العداد القديم لمنع التداخل
+        if (sessionInterval) clearInterval(sessionInterval);
 
-        // ============================================================
-        // 🛑 1. فحص الوقت الصارم (Server-Side Time Check)
-        // ============================================================
-        try {
-            // قراءة إعدادات الجلسة الحالية من السيرفر قبل السماح بالتسجيل
-            const docRef = doc(db, "settings", "control_panel");
-            const docSnap = await getDoc(docRef);
+        // ------------------------------------------
+        // الحالة الأولى: الجلسة مغلقة (OFF)
+        // ------------------------------------------
+        if (!isActive) {
+            // تنظيف الحماية المحلية لأن الجلسة انتهت رسمياً
+            sessionStorage.removeItem('secure_deadline_timestamp');
+            localSessionDeadline = null;
 
-            if (docSnap.exists()) {
-                const settings = docSnap.data();
-                const now = Date.now();
-                // حساب وقت النهاية (وقت البدء + المدة)
-                const endTime = settings.startTime + (settings.duration * 1000);
-
-                // الشرط القاتل:
-                // أ) الجلسة غير مفعلة (isActive = false)
-                // ب) أو الوقت انتهى (والمدة ليست مفتوحة -1)
-                if (!settings.isActive || (settings.duration !== -1 && now > endTime)) {
-
-                    // إظهار رسالة الخطأ
-                    showError("⛔ عذراً، انتهى وقت الجلسة وأُغلق النظام الآن.", false);
-
-                    // إعادة الزر لحالته
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-
-                    // طرد الطالب للصفحة الرئيسية بعد ثانيتين
-                    setTimeout(() => {
-                        resetApplicationState();
-                        switchScreen('screenWelcome');
-                    }, 2000);
-
-                    return; // 🛑 توقف هنا فوراً ولا تكمل الكود
-                }
+            // تحديث واجهة الدكتور/الطالب
+            if (btn) {
+                btn.classList.remove('session-open');
+                btn.style.background = "#fee2e2";
+                btn.style.color = "#991b1b";
+                btn.style.borderColor = "#ef4444";
+                if (icon) icon.className = "fa-solid fa-lock";
+                if (txt) txt.innerText = "التسجيل مغلق";
             }
-        } catch (e) {
-            console.error("Time Check Error:", e);
-            // في حالة خطأ الشبكة هنا، سنسمح بالإكمال ليتم اصطياد الخطأ في خطوة الحفظ الفعلية
-        }
-        // ============================================================
+            if (floatTimer) floatTimer.style.display = 'none';
 
+            // طرد الطالب لو كان بيسجل حالياً
+            if (!isAdmin && processIsActive) {
+                resetApplicationState();
+                switchScreen('screenWelcome');
 
-        // 2. التحقق من الموقع (GPS)
-        if (!userLat || !userLng) {
-            checkLocationStrict(() => submitToGoogle());
+                // إظهار نافذة النظام (بدون SweetAlert)
+                const modal = document.getElementById('systemTimeoutModal');
+                if (modal) modal.style.display = 'flex';
+
+                if (navigator.vibrate) navigator.vibrate(500);
+            }
             return;
         }
 
-        // 3. تجميع البيانات من الواجهة
-        const selectedSubject = document.getElementById('subjectSelect').value;
-        const selectedGroup = document.getElementById('groupSelect').value;
-        const sessionPassVal = document.getElementById('sessionPass').value;
-        const selectedHall = document.getElementById('hallSelect').value;
+        // ------------------------------------------
+        // الحالة الثانية: الجلسة مفتوحة (ON)
+        // ------------------------------------------
 
-        // التحقق من أن كل الخانات ممتلئة
-        if (!attendanceData.uniID || !sessionPassVal || !selectedSubject || !selectedGroup || !attendanceData.isVerified) {
-            showToast("يرجى إكمال جميع الخطوات.", 3000, '#f59e0b');
-            return;
+        // 1. تجهيز وقت البداية
+        let startMs = 0;
+        if (startTime && typeof startTime.toMillis === 'function') {
+            startMs = startTime.toMillis();
+        } else {
+            startMs = startTime || Date.now();
         }
 
-        // تغيير الزر لـ "جاري الحفظ"
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> جاري الحفظ...';
-        btn.disabled = true;
+        // 2. 🔥 تفعيل الحماية المحلية (Local Guard) 🔥
+        // نحسب وقت الانتهاء فوراً ونخزنه، عشان لو النت قطع الموبايل يفضل فاكر المعاد
+        if (duration !== -1) {
+            localSessionDeadline = startMs + (duration * 1000);
+            sessionStorage.setItem('secure_deadline_timestamp', localSessionDeadline);
+        } else {
+            localSessionDeadline = "OPEN";
+            sessionStorage.setItem('secure_deadline_timestamp', "OPEN");
+        }
 
-        const now = new Date();
-        // تنسيق التاريخ DD/MM/YYYY
-        const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
-
-        try {
-            // 4. التحقق من التكرار في Firebase (Duplicate Check)
-            const q = query(collection(db, "attendance"),
-                where("id", "==", attendanceData.uniID),
-                where("date", "==", dateStr),
-                where("subject", "==", selectedSubject));
-
-            const querySnapshot = await getDocs(q);
-
-            if (!querySnapshot.empty) {
-                // الطالب مسجل قبل كده!
-                document.getElementById('duplicateModal').style.display = 'flex';
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+        // 3. تشغيل العداد التنازلي
+        const updateTick = () => {
+            if (startTime === null) {
+                if (btn && txt) txt.innerText = "جاري البدء...";
                 return;
             }
 
-            // 5. تجهيز الحزمة للإرسال
-            const deviceId = getUniqueDeviceId();
+            const now = Date.now();
 
-            const payload = {
-                id: attendanceData.uniID,       // كود الطالب
-                name: attendanceData.name,      // اسم الطالب
-                group: selectedGroup,           // المجموعة
-                subject: selectedSubject,       // المادة
-                hall: selectedHall || "N/A",    // القاعة
-                date: dateStr,                  // تاريخ اليوم
-                timestamp: Timestamp.now(),     // وقت السيرفر
-                time_str: now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }),
-                device_id: deviceId,            // بصمة الجهاز
-                gps_lat: userLat,               // الموقع
-                gps_lng: userLng,
-                session_code: sessionPassVal,   // كود الـ QR
-                verification: "FIREBASE_SECURE",
-                face_vector: attendanceData.vector || [] // بصمة الوجه
-            };
+            // أ) وقت مفتوح (Open Time)
+            if (duration == -1) {
+                if (isAdmin) {
+                    if (btn) {
+                        btn.classList.add('session-open');
+                        btn.style.background = "#dcfce7";
+                        btn.style.borderColor = "#22c55e";
+                        btn.style.color = "#166534";
+                        if (icon) icon.className = "fa-solid fa-unlock";
+                        if (txt) txt.innerText = "وقت مفتوح 🔓";
+                    }
+                } else {
+                    if (floatTimer) {
+                        floatTimer.style.display = 'flex';
+                        floatText.innerText = "مفتوح";
+                    }
+                    if (btn) btn.style.display = 'none';
+                }
+                return;
+            }
 
-            // 6. استدعاء دالة كشف الغش (Fraud Check)
-            await checkForFraud(payload);
+            // ب) وقت محدد (Timer)
+            const elapsedSeconds = Math.floor((now - startMs) / 1000);
+            const remaining = duration - elapsedSeconds;
 
-            // 7. الحفظ الفعلي في Firestore
-            await addDoc(collection(db, "attendance"), payload);
+            if (remaining > 0) {
+                // لسه فيه وقت
+                if (isAdmin) {
+                    if (btn) {
+                        btn.classList.add('session-open');
+                        btn.style.background = "#fff7ed";
+                        btn.style.borderColor = "#f97316";
+                        btn.style.color = "#c2410c";
+                        if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin";
+                        if (txt) txt.innerText = `متبقي: ${remaining} ث`;
+                    }
+                } else {
+                    if (floatTimer) {
+                        floatTimer.style.display = 'flex';
+                        floatText.innerText = remaining + "s";
+                        // تلوين العداد بالأحمر في آخر 10 ثواني
+                        if (remaining <= 10) floatTimer.classList.add('urgent');
+                        else floatTimer.classList.remove('urgent');
+                    }
+                    if (btn) btn.style.display = 'none';
+                }
+            } else {
+                // الوقت انتهى
+                clearInterval(sessionInterval);
 
-            // ===========================
-            //  تم الحفظ بنجاح! 🎉
-            // ===========================
+                if (isAdmin) {
+                    // إغلاق الجلسة أوتوماتيكياً في قاعدة البيانات
+                    const docRef = doc(db, "settings", "control_panel");
+                    setDoc(docRef, { isActive: false }, { merge: true }).catch(() => { });
+                } else {
+                    // سيناريو الطالب: انتهى الوقت
+                    if (floatTimer) floatTimer.style.display = 'none';
 
-            // تحديث واجهة الإيصال (Receipt)
-            document.getElementById('receiptName').innerText = attendanceData.name;
-            document.getElementById('receiptID').innerText = attendanceData.uniID;
-            document.getElementById('receiptGroup').innerText = selectedGroup;
-            document.getElementById('receiptSubject').innerText = selectedSubject;
-            document.getElementById('receiptHall').innerText = selectedHall || 'N/A';
-            document.getElementById('receiptDate').innerText = dateStr;
-            document.getElementById('receiptTime').innerText = payload.time_str;
+                    if (processIsActive) {
+                        resetApplicationState();
+                        switchScreen('screenWelcome');
 
-            // إنهاء العملية وتنظيف الذاكرة
-            processIsActive = false;
-            releaseWakeLock();
+                        // إظهار نافذة انتهت الجلسة الخاصة بالنظام
+                        const modal = document.getElementById('systemTimeoutModal');
+                        if (modal) modal.style.display = 'flex';
 
-            let left = decrementAttempts();
-            updateUIForAttempts();
-            if (left === 0) { localStorage.setItem(BAN_KEY, "true"); }
+                        if (navigator.vibrate) navigator.vibrate(300);
+                    }
+                }
+            }
+        };
 
-            // التبديل لشاشة النجاح وتشغيل الصوت
-            resetApplicationState();
-            switchScreen('screenSuccess');
-            playSuccess();
-
-            // إضافة للسجل المحلي
-            cachedReportData.push({
-                uniID: attendanceData.uniID,
-                subject: selectedSubject,
-                time: payload.time_str,
-                group: selectedGroup,
-                name: attendanceData.name,
-                hall: selectedHall
-            });
-
-        } catch (err) {
-            console.error("Firebase Submit Error: ", err);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            showToast("فشل الاتصال بالسيرفر. تأكد من الإنترنت.", 4000, '#ef4444');
-        }
+        updateTick();
+        sessionInterval = setInterval(updateTick, 1000);
     }
 
     function addKey(num) { playClick(); const i = document.getElementById('uniID'); if (i.value.length < 10) i.value += num; }
@@ -2164,6 +2158,19 @@ onAuthStateChanged(auth, (user) => {
         const sum = descriptor1.map((val, i) => Math.pow(val - descriptor2[i], 2)).reduce((a, b) => a + b);
         return Math.sqrt(sum);
     }
+    // ==========================================
+    // دالة زر "العودة للشاشة الرئيسية" (في نافذة انتهاء الوقت)
+    // ==========================================
+    window.forceReturnHome = function () {
+        playClick(); // تشغيل صوت النقر
+
+        // إخفاء النافذة
+        const modal = document.getElementById('systemTimeoutModal');
+        if (modal) modal.style.display = 'none';
+
+        // إعادة تحميل الصفحة بالكامل لتنظيف أي بيانات عالقة
+        location.reload();
+    };
 
     // 👇👇👇 القوس النهائي للملف (تأكد إنه آخر حاجة) 👇👇👇
 })();
