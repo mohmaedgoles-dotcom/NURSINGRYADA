@@ -968,3 +968,56 @@ p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1
     70% { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
     100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
 }
+/* =========================================
+   تصميم العداد العائم (Floating Timer)
+   ========================================= */
+.floating-timer {
+    position: fixed;
+    top: 20px; 
+    left: 20px; /* مكانها شمال فوق بعيد عن الزحمة */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 8px 15px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999999;
+    border: 2px solid #10b981; /* أخضر في البداية */
+    transition: all 0.3s ease;
+    animation: slideInDown 0.5s ease-out;
+}
+
+.floating-timer span {
+    font-weight: 800;
+    font-size: 18px;
+    color: #1e293b;
+}
+
+/* حركة الأيقونة */
+.timer-icon-pulse {
+    color: #10b981;
+    font-size: 16px;
+    animation: spin-slow 3s linear infinite;
+}
+
+/* لما الوقت يقرب يخلص (أحمر) */
+.floating-timer.urgent {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+.floating-timer.urgent .timer-icon-pulse {
+    color: #ef4444;
+    animation: pulse-fast 1s infinite;
+}
+
+@keyframes slideInDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@keyframes spin-slow { 100% { transform: rotate(360deg); } }
+@keyframes pulse-fast { 
+    0%, 100% { transform: scale(1); } 
+    50% { transform: scale(1.2); } 
+}
