@@ -966,23 +966,37 @@
             border-color: #86efac;
         }
     </style>
-    <div id="sessionTimeModal" class="modal-overlay" style="z-index: 9999999;">
-        <div class="modal-box" style="width: 90%; max-width: 350px; padding: 20px;">
-            <div class="modal-title" style="margin-bottom: 15px;">⏱️ اختر مدة الجلسة</div>
-
-            <div class="time-grid-modern">
-                <button onclick="confirmSessionStart(10)" class="time-btn">10 ثواني</button>
-                <button onclick="confirmSessionStart(20)" class="time-btn">20 ثانية</button>
-                <button onclick="confirmSessionStart(30)" class="time-btn">30 ثانية</button>
-                <button onclick="confirmSessionStart(40)" class="time-btn">40 ثانية</button>
-                <button onclick="confirmSessionStart(50)" class="time-btn">50 ثانية</button>
-                <button onclick="confirmSessionStart(60)" class="time-btn">1 دقيقة</button>
-                <button onclick="confirmSessionStart(120)" class="time-btn">2 دقيقة</button>
-                <button onclick="confirmSessionStart(-1)" class="time-btn open-time">🔓 وقت مفتوح</button>
+    <div id="customTimeModal" class="sys-modal-overlay" style="display: none;">
+        <div class="sys-modal-box">
+            <div class="sys-modal-header">
+                <div class="header-icon-bg">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <h3>Session Duration</h3>
             </div>
 
-            <button onclick="document.getElementById('sessionTimeModal').style.display='none'" class="btn-cancel-modern"
-                style="margin-top: 15px; width: 100%;">إلغاء</button>
+            <p class="sys-modal-hint">Select attendance time limit</p>
+
+            <div class="sys-time-grid">
+                <button onclick="confirmSessionStart(10)" class="sys-time-btn">10 <span>sec</span></button>
+                <button onclick="confirmSessionStart(20)" class="sys-time-btn">20 <span>sec</span></button>
+                <button onclick="confirmSessionStart(30)" class="sys-time-btn">30 <span>sec</span></button>
+
+                <button onclick="confirmSessionStart(40)" class="sys-time-btn">40 <span>sec</span></button>
+                <button onclick="confirmSessionStart(50)" class="sys-time-btn">50 <span>sec</span></button>
+                <button onclick="confirmSessionStart(60)" class="sys-time-btn">1 <span>min</span></button>
+
+                <button onclick="confirmSessionStart(120)" class="sys-time-btn full-width-btn">2
+                    <span>minutes</span></button>
+
+                <button onclick="confirmSessionStart(-1)" class="sys-time-btn sys-infinite">
+                    <i class="fa-solid fa-infinity"></i> Open Time (Manual)
+                </button>
+            </div>
+
+            <button onclick="document.getElementById('customTimeModal').style.display='none'" class="sys-close-btn">
+                Cancel
+            </button>
         </div>
     </div>
     <div id="studentFloatingTimer" class="floating-timer" style="display: none;">
@@ -991,6 +1005,7 @@
         </div>
         <span id="floatingTimeText" class="en-font">00</span>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>
