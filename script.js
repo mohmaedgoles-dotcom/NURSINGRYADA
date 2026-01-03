@@ -579,111 +579,125 @@ onAuthStateChanged(auth, (user) => {
     };
 
     // 2. دالة العداد والتحكم (القلب النابض)
-    // ------------------------------------------
+    // ==========================================
+    // 2. دالة العداد والتحكم (القلب النابض) - نسخة الأيقونة العائمة
+    // ==========================================
     function handleSessionTimer(isActive, startTime, duration) {
+        // عناصر الأدمن
         const btn = document.getElementById('btnToggleSession');
         const icon = document.getElementById('sessionIcon');
         const txt = document.getElementById('sessionText');
+
+        // عناصر الطالب (الجديدة)
+        const floatTimer = document.getElementById('studentFloatingTimer');
+        const floatText = document.getElementById('floatingTimeText');
+
         const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
 
-        // تنظيف أي عداد سابق فوراً لمنع تداخل الأرقام
         if (sessionInterval) clearInterval(sessionInterval);
 
-        // ===================================
-        // الحالة الأولى: الجلسة مغلقة (OFF)
-        // ===================================
+        // 1. حالة الإغلاق (OFF)
         if (!isActive) {
-            // تحديث شكل الزر
+            // تحديث واجهة الأدمن
             if (btn) {
                 btn.classList.remove('session-open');
-                btn.style.background = "#fee2e2"; // أحمر فاتح
+                btn.style.background = "#fee2e2";
                 btn.style.color = "#991b1b";
                 btn.style.borderColor = "#ef4444";
                 if (icon) icon.className = "fa-solid fa-lock";
                 if (txt) txt.innerText = "التسجيل مغلق";
             }
 
-            // ⛔ طرد الطالب فوراً لو كان بيسجل والجلسة قفلت
+            // إخفاء العداد العائم للطالب
+            if (floatTimer) floatTimer.style.display = 'none';
+
+            // طرد الطالب
             if (!isAdmin && processIsActive) {
                 resetApplicationState();
                 switchScreen('screenWelcome');
                 showToast("⛔ انتهى وقت الجلسة!", 4000, "#ef4444");
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // اهتزاز للتنبيه
+                if (navigator.vibrate) navigator.vibrate(500);
             }
-            return; // خروج
+            return;
         }
 
-        // ===================================
-        // الحالة الثانية: الجلسة مفتوحة (ON)
-        // ===================================
-
-        // دالة التحديث اللحظي (هتتكرر كل ثانية)
+        // 2. حالة الفتح (ON)
         const updateTick = () => {
             const now = Date.now();
 
-            // أ) لو الوقت مفتوح (-1)
+            // -- أ) وقت مفتوح --
             if (duration == -1) {
-                if (btn) {
-                    btn.classList.add('session-open');
-                    btn.style.background = "#dcfce7"; // أخضر
-                    btn.style.borderColor = "#22c55e";
-                    btn.style.color = "#166534";
-                    if (icon) icon.className = "fa-solid fa-unlock";
-                    if (txt) txt.innerText = "وقت مفتوح 🔓";
+                if (isAdmin) {
+                    // للأدمن: زرار أخضر
+                    if (btn) {
+                        btn.classList.add('session-open');
+                        btn.style.background = "#dcfce7";
+                        btn.style.borderColor = "#22c55e";
+                        if (txt) txt.innerText = "وقت مفتوح 🔓";
+                    }
+                } else {
+                    // للطالب: أيقونة خضراء مكتوب فيها Open
+                    if (floatTimer) {
+                        floatTimer.style.display = 'flex';
+                        floatTimer.style.borderColor = '#10b981';
+                        floatText.innerText = "مفتوح";
+                    }
+                    // نخفي زرار الأدمن عن الطالب
+                    if (btn) btn.style.display = 'none';
                 }
-                return; // مفيش عداد بيعد هنا
+                return;
             }
 
-            // ب) لو وقت محدد (حساب المتبقي)
+            // -- ب) وقت محدد (العداد) --
             const elapsedSeconds = Math.floor((now - startTime) / 1000);
             const remaining = duration - elapsedSeconds;
 
             if (remaining > 0) {
-                // --- لسه فيه وقت ---
-                if (btn) {
-                    btn.classList.add('session-open');
-                    btn.style.background = "#fff7ed"; // برتقالي
-                    btn.style.borderColor = "#f97316";
-                    btn.style.color = "#c2410c";
-                    if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin";
-                    if (txt) txt.innerText = `متبقي: ${remaining} ثانية`;
-                }
-            } else {
-                // --- الوقت انتهى (0 أو أقل) ---
+                // -- لسه فيه وقت --
 
-                // وقف العداد
+                if (isAdmin) {
+                    // للأدمن: تحديث الزرار الكبير
+                    if (btn) {
+                        btn.classList.add('session-open');
+                        btn.style.background = "#fff7ed";
+                        btn.style.borderColor = "#f97316";
+                        btn.style.color = "#c2410c";
+                        if (txt) txt.innerText = `متبقي: ${remaining} ث`;
+                    }
+                } else {
+                    // للطالب: تحديث الأيقونة العائمة
+                    if (floatTimer) {
+                        floatTimer.style.display = 'flex';
+                        floatText.innerText = remaining + "s"; // عرض الثواني
+
+                        // لو فاضل أقل من 10 ثواني، خلي لونها أحمر
+                        if (remaining <= 10) {
+                            floatTimer.classList.add('urgent');
+                        } else {
+                            floatTimer.classList.remove('urgent');
+                        }
+                    }
+                    // نخفي زرار الأدمن عن الطالب تماماً
+                    if (btn) btn.style.display = 'none';
+                }
+
+            } else {
+                // -- الوقت انتهى --
                 clearInterval(sessionInterval);
 
-                // سيناريو 1: لو أنا الأدمن (المسؤول)
-                // ابعت أمر للسيرفر يقفل الجلسة فوراً
                 if (isAdmin) {
-                    // استدعاء دالة الغلق اللي كتبناها قبل كده
-                    if (typeof closeSessionImmediately === 'function') {
-                        closeSessionImmediately();
-                    } else {
-                        // كود احتياطي لو الدالة مش موجودة
-                        const docRef = doc(db, "settings", "control_panel");
-                        setDoc(docRef, { isActive: false }, { merge: true });
-                    }
-                }
-                // سيناريو 2: لو أنا طالب
-                else {
-                    // غير شكل الزرار لحد ما السيرفر يفصل
-                    if (btn) {
-                        btn.classList.remove('session-open');
-                        if (txt) txt.innerText = "انتهى الوقت";
-                    }
-                    // طرد الطالب لو لسه فاتح شاشة التسجيل
+                    closeSessionImmediately();
+                } else {
+                    if (floatTimer) floatTimer.style.display = 'none'; // نخفي العداد
                     if (processIsActive) {
                         resetApplicationState();
                         switchScreen('screenWelcome');
-                        alert("عذراً، انتهى الوقت المحدد للجلسة أثناء تسجيلك.");
+                        alert("انتهى الوقت المحدد!");
                     }
                 }
             }
         };
 
-        // تشغيل التحديث فوراً ثم تكراره كل ثانية
         updateTick();
         sessionInterval = setInterval(updateTick, 1000);
     }
