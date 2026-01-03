@@ -480,37 +480,52 @@ onAuthStateChanged(auth, (user) => {
     // 🎮 نظام التحكم في الجلسة بالوقت (مطور)
     // ==========================================
 
-    // 1. عند ضغط الدكتور على الزر (يفتح النافذة لو مغلق، ويقفل لو مفتوح)
-    window.toggleSessionState = async function () {
+    // ==========================================
+    // 1. فتح نافذة اختيار الوقت (تصميم حديث بـ SweetAlert2)
+    // ==========================================
+    // ==========================================
+    // 1. فتح نافذة النظام الخاصة (Custom System Modal)
+    // ==========================================
+    window.toggleSessionState = function () {
+        // التأكد إن المستخدم أدمن
         if (!sessionStorage.getItem("secure_admin_session_token_v99")) return;
 
         const btn = document.getElementById('btnToggleSession');
-        const isCurrentlyOpen = btn.classList.contains('session-open');
 
-        if (isCurrentlyOpen) {
-            // لو مفتوح -> اقفله فوراً
+        // لو الجلسة مفتوحة -> اقفلها فوراً
+        if (btn && btn.classList.contains('session-open')) {
             closeSessionImmediately();
         } else {
-            // لو مغلق -> افتح نافذة اختيار الوقت
-            document.getElementById('sessionTimeModal').style.display = 'flex';
+            // لو مغلقة -> افتح النافذة الخاصة بينا (الشفافة)
+            const modal = document.getElementById('customTimeModal');
+            if (modal) {
+                modal.style.display = 'flex'; // إظهار النافذة
+            } else {
+                console.error("لم يتم العثور على النافذة customTimeModal في HTML");
+            }
         }
     };
 
+    // ==========================================
+    // 2. تنفيذ البدء وإخفاء النافذة
+    // ==========================================
     window.confirmSessionStart = async function (seconds) {
-        document.getElementById('sessionTimeModal').style.display = 'none';
+        // إخفاء النافذة فوراً
+        const modal = document.getElementById('customTimeModal');
+        if (modal) modal.style.display = 'none';
 
         try {
             const docRef = doc(db, "settings", "control_panel");
 
-            // التعديل هنا: استخدام serverTimestamp() بدلاً من Date.now()
-            // ده بيخلي وقت البدء موحد عالمياً
+            // إرسال البيانات للسيرفر (مع serverTimestamp)
             await setDoc(docRef, {
                 isActive: true,
-                startTime: serverTimestamp(), // <--- التغيير هنا
+                startTime: serverTimestamp(),
                 duration: seconds
             }, { merge: true });
 
-            showToast(`تم فتح الجلسة: ${seconds == -1 ? 'وقت مفتوح' : seconds + ' ثانية'}`, 2000, "#10b981");
+            // رسالة تأكيد صغيرة
+            showToast(`تم فتح الجلسة بنجاح 🚀`, 2000, "#10b981");
 
         } catch (e) {
             console.error(e);
@@ -578,7 +593,8 @@ onAuthStateChanged(auth, (user) => {
     // 2. دالة العداد والتحكم (القلب النابض)
     // ==========================================
     // ==========================================
-    // 2. دالة العداد والتحكم (النسخة المصححة)
+    // ==========================================
+    // 2. دالة العداد (النسخة النهائية مع رسائل مودرن 🎨)
     // ==========================================
     function handleSessionTimer(isActive, startTime, duration) {
         const btn = document.getElementById('btnToggleSession');
@@ -588,10 +604,9 @@ onAuthStateChanged(auth, (user) => {
         const floatText = document.getElementById('floatingTimeText');
         const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
 
-        // تنظيف أي عداد سابق
         if (sessionInterval) clearInterval(sessionInterval);
 
-        // 1. حالة الإغلاق
+        // 1. حالة الإغلاق (OFF)
         if (!isActive) {
             if (btn) {
                 btn.classList.remove('session-open');
@@ -607,30 +622,36 @@ onAuthStateChanged(auth, (user) => {
             if (!isAdmin && processIsActive) {
                 resetApplicationState();
                 switchScreen('screenWelcome');
-                showToast("⛔ انتهى وقت الجلسة!", 4000, "#ef4444");
+
+                // 👇 استبدال التنبيه القديم بالجديد 👇
+                Swal.fire({
+                    title: 'انتهت الجلسة! 🔒',
+                    text: 'عذراً، قام المحاضر بإغلاق باب التسجيل.',
+                    icon: 'error',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#ef4444',
+                    timer: 5000,
+                    timerProgressBar: true
+                });
+
                 if (navigator.vibrate) navigator.vibrate(500);
             }
             return;
         }
 
-        // 2. حالة الفتح (العداد)
+        // 2. حالة الفتح (ON)
         const updateTick = () => {
-            // +++++++++ [التصحيح هنا] +++++++++
-            // لو وقت السيرفر لسه "null" (جاري الكتابة)، ننتظر وميقفلش الجلسة
             if (startTime === null) {
                 if (btn && txt) txt.innerText = "جاري البدء...";
                 return;
             }
-            // ++++++++++++++++++++++++++++++++
 
             const now = Date.now();
             let startMs = 0;
-
-            // تحويل وقت الفايربيس لرقم (مللي ثانية)
             if (typeof startTime.toMillis === 'function') {
                 startMs = startTime.toMillis();
             } else {
-                startMs = startTime; // لو هو أصلاً رقم
+                startMs = startTime;
             }
 
             // أ) وقت مفتوح
@@ -655,7 +676,6 @@ onAuthStateChanged(auth, (user) => {
             }
 
             // ب) وقت محدد
-            // بنخصم 2 ثانية كـ هامش تأخير للإنترنت
             const elapsedSeconds = Math.floor((now - startMs) / 1000);
             const remaining = duration - elapsedSeconds;
 
@@ -684,19 +704,35 @@ onAuthStateChanged(auth, (user) => {
                 clearInterval(sessionInterval);
 
                 if (isAdmin) {
-                    // التأكد إن الدالة موجودة قبل استدعائها
-                    if (typeof closeSessionImmediately === 'function') {
-                        closeSessionImmediately();
-                    } else {
-                        // كود طوارئ لو الدالة مش موجودة
-                        setDoc(doc(db, "settings", "control_panel"), { isActive: false }, { merge: true });
-                    }
+                    // إغلاق تلقائي من عند الدكتور
+                    const docRef = doc(db, "settings", "control_panel");
+                    setDoc(docRef, { isActive: false }, { merge: true })
+                        .then(() => {
+                            showToast("⏰ انتهى الوقت المحدد! تم إغلاق الجلسة تلقائياً.", 4000, "#ef4444");
+                            if (typeof playError === 'function') playError();
+                        });
                 } else {
+                    // --- سيناريو الطالب ---
                     if (floatTimer) floatTimer.style.display = 'none';
                     if (processIsActive) {
                         resetApplicationState();
                         switchScreen('screenWelcome');
-                        alert("انتهى الوقت المحدد!");
+
+                        // 👇👇👇 هنا الشكل الجديد المودرن 👇👇👇
+                        Swal.fire({
+                            title: 'انتهى الوقت! ⏳',
+                            text: 'للأسف، لقد نفد الوقت المحدد لتسجيل الحضور.',
+                            icon: 'warning',
+                            confirmButtonText: 'عودة للرئيسية',
+                            confirmButtonColor: '#f59e0b',
+                            allowOutsideClick: false, // يمنع إغلاق النافذة بالضغط خارجها
+                            backdrop: `
+                            rgba(0,0,123,0.4)
+                            url("https://media.giphy.com/media/l4pT2ASyWWgdD0S4w/giphy.gif")
+                            left top
+                            no-repeat
+                        ` // (اختياري) خلفية متحركة بسيطة لو حابب، ممكن تشيل السطر ده
+                        });
                     }
                 }
             }
@@ -705,7 +741,6 @@ onAuthStateChanged(auth, (user) => {
         updateTick();
         sessionInterval = setInterval(updateTick, 1000);
     }
-
     // 3. تحديث شكل الزر
     function updateSessionButtonUI(isOpen) {
         const btn = document.getElementById('btnToggleSession');
