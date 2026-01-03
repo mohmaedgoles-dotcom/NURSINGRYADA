@@ -593,9 +593,6 @@ onAuthStateChanged(auth, (user) => {
     // 2. دالة العداد والتحكم (القلب النابض)
     // ==========================================
     // ==========================================
-    // ==========================================
-    // 2. دالة العداد (النسخة النهائية مع رسائل مودرن 🎨)
-    // ==========================================
     function handleSessionTimer(isActive, startTime, duration) {
         const btn = document.getElementById('btnToggleSession');
         const icon = document.getElementById('sessionIcon');
@@ -618,21 +615,14 @@ onAuthStateChanged(auth, (user) => {
             }
             if (floatTimer) floatTimer.style.display = 'none';
 
-            // طرد الطالب
+            // طرد الطالب لو كان بيسجل حالياً
             if (!isAdmin && processIsActive) {
                 resetApplicationState();
                 switchScreen('screenWelcome');
 
-                // 👇 استبدال التنبيه القديم بالجديد 👇
-                Swal.fire({
-                    title: 'انتهت الجلسة! 🔒',
-                    text: 'عذراً، قام المحاضر بإغلاق باب التسجيل.',
-                    icon: 'error',
-                    confirmButtonText: 'حسناً',
-                    confirmButtonColor: '#ef4444',
-                    timer: 5000,
-                    timerProgressBar: true
-                });
+                // ✅ التعديل هنا: إظهار النافذة الخاصة بالنظام
+                const modal = document.getElementById('systemTimeoutModal');
+                if (modal) modal.style.display = 'flex';
 
                 if (navigator.vibrate) navigator.vibrate(500);
             }
@@ -712,27 +702,18 @@ onAuthStateChanged(auth, (user) => {
                             if (typeof playError === 'function') playError();
                         });
                 } else {
-                    // --- سيناريو الطالب ---
+                    // --- سيناريو الطالب: الوقت انتهى ---
                     if (floatTimer) floatTimer.style.display = 'none';
+
                     if (processIsActive) {
                         resetApplicationState();
                         switchScreen('screenWelcome');
 
-                        // 👇👇👇 هنا الشكل الجديد المودرن 👇👇👇
-                        Swal.fire({
-                            title: 'انتهى الوقت! ⏳',
-                            text: 'للأسف، لقد نفد الوقت المحدد لتسجيل الحضور.',
-                            icon: 'warning',
-                            confirmButtonText: 'عودة للرئيسية',
-                            confirmButtonColor: '#f59e0b',
-                            allowOutsideClick: false, // يمنع إغلاق النافذة بالضغط خارجها
-                            backdrop: `
-                            rgba(0,0,123,0.4)
-                            url("https://media.giphy.com/media/l4pT2ASyWWgdD0S4w/giphy.gif")
-                            left top
-                            no-repeat
-                        ` // (اختياري) خلفية متحركة بسيطة لو حابب، ممكن تشيل السطر ده
-                        });
+                        // ✅ التعديل هنا أيضاً: إظهار النافذة الخاصة بالنظام
+                        const modal = document.getElementById('systemTimeoutModal');
+                        if (modal) modal.style.display = 'flex';
+
+                        if (navigator.vibrate) navigator.vibrate(300);
                     }
                 }
             }
