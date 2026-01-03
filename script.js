@@ -635,7 +635,43 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
             if (docSnap.exists()) {
                 // ✅ الطالب موجود!
                 const studentData = docSnap.data();
-                const studentName = studentData.name; // جلب الاسم من الداتا
+                const studentName = studentData.name;
+
+                // =============================================
+                // 🚨 بداية كود فحص الانضباط (الجديد)
+                // =============================================
+                const disciplineScore = studentData.discipline_score || 0;
+                const isUnruly = studentData.is_unruly || false;
+
+                const discDisplay = document.getElementById('scanDisciplineDisplay');
+
+                if (isUnruly) {
+                    // 🔴 حالة الطالب غير منضبط (تنبيه أحمر)
+                    discDisplay.innerHTML = "⚠️ تصنيف غير منضبط";
+                    discDisplay.className = "student-info-value discipline-score-display danger-pulse";
+                    discDisplay.style.color = "#ef4444";
+                    discDisplay.style.backgroundColor = "#fee2e2";
+                    discDisplay.style.border = "1px solid #ef4444";
+
+                    // تشغيل اهتزاز قوي للتحذير
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+                } else {
+                    // 🟢 حالة عادية (عرض النقاط فقط)
+                    discDisplay.innerText = disciplineScore + " نقطة";
+                    discDisplay.className = "student-info-value discipline-score-display safe";
+
+                    // تلوين الرقم حسب خطورته
+                    if (disciplineScore > 15) {
+                        discDisplay.style.color = "#f59e0b"; // برتقالي (تحذير)
+                    } else {
+                        discDisplay.style.color = "#10b981"; // أخضر (تمام)
+                    }
+                    discDisplay.style.backgroundColor = "transparent";
+                    discDisplay.style.border = "none";
+                }
+                // =============================================
+                // 🚨 نهاية كود فحص الانضباط
+                // =============================================
 
                 // حفظ البيانات مؤقتاً للجلسة الحالية
                 attendanceData.uniID = uniIdVal;
@@ -643,7 +679,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                 sessionStorage.setItem(TEMP_ID_KEY, uniIdVal);
                 sessionStorage.setItem(TEMP_NAME_KEY, studentName);
 
-                // عرض الاسم في الشاشة وتحديث الواجهة
+                // عرض الاسم والكود في الشاشة
                 document.getElementById('scanNameDisplay').innerText = studentName;
                 document.getElementById('scanIDDisplay').innerText = uniIdVal;
 
@@ -897,7 +933,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
             // 4. تجهيز الحزمة للإرسال
             // 4. تجهيز الحزمة للإرسال
             const deviceId = getUniqueDeviceId();
-            
+
             // --- بداية التغيير ---
             const payload = {
                 id: attendanceData.uniID,       // كود الطالب
@@ -915,7 +951,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                 verification: "FIREBASE_SECURE",
 
                 // +++ [إضافة جديدة] تخزين بصمة الوجه للمقارنة +++
-                face_vector: attendanceData.vector || [] 
+                face_vector: attendanceData.vector || []
             };
 
             // +++ [إضافة جديدة] استدعاء دالة كشف الغش قبل الحفظ +++
@@ -1295,48 +1331,139 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
         slider.className = "range-slider " + colorClass; display.innerText = text; display.style.color = colorHex;
     }
 
-    function openEvaluation(studentName, studentID, currentTotal = 0) {
-        playClick(); currentEvalID = studentID; currentEvalName = studentName;
+    async function openEvaluation(studentName, studentID) {
+        playClick();
+        currentEvalID = studentID;
+        currentEvalName = studentName;
+
         document.getElementById('evalStudentName').innerText = studentName;
-        const savedEvals = getEvaluations(); const totalScore = savedEvals[studentID] || 0;
-        document.getElementById('evalCurrentTotal').innerText = totalScore;
-        const slider = document.getElementById('behaviorSlider'); slider.value = 1; updateSliderUI(1);
         document.getElementById('evaluationModal').style.display = 'flex';
+
+        // تصفير العرض مؤقتاً لحد ما نجيب الداتا
+        document.getElementById('evalCurrentTotal').innerText = "...";
+        document.getElementById('evalCurrentTotal').style.color = "#64748b";
+
+        try {
+            // جلب البيانات الحية من السيرفر
+            const docRef = doc(db, "students", studentID);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const score = data.discipline_score || 0;
+                const isUnruly = data.is_unruly || false;
+
+                // عرض النتيجة
+                document.getElementById('evalCurrentTotal').innerText = score + " / 25";
+
+                // لو غير منضبط نلونها ونكتب جمبها
+                if (isUnruly) {
+                    document.getElementById('evalCurrentTotal').innerHTML =
+                        `${score} / 25 <br><span style="color:#ef4444; font-weight:900; font-size:18px; background:#fee2e2; padding:2px 10px; border-radius:5px;">⚠️ تصنيف: غير منضبط</span>`;
+                } else {
+                    document.getElementById('evalCurrentTotal').style.color = score > 15 ? "#f59e0b" : "#10b981";
+                }
+            } else {
+                document.getElementById('evalCurrentTotal').innerText = "0";
+            }
+        } catch (e) {
+            console.log("Error fetching score", e);
+            document.getElementById('evalCurrentTotal').innerText = "خطأ في الجلب";
+        }
+
+        const slider = document.getElementById('behaviorSlider');
+        slider.value = 1;
+        updateSliderUI(1);
     }
 
     function closeEvaluation() { playClick(); document.getElementById('evaluationModal').style.display = 'none'; currentEvalID = null; currentEvalName = null; }
 
     // ==========================================
-    //  FIREBASE: SAVE DISCIPLINE
+    //  تحديث: نظام تجميع النقاط (25 درجة = غير منضبط)
     // ==========================================
     async function saveEvaluation() {
         if (!currentEvalID) return;
-        const val = parseInt(document.getElementById('behaviorSlider').value);
 
-        // Local Update
-        let evals = getEvaluations(); const oldVal = parseInt(evals[currentEvalID] || 0);
-        evals[currentEvalID] = oldVal + val; localStorage.setItem(EVAL_STORAGE_KEY, JSON.stringify(evals));
+        // 1. القيمة التي اختارها الدكتور حالياً
+        const valueToAdd = parseInt(document.getElementById('behaviorSlider').value);
+        const btn = document.querySelector('#evaluationModal .btn-main');
+        const originalText = btn.innerHTML;
 
-        const btn = document.querySelector('#evaluationModal .btn-main'); const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحساب...';
+        btn.disabled = true;
 
         try {
-            await addDoc(collection(db, "discipline"), {
-                id: currentEvalID,
-                name: currentEvalName,
-                score: val,
-                total_score: evals[currentEvalID],
-                timestamp: Timestamp.now()
+            const studentRef = doc(db, "students", currentEvalID);
+            const studentSnap = await getDoc(studentRef);
+
+            if (!studentSnap.exists()) {
+                alert("لم يتم العثور على ملف الطالب في قاعدة البيانات الرئيسية!");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            const studentData = studentSnap.data();
+
+            // 2. جلب الرصيد القديم (لو مفيش نعتبره صفر)
+            let currentScore = studentData.discipline_score || 0;
+            let isUnruly = studentData.is_unruly || false;
+
+            // 3. عملية الجمع
+            let newScore = currentScore + valueToAdd;
+            let cycleMessage = "";
+
+            // 4. التحقق من الوصول للحد الأقصى (25)
+            if (newScore >= 25) {
+                newScore = 0; // تصفير العداد
+                isUnruly = true; // وشم الطالب بـ "غير منضبط"
+                cycleMessage = "⚠️ وصل الطالب للحد الأقصى (25)! تم تصنيفه (غير منضبط) وتصفير العداد.";
+            }
+
+            // 5. تحديث بيانات الطالب في السيرفر
+            await setDoc(studentRef, {
+                discipline_score: newScore,
+                is_unruly: isUnruly,
+                last_discipline_update: Timestamp.now()
+            }, { merge: true });
+
+            // 6. تسجيل العملية في سجل التاريخ (عشان مننساش هو عمل إيه)
+            await addDoc(collection(db, "discipline_logs"), {
+                student_id: currentEvalID,
+                student_name: currentEvalName,
+                added_score: valueToAdd,
+                score_after: newScore,
+                action: isUnruly && newScore === 0 ? "CYCLE_RESET_UNRULY" : "ADD_SCORE",
+                timestamp: Timestamp.now(),
+                admin_id: "DOCTOR" // يمكن تغييرها باسم الدكتور لو متاح
             });
 
-            playSuccess(); closeEvaluation(); showToast("تم تسجيل المخالفة بنجاح", 2000, "#ef4444");
-            const currentSub = document.getElementById('currentSubjectTitle').innerText; if (currentSub !== "--") openSubjectDetails(currentSub);
+            // تحديث الواجهة وتحديث السجل المحلي
+            playSuccess();
+            closeEvaluation();
+
+            if (cycleMessage) {
+                alert(cycleMessage); // تنبيه للدكتور
+            } else {
+                showToast(`تم إضافة ${valueToAdd} درجات. الرصيد الحالي: ${newScore}`, 3000, "#f59e0b");
+            }
+
+            // تحديث العرض في القائمة الخلفية
+            let evals = getEvaluations();
+            evals[currentEvalID] = newScore;
+            localStorage.setItem(EVAL_STORAGE_KEY, JSON.stringify(evals));
+
+            // تحديث الشاشة لو القائمة مفتوحة
+            const currentSub = document.getElementById('currentSubjectTitle').innerText;
+            if (currentSub !== "--") openSubjectDetails(currentSub);
 
         } catch (e) {
-            console.error(e);
-            alert("فشل في الاتصال بالسيرفر، تم الحفظ محلياً فقط.");
-            closeEvaluation();
-        } finally { btn.innerHTML = originalText; }
+            console.error("Discipline Error:", e);
+            alert("حدث خطأ في الاتصال: " + e.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     function getDisciplineBadge(score) {
@@ -1396,11 +1523,58 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     function closeModernConfirm() { playClick(); document.getElementById('modernConfirmModal').style.display = 'none'; pendingAction = null; }
 
     async function deleteEntry(id, subject, btn) {
-        showModernConfirm("حذف نهائي", "سيتم حذف الطالب من السجل. هل أنت متأكد؟", async function () {
-            const card = btn.closest('.student-detailed-card'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            card.style.opacity = '0'; setTimeout(() => { card.remove(); }, 300);
-            showToast("تم الحذف من القائمة.", 2000, '#ef4444');
-            // TODO: Delete from Firebase if needed
+        showModernConfirm("حذف نهائي", "سيتم حذف هذا السجل من قاعدة البيانات نهائياً. هل أنت متأكد؟", async function () {
+
+            // 1. تغيير شكل الزر للتحميل
+            const card = btn.closest('.student-detailed-card');
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                // 2. البحث عن مستند الحضور في Firebase لحذفه
+                // نبحث عن الطالب في هذا اليوم وهذه المادة
+                const now = new Date();
+                const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
+
+                const q = query(
+                    collection(db, "attendance"),
+                    where("id", "==", id),
+                    where("date", "==", dateStr),
+                    where("subject", "==", subject)
+                );
+
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    showToast("لم يتم العثور على السجل في السيرفر!", 3000, "#f59e0b");
+                    btn.innerHTML = originalIcon;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 3. حذف جميع النسخ المطابقة (في حال وجود تكرار)
+                const deletePromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+
+                await Promise.all(deletePromises);
+
+                // 4. إخفاء العنصر من الشاشة بعد نجاح الحذف
+                card.style.transition = "all 0.5s ease";
+                card.style.transform = "translateX(100%)";
+                card.style.opacity = '0';
+
+                setTimeout(() => { card.remove(); }, 500);
+                showToast("تم الحذف من السيرفر بنجاح.", 3000, '#ef4444');
+
+            } catch (error) {
+                console.error("Delete Error:", error);
+                showToast("حدث خطأ أثناء الحذف.", 3000, "#ef4444");
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+            }
         });
     }
 
@@ -1411,10 +1585,59 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     }
 
     async function clearAllReport() {
-        showModernConfirm("تصفيه السجل", "سيتم مسح البيانات. هل أنت متأكد؟", async function () {
-            document.getElementById('subjectsContainer').innerHTML = '<div class="empty-state">تم التنظيف محلياً.</div>'; playSuccess();
-            // Firebase clear logic can be added here if needed
-        });
+        showModernConfirm(
+            "حذف سجل اليوم بالكامل 🗑️",
+            "تحذير خطير: سيتم حذف جميع بيانات الحضور المسجلة بتاريخ اليوم من السيرفر نهائياً.<br>لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟",
+            async function () {
+                const container = document.getElementById('subjectsContainer');
+
+                // 1. إظهار علامة التحميل
+                container.innerHTML = '<div style="text-align:center; padding:50px; color:#ef4444;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px;"></i><br>جاري حذف جميع البيانات من السيرفر...</div>';
+
+                try {
+                    // 2. تحديد تاريخ اليوم
+                    const now = new Date();
+                    const dateStr = ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + now.getFullYear();
+
+                    // 3. جلب كل مستندات الحضور الخاصة باليوم
+                    const q = query(collection(db, "attendance"), where("date", "==", dateStr));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        showToast("السجل نظيف بالفعل، لا توجد بيانات.", 3000, "#10b981");
+                        container.innerHTML = '<div class="empty-state">لا توجد سجلات اليوم.</div>';
+                        return;
+                    }
+
+                    // 4. الحذف الجماعي (Batch Delete)
+                    // نقسمهم مجموعات عشان لو العدد كبير السيرفر يقبلهم
+                    const chunks = [];
+                    const docs = querySnapshot.docs;
+                    for (let i = 0; i < docs.length; i += 400) {
+                        chunks.push(docs.slice(i, i + 400));
+                    }
+
+                    for (const chunk of chunks) {
+                        const batch = writeBatch(db);
+                        chunk.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        await batch.commit();
+                    }
+
+                    // 5. نجاح العملية
+                    playSuccess();
+                    showToast(`تم حذف ${querySnapshot.size} سجل بنجاح.`, 4000, "#10b981");
+                    container.innerHTML = '<div class="empty-state">تم تصفية السجل نهائياً.</div>';
+
+                } catch (error) {
+                    console.error("Clear All Error:", error);
+                    showToast("حدث خطأ أثناء الحذف: " + error.message, 4000, "#ef4444");
+                    // إعادة تحميل البيانات لو حصل خطأ
+                    openReportModal();
+                }
+            }
+        );
     }
 
     function isMobileDevice() { const ua = navigator.userAgent.toLowerCase(); const isTargetMobile = /android|iphone|ipod/i.test(ua); const isExcluded = /windows|macintosh|ipad|tablet|x11|kindle/i.test(ua); return (isTargetMobile && !isExcluded); }
@@ -1634,11 +1857,11 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
                     hall: currentData.hall,
                     isRead: false
                 };
-                
+
                 // هنا مربط الفرس: المتغيرات دي متشافة هنا بس
                 systemAlerts.unshift(newAlert);
                 localStorage.setItem(ALERT_STORAGE_KEY, JSON.stringify(systemAlerts));
-                checkStoredAlerts(); 
+                checkStoredAlerts();
                 showToast(`⚠️ تم رصد مخالفة: ${fraudReason}`, 5000, "#ef4444");
             }
 
@@ -1653,7 +1876,7 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
         return Math.sqrt(sum);
     }
 
-// 👇👇👇 القوس النهائي للملف (تأكد إنه آخر حاجة) 👇👇👇
+    // 👇👇👇 القوس النهائي للملف (تأكد إنه آخر حاجة) 👇👇👇
 })();
 
 if ('serviceWorker' in navigator) {
