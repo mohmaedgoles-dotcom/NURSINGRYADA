@@ -385,19 +385,20 @@ onAuthStateChanged(auth, (user) => {
     function updateUIForMode() {
         const isAdmin = sessionStorage.getItem(ADMIN_AUTH_TOKEN);
 
-        // 1. التحكم في العناصر القديمة (عشان ما نبوظش حاجة)
+        // تعريف العناصر
         const badge = document.getElementById('adminBadge');
         const loginBtn = document.getElementById('btnAdminLogin');
         const logoutBtn = document.getElementById('btnAdminLogout');
         const reportBtn = document.getElementById('btnViewReport');
-        const adminFloating = document.getElementById('adminFloatingBack');
         const notifBtn = document.getElementById('notificationBtn');
         const adminBypassContainer = document.getElementById('adminBypassContainer');
         const btnDataEntry = document.getElementById('btnDataEntry');
-        const sessionBtn = document.getElementById('btnToggleSession'); // <-- ده الجديد المهم
+        const sessionBtn = document.getElementById('btnToggleSession');
 
         if (isAdmin) {
-            // --- وضع الأدمن ---
+            // =================================
+            // 1. وضع المسؤول (Admin Mode)
+            // =================================
             if (badge) badge.style.display = 'block';
             if (loginBtn) loginBtn.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'flex';
@@ -407,19 +408,25 @@ onAuthStateChanged(auth, (user) => {
                 reportBtn.classList.add('unlocked');
             }
 
-            document.getElementById('adminDeleteAlert').style.display = 'flex';
+            const deleteAlert = document.getElementById('adminDeleteAlert');
+            if (deleteAlert) deleteAlert.style.display = 'flex';
+
             if (notifBtn) notifBtn.classList.remove('locked');
             if (adminBypassContainer) adminBypassContainer.style.display = 'block';
             if (btnDataEntry) btnDataEntry.style.display = 'flex';
 
-            // إظهار زر التحكم في الجلسة وتشغيل المراقبة
+            // --- [تفعيل زر الجلسة والعداد] ---
             if (sessionBtn) sessionBtn.style.display = 'flex';
-            if (!unsubscribeSessionListener) listenToSessionState();
 
-            syncGlobalAlerts();
+            // تشغيل مراقب الجلسة فوراً ليظهر العداد للدكتور
+            listenToSessionState();
+
+            if (typeof syncGlobalAlerts === 'function') syncGlobalAlerts();
 
         } else {
-            // --- وضع الطالب ---
+            // =================================
+            // 2. وضع الطالب (Student Mode)
+            // =================================
             if (badge) badge.style.display = 'none';
             if (loginBtn) loginBtn.style.display = 'flex';
             if (logoutBtn) logoutBtn.style.display = 'none';
@@ -429,23 +436,24 @@ onAuthStateChanged(auth, (user) => {
                 reportBtn.classList.add('locked');
             }
 
-            document.getElementById('adminDeleteAlert').style.display = 'none';
+            const deleteAlert = document.getElementById('adminDeleteAlert');
+            if (deleteAlert) deleteAlert.style.display = 'none';
+
             if (notifBtn) notifBtn.classList.add('locked');
             if (adminBypassContainer) adminBypassContainer.style.display = 'block';
             if (btnDataEntry) btnDataEntry.style.display = 'none';
 
-            // إخفاء زر التحكم في الجلسة وإيقاف المراقبة
+            // إخفاء زر التحكم عن الطالب
             if (sessionBtn) sessionBtn.style.display = 'none';
-            if (unsubscribeSessionListener) {
-                unsubscribeSessionListener();
-                unsubscribeSessionListener = null;
-            }
+
+            // --- [تفعيل المراقبة للطالب أيضاً] ---
+            // مهم جداً: الطالب لازم يراقب الجلسة عشان لو الوقت خلص يطرده النظام
+            listenToSessionState();
         }
 
-        updateUIForAttempts();
-        checkStoredAlerts();
+        if (typeof updateUIForAttempts === 'function') updateUIForAttempts();
+        if (typeof checkStoredAlerts === 'function') checkStoredAlerts();
     }
-
     function detectFakeGPS(pos) { return (pos.coords.accuracy < 2 || (pos.coords.altitude === null && pos.coords.accuracy < 10)); }
     function checkLocationStrict(onSuccess) {
         if (navigator.geolocation) {
@@ -471,8 +479,6 @@ onAuthStateChanged(auth, (user) => {
     // ==========================================
     // 🎮 نظام التحكم في الجلسة بالوقت (مطور)
     // ==========================================
-
-    let sessionInterval = null; // متغير للعداد
 
     // 1. عند ضغط الدكتور على الزر (يفتح النافذة لو مغلق، ويقفل لو مفتوح)
     window.toggleSessionState = async function () {
@@ -541,85 +547,133 @@ onAuthStateChanged(auth, (user) => {
         });
     };
 
-    // 5. دالة العداد وحساب الوقت (القلب النابض)
+    // ==========================================
+    // 🎮 نظام العداد والمراقبة (الكود المعدل)
+    // ==========================================
+
+    // متغير لتخزين العداد عشان نقدر نوقفه ومنع التداخل
+    let sessionInterval = null;
+
+    // 1. دالة المراقبة (الرادار)
+    // ------------------------------------------
+    window.listenToSessionState = function () {
+        const docRef = doc(db, "settings", "control_panel");
+
+        // لو فيه مراقب شغال من قبل كده، نوقفه الأول عشان ميعملش دوشة
+        if (window.unsubscribeSessionListener) {
+            window.unsubscribeSessionListener();
+            window.unsubscribeSessionListener = null;
+        }
+
+        // بدء المراقبة الحية من الفايربيس
+        window.unsubscribeSessionListener = onSnapshot(docRef, (docSnap) => {
+            if (!docSnap.exists()) return;
+
+            const data = docSnap.data();
+            // تمرير البيانات لدالة العداد والتحكم
+            handleSessionTimer(data.isActive, data.startTime, data.duration);
+
+        }, (error) => {
+            console.error("خطأ في مراقبة الجلسة:", error);
+        });
+    };
+
+    // 2. دالة العداد والتحكم (القلب النابض)
+    // ------------------------------------------
     function handleSessionTimer(isActive, startTime, duration) {
         const btn = document.getElementById('btnToggleSession');
         const icon = document.getElementById('sessionIcon');
         const txt = document.getElementById('sessionText');
         const isAdmin = !!sessionStorage.getItem("secure_admin_session_token_v99");
 
-        // تنظيف أي عداد سابق
+        // تنظيف أي عداد سابق فوراً لمنع تداخل الأرقام
         if (sessionInterval) clearInterval(sessionInterval);
 
+        // ===================================
+        // الحالة الأولى: الجلسة مغلقة (OFF)
+        // ===================================
         if (!isActive) {
-            // --- حالة الإغلاق ---
+            // تحديث شكل الزر
             if (btn) {
                 btn.classList.remove('session-open');
-                btn.style.background = "#fee2e2";
+                btn.style.background = "#fee2e2"; // أحمر فاتح
                 btn.style.color = "#991b1b";
                 btn.style.borderColor = "#ef4444";
                 if (icon) icon.className = "fa-solid fa-lock";
                 if (txt) txt.innerText = "التسجيل مغلق";
             }
-            // لو طالب وكان بيسجل، نطرده فوراً
+
+            // ⛔ طرد الطالب فوراً لو كان بيسجل والجلسة قفلت
             if (!isAdmin && processIsActive) {
-                // إغلاق أي نافذة مفتوحة
                 resetApplicationState();
                 switchScreen('screenWelcome');
                 showToast("⛔ انتهى وقت الجلسة!", 4000, "#ef4444");
-                if (navigator.vibrate) navigator.vibrate(500);
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // اهتزاز للتنبيه
             }
-            return;
+            return; // خروج
         }
 
-        // --- حالة الفتح ---
+        // ===================================
+        // الحالة الثانية: الجلسة مفتوحة (ON)
+        // ===================================
 
-        // دالة التحديث اللحظي
+        // دالة التحديث اللحظي (هتتكرر كل ثانية)
         const updateTick = () => {
             const now = Date.now();
 
-            // لو الوقت مفتوح (-1)
-            if (duration === -1) {
+            // أ) لو الوقت مفتوح (-1)
+            if (duration == -1) {
                 if (btn) {
                     btn.classList.add('session-open');
-                    btn.style.background = "#dcfce7";
+                    btn.style.background = "#dcfce7"; // أخضر
                     btn.style.borderColor = "#22c55e";
                     btn.style.color = "#166534";
                     if (icon) icon.className = "fa-solid fa-unlock";
                     if (txt) txt.innerText = "وقت مفتوح 🔓";
                 }
-                return;
+                return; // مفيش عداد بيعد هنا
             }
 
-            // حساب الوقت المتبقي بدقة
+            // ب) لو وقت محدد (حساب المتبقي)
             const elapsedSeconds = Math.floor((now - startTime) / 1000);
             const remaining = duration - elapsedSeconds;
 
             if (remaining > 0) {
-                // لسه فيه وقت
+                // --- لسه فيه وقت ---
                 if (btn) {
                     btn.classList.add('session-open');
-                    btn.style.background = "#fff7ed"; // لون برتقالي فاتح
+                    btn.style.background = "#fff7ed"; // برتقالي
                     btn.style.borderColor = "#f97316";
                     btn.style.color = "#c2410c";
-                    if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin"; // أيقونة بتلف
-                    // عرض العداد داخل الزر
+                    if (icon) icon.className = "fa-solid fa-hourglass-half fa-spin";
                     if (txt) txt.innerText = `متبقي: ${remaining} ثانية`;
                 }
             } else {
-                // الوقت خلص!
+                // --- الوقت انتهى (0 أو أقل) ---
+
+                // وقف العداد
                 clearInterval(sessionInterval);
 
-                // لو أنا الأدمن، هبعت أمر الإغلاق للسيرفر
+                // سيناريو 1: لو أنا الأدمن (المسؤول)
+                // ابعت أمر للسيرفر يقفل الجلسة فوراً
                 if (isAdmin) {
-                    closeSessionImmediately();
-                } else {
-                    // لو أنا طالب، الجلسة قفلت عندي خلاص
+                    // استدعاء دالة الغلق اللي كتبناها قبل كده
+                    if (typeof closeSessionImmediately === 'function') {
+                        closeSessionImmediately();
+                    } else {
+                        // كود احتياطي لو الدالة مش موجودة
+                        const docRef = doc(db, "settings", "control_panel");
+                        setDoc(docRef, { isActive: false }, { merge: true });
+                    }
+                }
+                // سيناريو 2: لو أنا طالب
+                else {
+                    // غير شكل الزرار لحد ما السيرفر يفصل
                     if (btn) {
                         btn.classList.remove('session-open');
                         if (txt) txt.innerText = "انتهى الوقت";
                     }
-                    // طرد الطالب لو بيسجل
+                    // طرد الطالب لو لسه فاتح شاشة التسجيل
                     if (processIsActive) {
                         resetApplicationState();
                         switchScreen('screenWelcome');
@@ -629,25 +683,10 @@ onAuthStateChanged(auth, (user) => {
             }
         };
 
-        // تشغيل التحديث كل ثانية
-        updateTick(); // تحديث فوري
+        // تشغيل التحديث فوراً ثم تكراره كل ثانية
+        updateTick();
         sessionInterval = setInterval(updateTick, 1000);
     }
-
-    // 2. دالة المراقبة الحية
-    window.listenToSessionState = function () {
-        if (!sessionStorage.getItem("secure_admin_session_token_v99")) return;
-
-        const docRef = doc(db, "settings", "control_panel");
-
-        // تشغيل المراقبة الحية (onSnapshot)
-        unsubscribeSessionListener = onSnapshot(docRef, (docSnap) => {
-            const isActive = docSnap.exists() ? docSnap.data().isActive : false;
-            updateSessionButtonUI(isActive);
-        }, (error) => {
-            console.error("Session Listener Error:", error);
-        });
-    };
 
     // 3. تحديث شكل الزر
     function updateSessionButtonUI(isOpen) {
