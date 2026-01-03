@@ -916,6 +916,75 @@
         </div>
     </div>
     <div id="toastNotification"></div>
+    <div id="sessionTimeModal" class="modal-overlay" style="z-index: 9999999;">
+        <div class="modal-box" style="width: 90%; max-width: 350px; padding: 20px;">
+            <div class="modal-title" style="margin-bottom: 15px;">⏱️ اختر مدة الجلسة</div>
+
+            <div class="time-grid-modern">
+                <button onclick="confirmSessionStart(10)" class="time-btn">10 ثواني</button>
+                <button onclick="confirmSessionStart(20)" class="time-btn">20 ثانية</button>
+                <button onclick="confirmSessionStart(30)" class="time-btn">30 ثانية</button>
+                <button onclick="confirmSessionStart(40)" class="time-btn">40 ثانية</button>
+                <button onclick="confirmSessionStart(50)" class="time-btn">50 ثانية</button>
+                <button onclick="confirmSessionStart(60)" class="time-btn">1 دقيقة</button>
+                <button onclick="confirmSessionStart(120)" class="time-btn">2 دقيقة</button>
+                <button onclick="confirmSessionStart(-1)" class="time-btn open-time">🔓 وقت مفتوح</button>
+            </div>
+
+            <button onclick="document.getElementById('sessionTimeModal').style.display='none'" class="btn-cancel-modern"
+                style="margin-top: 15px; width: 100%;">إلغاء</button>
+        </div>
+    </div>
+
+    <style>
+        /* تنسيقات النافذة المودرن */
+        .time-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .time-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: bold;
+            color: #334155;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .time-btn:active {
+            transform: scale(0.95);
+        }
+
+        .time-btn.open-time {
+            grid-column: span 2;
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+        }
+    </style>
+    <div id="sessionTimeModal" class="modal-overlay" style="z-index: 9999999;">
+        <div class="modal-box" style="width: 90%; max-width: 350px; padding: 20px;">
+            <div class="modal-title" style="margin-bottom: 15px;">⏱️ اختر مدة الجلسة</div>
+
+            <div class="time-grid-modern">
+                <button onclick="confirmSessionStart(10)" class="time-btn">10 ثواني</button>
+                <button onclick="confirmSessionStart(20)" class="time-btn">20 ثانية</button>
+                <button onclick="confirmSessionStart(30)" class="time-btn">30 ثانية</button>
+                <button onclick="confirmSessionStart(40)" class="time-btn">40 ثانية</button>
+                <button onclick="confirmSessionStart(50)" class="time-btn">50 ثانية</button>
+                <button onclick="confirmSessionStart(60)" class="time-btn">1 دقيقة</button>
+                <button onclick="confirmSessionStart(120)" class="time-btn">2 دقيقة</button>
+                <button onclick="confirmSessionStart(-1)" class="time-btn open-time">🔓 وقت مفتوح</button>
+            </div>
+
+            <button onclick="document.getElementById('sessionTimeModal').style.display='none'" class="btn-cancel-modern"
+                style="margin-top: 15px; width: 100%;">إلغاء</button>
+        </div>
+    </div>
 </body>
 
 </html>
