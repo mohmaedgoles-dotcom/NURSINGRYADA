@@ -836,3 +836,46 @@ p { font-size: 13px; color: var(--text-sub); margin-bottom: 25px; line-height: 1
         opacity: 1;
     }
 }
+/* 1. تصميم زر إزالة المخالفات */
+.btn-reset-modern {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #94a3b8;
+    background: #f8fafc;
+    color: #64748b;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: 'Cairo', sans-serif;
+}
+.btn-reset-modern:active {
+    background: #e2e8f0;
+    transform: scale(0.98);
+}
+
+/* 2. تصميم النافذة العائمة للطالب (تظهر وتختفي) */
+.unruly-popup {
+    position: fixed;
+    top: 20px; /* تظهر من الأعلى */
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px); /* مخفية للأعلى */
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    padding: 10px 20px;
+    border-radius: 50px; /* شكل كبسولة */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+    z-index: 9999999;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+}
+
+.unruly-popup.show {
+    transform: translateX(-50%) translateY(20px); /* تنزل لتحت */
+    opacity: 1;
+}
