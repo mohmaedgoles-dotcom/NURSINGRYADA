@@ -2,7 +2,8 @@
 //  1. استيراد مكتبات Firebase (تم إضافة Auth)
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // <--- هذا السطر الجديد
+import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp, doc, getDoc, writeBatch, onSnapshot, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 let unsubscribeSessionListener = null; // متغير لمراقبة الجلسة
 
 const firebaseConfig = {
@@ -17,6 +18,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app); // <--- تفعيل الـ Auth
+
+// ==========================================
+// 🛡️ نظام الحماية الحقيقي (بيراقب حالة الدخول)
+// ==========================================
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // ✅ فيه يوزر مسجل دخول بجد
+        console.log("Admin Verified: ", user.email);
+        sessionStorage.setItem("secure_admin_session_token_v99", "SECURE_FIREBASE_SESSION_" + user.uid);
+        // حدث الواجهة وافتح الأدوات
+        if (typeof updateUIForMode === 'function') updateUIForMode();
+    } else {
+        // ❌ مفيش يوزر (أو عمل خروج)
+        console.log("No User / Logged Out");
+        // امسح الختم المزور فوراً
+        sessionStorage.removeItem("secure_admin_session_token_v99");
+        // اقفل الواجهة ورجع وضع الطالب
+        if (typeof updateUIForMode === 'function') updateUIForMode();
+    }
+});
 
 // ==========================================
 //  2. منطق التطبيق (System Logic)
@@ -1194,7 +1215,23 @@ const auth = getAuth(app); // <--- تفعيل الـ Auth
     }
 
     function showError(msg, isPermanent = false) { if (countdownInterval) clearInterval(countdownInterval); document.getElementById('errorMsg').innerHTML = msg; const retryBtn = document.getElementById('retryBtn'); if (isPermanent) retryBtn.style.display = 'none'; else { retryBtn.style.display = 'inline-block'; retryBtn.onclick = function () { location.reload(); }; } switchScreen('screenError'); if (navigator.vibrate) navigator.vibrate(300); }
-    function performLogout() { playClick(); sessionStorage.removeItem(ADMIN_AUTH_TOKEN); location.reload(); }
+    // دالة الخروج الآمن (تم تحديثها)
+    window.performLogout = async function () {
+        if (typeof playClick === 'function') playClick();
+        try {
+            // 1. الخروج من سيرفر فايربيس
+            await signOut(auth);
+
+            // 2. مسح التوكن من المتصفح
+            sessionStorage.removeItem("secure_admin_session_token_v99");
+
+            // 3. إعادة تحميل الصفحة
+            location.reload();
+        } catch (error) {
+            console.error("Logout Error:", error);
+            alert("حدث خطأ في الاتصال أثناء الخروج");
+        }
+    };
     function openLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'flex'; }
     function closeLogoutModal() { playClick(); document.getElementById('customLogoutModal').style.display = 'none'; }
     function showConnectionLostModal() { document.getElementById('connectionLostModal').style.display = 'flex'; }
@@ -1944,50 +1981,6 @@ function playClick() {
 // ==========================================
 //  تصدير الحضور لملف Excel باسم المادة
 // ==========================================
-window.exportSubjectToExcel = function (subjectName) {
-    // 1. جلب البيانات من المخزن العالمي
-    const allData = window.cachedReportData || [];
-
-    // 2. فلترة البيانات للمادة المطلوبة فقط
-    const filteredData = allData.filter(item => item.subject === subjectName);
-
-    if (filteredData.length === 0) {
-        alert(`⚠️ لا توجد بيانات مسجلة لمادة: ${subjectName}`);
-        return;
-    }
-
-    // 3. تنسيق البيانات داخل الجدول
-    const excelRows = filteredData.map((student, index) => ({
-        "م": index + 1,
-        "اسم المادة": subjectName, // إضافة اسم المادة داخل كل سطر
-        "اسم الطالب": student.name,
-        "الكود الجامعي": student.uniID,
-        "المجموعة": student.group,
-        "وقت الحضور": student.time,
-        "المدرج/القاعة": student.hall,
-        "كود الجلسة": student.code
-    }));
-
-    try {
-        // 4. إنشاء ملف الإكسل
-        const worksheet = XLSX.utils.json_to_sheet(excelRows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, subjectName); // اسم الشيت بالأسفل
-
-        // ضبط الاتجاه لليمين (RTL)
-        worksheet['!dir'] = 'rtl';
-
-        // 5. تحميل الملف باسم المادة والتاريخ
-        const dateStr = new Date().toLocaleDateString('ar-EG').replace(/\//g, '-');
-        const fileName = `حضور_${subjectName}_بتاريخ_${dateStr}.xlsx`;
-
-        XLSX.writeFile(workbook, fileName);
-
-    } catch (error) {
-        console.error("Excel Export Error:", error);
-        alert("حدث خطأ أثناء تصدير الملف. تأكد من تحميل الصفحة بالكامل.");
-    }
-};
 // ==========================================
 //  نظام إدارة وحذف الشيتات (Upload History)
 // ==========================================
