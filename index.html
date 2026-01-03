@@ -1005,7 +1005,28 @@
         </div>
         <span id="floatingTimeText" class="en-font">00</span>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div id="systemTimeoutModal" class="modal-overlay" style="z-index: 999999999; display: none;">
+        <div class="modal-box" style="text-align: center; padding: 30px 20px;">
+
+            <div
+                style="background: #fef2f2; width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; border: 4px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <i class="fa-solid fa-hourglass-end" style="font-size: 40px; color: #ef4444;"></i>
+            </div>
+
+            <h2 style="margin: 0; color: #1e293b; font-size: 22px; font-weight: 900; font-family: 'Cairo', sans-serif;">
+                انتهت الجلسة
+            </h2>
+
+            <p style="color: #64748b; font-size: 14px; margin: 10px 0 25px 0; line-height: 1.6;">
+                عذراً، لقد نفد الوقت المحدد لتسجيل الحضور.<br>تم إغلاق التسجيل لهذه المحاضرة.
+            </p>
+
+            <button onclick="forceReturnHome()" class="btn-main"
+                style="width: 100%; background: #334155; color: white; box-shadow: 0 4px 6px -1px rgba(51, 65, 85, 0.3);">
+                العودة للشاشة الرئيسية
+            </button>
+        </div>
+    </div>
 </body>
 
 </html>
